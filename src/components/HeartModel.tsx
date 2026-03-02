@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei";
 import { useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { OPEN_ANGLE, OPEN_SPEED } from "../lib/constants";
+import { OPEN_ANGLE, OPEN_SPEED } from "@/lib/constants";
 
 export default function HeartModel() {
   const gltf = useGLTF("/models/heart.glb");
