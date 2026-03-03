@@ -1,3 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-text: var(--text);
+  --color-postcard-background: var(--postcard-background);
+
+  --spacing-postcard-width: 60rem;
+  --spacing-postcard-height: 41.5rem;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -7,15 +18,34 @@
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
-  
+  --text-xxs: 0.7rem;
+  --text-xs: 0.8rem;
+  --text-s: 0.9rem;
+  --text-sm: 1.2rem;
+  --text-md: 1.4rem;
+  --text-lg: 1.8rem;
+  --text-xl: 2rem;
+  --text-xxl: 2.8rem;
 
   --background: #a785da;
+  --text: #242424;
+  --postcard-background: #FFFDFA;
 }
 
-html, body {
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   background: var(--background);
+  color: var(--text);
+}
+
+html {
+  font-size: 10px;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
 }
