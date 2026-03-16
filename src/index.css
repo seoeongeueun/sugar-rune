@@ -75,9 +75,15 @@ canvas {
 }
 
 ::-webkit-scrollbar {
-  width: 0.5rem;
+  width: 1rem;
+  border-radius: 1rem;
+}
+
+::-webkit-scrollbar-thumb {
   background: var(--background);
-  border-radius: 20rem;
+  border-radius: 0.2rem;
+  background-clip: padding-box;
+  border: 3px solid transparent;
 }
 
 button {
