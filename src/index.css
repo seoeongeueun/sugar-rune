@@ -9,6 +9,8 @@
 
   --spacing-postcard-width: 60rem;
   --spacing-postcard-height: 41.5rem;
+  --spacing-postcard-width-half: 30rem;
+  --spacing-postcard-height-half: 20.75rem;
 }
 
 :root {
