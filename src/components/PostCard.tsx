@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { HEART_COLORS } from "@/lib/constants";
+import PostCardCut from "./PostCardCut";
 
 type POSTCARD_MODE = "view" | "edit";
 
@@ -20,7 +21,9 @@ export default function PostCard() {
   );
   const [hearColor, setHearColor] = useState<string>("pink");
 
-  const { register, handleSubmit, setValue, reset } = useForm<FormData>({
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
       month: "",
       day: "",
@@ -55,8 +58,11 @@ export default function PostCard() {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
-      <article className="group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height ">
+    <div className="pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
+      <article
+        ref={cardRef}
+        className="pointer-events-auto group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height "
+      >
         <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full">
           <button
             type="button"
@@ -170,6 +176,7 @@ export default function PostCard() {
           </div>
         </div>
       </article>
+      <PostCardCut originalRef={cardRef} />
     </div>
   );
 }

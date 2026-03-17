@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import HeartModel from "./components/HeartModel";
 import GemModel from "./components/GemModel";
 import PostCard from "./components/PostCard";
-import PostCard_Copy from "./components/PostCard copy";
 export default function App() {
   return (
     <>
@@ -20,8 +19,7 @@ export default function App() {
 
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
-      <PostCard_Copy />
-      {/* <PostCard /> */}
+      <PostCard />
     </>
   );
 }
