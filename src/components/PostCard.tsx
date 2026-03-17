@@ -64,12 +64,12 @@ export default function PostCard() {
   };
 
   return (
-    <div className="pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
+    <div className="font-alegro text-xl pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
       <article
         ref={cardRef}
         className="pointer-events-auto group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height "
       >
-        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none text-lg p-4 z-60">
+        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none p-4 z-60">
           <button
             type="button"
             onClick={handleButtonClick}
@@ -103,13 +103,13 @@ export default function PostCard() {
               className="w-full h-auto object-contain absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
             />
           </div>
-          <div className="front bg-[url('/assets/frame.svg')] text-lg bg-no-repeat bg-center absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background ">
+          <div className="front bg-[url('/assets/frame.svg')] bg-no-repeat bg-center absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background ">
             {mode === "edit" ? (
               <form
                 id="postcard-content"
                 className="flex flex-col w-[80%] h-[65%] place-center justify-between"
               >
-                <div className="flex flex-row items-end w-fit px-4 text-sm mb-4">
+                <div className="flex flex-row items-end w-fit px-4 text-lg mb-4">
                   <div className="flex flex-row w-full items-end">
                     <span className="mr-2">♦ Date</span>
                     <input
@@ -168,9 +168,11 @@ export default function PostCard() {
               </form>
             ) : (
               <section className="p-4 place-center text-lg flex flex-col w-[80%] h-[65%] place-center justify-between">
-                <div className="flex flex-row items-end w-fit text-sm mb-2">
+                <div className="flex flex-row items-end w-fit mb-2">
                   <span className="mr-2">♦ Date</span>
-                  <span>{date.toLocaleDateString().replace(/\//g, ".")}</span>
+                  <span className="text-background">
+                    {date.toLocaleDateString().replace(/\//g, ". ")}
+                  </span>
                 </div>
                 <p className="w-full h-full overflow-y-auto  decoration-gray-400">
                   {content}
