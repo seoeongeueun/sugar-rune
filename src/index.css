@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Alegro-star";
+  src: url("/fonts/Gawaa-Regular.otf") format("opentype");
+}
+
 @theme {
   --color-background: var(--background);
   --color-text: var(--text);
@@ -11,6 +16,17 @@
   --spacing-postcard-height: 41.5rem;
   --spacing-postcard-width-half: 30rem;
   --spacing-postcard-height-half: 20.75rem;
+
+  --text-xxs: var(--text-xxs);
+  --text-xs: var(--text-xs);
+  --text-s: var(--text-s);
+  --text-sm: var(--text-sm);
+  --text-md: var(--text-md);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-xxl: var(--text-xxl);
+
+  --font-alegro: "Alegro-star", serif;
 }
 
 :root {
@@ -34,7 +50,8 @@
   --background: #a785da;
   --text: #242424;
   --postcard-background: #FFFDFA;
-  --gold: #e7b446;
+  --gold: rgb(231, 180, 70);
+  --gold-rgb: 231, 180, 70;
   --night: #20223b;
 }
 
@@ -90,4 +107,78 @@ canvas {
 
 button {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#modal, #modal button {
+  text-shadow: 1px 1px 0px var(--night), -1px 1px 0px var(--night), 1px -1px 0px var(--night), -1px -1px 0px var(--night);
+}
+
+h1 {
+  font-size: 5.6rem;
+  font-weight: 500;
+}
+
+
+/*
+Source - https://stackoverflow.com/a/17386187
+Posted by Yotam Omer, modified by community. See post 'Timeline' for change history
+Retrieved 2026-03-17, License - CC BY-SA 4.0
+*/
+
+.heart {
+  position: relative;
+  width: 44px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+
+
+.heart::before, .heart::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 22px;
+  height: 36px;
+  border-radius: 20px 20px 0 0;
+  transition: background-color 0.2s ease;
+  
+}
+
+.heart:hover::before, .heart:hover::after {
+  background-color: var(--background);
+}
+
+.heart::before {
+  left: 20px;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+}
+
+.heart::after {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+}
+
+.heart.large {
+  width: 67px;
+  height: 48px;
+}
+
+.heart.large::before, .heart.large::after {
+  width: 33px;
+  height: 53px;
+}
+
+.heart.large::before {
+  left: 33px;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
 }
