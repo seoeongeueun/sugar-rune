@@ -4,32 +4,55 @@ import type { RefObject } from "react";
 
 type Props = {
   originalRef?: RefObject<HTMLDivElement | null>;
+  deleteTrigger?: number;
 };
 
-export default function PostCardCut({ originalRef }: Props) {
+export default function PostCardCut({ originalRef, deleteTrigger }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const cardLeftRef = useRef<HTMLDivElement>(null);
   const cardRightRef = useRef<HTMLDivElement>(null);
 
-  // useEffect(() => {
-  //   const card = cardRef.current;
-  //   const originalCard = originalRef?.current;
-  //   if (!card || !originalCard) return;
+  useEffect(() => {
+    const card = cardRef.current;
+    const originalCard = originalRef?.current;
+    const originalContainer = originalCard?.querySelector(
+      "#postcard-container",
+    );
+    if (!card || !originalCard || !originalContainer || !deleteTrigger) return;
 
-  //   const left = cardLeftRef.current;
-  //   const right = cardRightRef.current;
+    const left = cardLeftRef.current;
+    const right = cardRightRef.current;
+    if (!left || !right) return;
 
-  //   const tl = gsap.timeline();
-  //   tl.to(originalCard, { opacity: 0, duration: 0, delay: 0.8 })
-  //     .to(card, { opacity: 1, duration: 0 }, "<-0.1")
-  //     .to(left, { rotateZ: -10, x: -10, duration: 0.5, delay: 0.1 }, "<")
-  //     .to(right, { rotateZ: 10, y: 20, duration: 0.5 }, "<")
-  //     .to(card, { opacity: 0, duration: 0.5 }, ">-0.2");
+    const containerEl = originalContainer as HTMLElement;
+    const prevTransition = containerEl.style.transition;
 
-  //   return () => {
-  //     tl.kill();
-  //   };
-  // }, [originalRef]);
+    gsap.killTweensOf(containerEl);
+
+    // clear previous transition values for gsap animation
+    containerEl.style.transition = "none";
+    gsap.set(containerEl, { willChange: "transform", force3D: true });
+
+    const tl = gsap.timeline();
+    tl.to(containerEl, {
+      rotationY: 180,
+      rotateZ: -5,
+      duration: 0.3,
+      ease: "power2.out",
+      overwrite: "auto",
+    })
+      .to(originalCard, { opacity: 0, duration: 0 }, ">0.2")
+      .to(card, { opacity: 1, duration: 0 }, "<")
+      .to(left, { rotateZ: -10, x: -10, duration: 1, delay: 0.1 }, ">")
+      .to(right, { rotateZ: 10, y: 20, duration: 1 }, "<")
+      .to(card, { opacity: 0, duration: 0.7 }, ">-0.2");
+
+    return () => {
+      tl.kill();
+      containerEl.style.transition = prevTransition;
+      gsap.set(containerEl, { clearProps: "willChange" });
+    };
+  }, [originalRef, deleteTrigger]);
 
   return (
     <article

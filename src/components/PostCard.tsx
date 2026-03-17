@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { HEART_COLORS } from "@/lib/constants";
 import PostCardCut from "./PostCardCut";
+import { Trash2, SquarePen, Save } from "lucide-react";
 
 type POSTCARD_MODE = "view" | "edit";
 
@@ -16,6 +17,7 @@ interface FormData {
 export default function PostCard() {
   const [mode, setMode] = useState<POSTCARD_MODE>("view");
   const [date, setDate] = useState<Date>(new Date());
+  const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [content, setContent] = useState<string>(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 𖤐 ",
   );
@@ -57,22 +59,38 @@ export default function PostCard() {
     }
   };
 
+  const handleRemoveCard = () => {
+    setDeleteTrigger((prev) => prev + 1);
+  };
+
   return (
     <div className="pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
       <article
         ref={cardRef}
         className="pointer-events-auto group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height "
       >
-        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full">
+        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none text-lg p-4 z-60">
           <button
             type="button"
-            className="transition-opacity group-hover:pointer-events-auto pointer-events-none text-lg mb-4 z-60"
             onClick={handleButtonClick}
+            className="bg-black rounded-full p-2 hover:bg-background transition-colors flex items-center justify-center"
           >
-            {mode === "view" ? "Edit" : "Save"}
+            {mode === "view" ? (
+              <SquarePen size={16} color="white" />
+            ) : (
+              <Save size={16} color="white" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRemoveCard()}
+            className="bg-black rounded-full p-2 hover:bg-background transition-colors flex items-center justify-center"
+          >
+            <Trash2 size={16} color="white" />
           </button>
         </div>
         <div
+          id="postcard-container"
           className={twMerge(
             "w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
             mode === "edit" && "rotate-y-0 rotate-z-0",
@@ -176,7 +194,7 @@ export default function PostCard() {
           </div>
         </div>
       </article>
-      <PostCardCut originalRef={cardRef} />
+      <PostCardCut originalRef={cardRef} deleteTrigger={deleteTrigger} />
     </div>
   );
 }
