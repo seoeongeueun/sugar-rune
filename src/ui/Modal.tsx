@@ -20,11 +20,11 @@ const MODAL_TYPES = {
     description: "Le récit de l'apprentie sorcière",
     buttons: [
       {
-        label: "Log In",
+        label: "Close",
         action: () => {},
       },
       {
-        label: "Sign Up",
+        label: "Log In",
         action: () => {},
       },
     ],
@@ -74,14 +74,14 @@ export function Modal({ type }: ModalProps) {
           className="w-10 h-10 animate-bounce [animation-duration:1.8s]"
         />
         <header className="flex flex-col items-center justify-center w-full">
-          <h1 className="leading-20">{modal.title}</h1>
+          <h1 className="leading-20 font-bold!">{modal.title}</h1>
           <p className="text-center">{modal.description}</p>
         </header>
         {isLoginModal && (
           <div className="flex flex-col w-full px-8">
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Witch name"
               aria-invalid={errors.username ? "true" : "false"}
               {...register("username", { required: "Username is required" })}
               className="p-1 mb-2 px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-2 focus:ring-background"
@@ -103,9 +103,15 @@ export function Modal({ type }: ModalProps) {
                 {errors.password.message}
               </p>
             )}
+            <button
+              type="button"
+              className="underline underline-offset-2 decoration-1 text-background text-lg"
+            >
+              Make a new account
+            </button>
           </div>
         )}
-        <footer className="flex flex-row items-center justify-between gap-2 text-md w-2/3 mt-8">
+        <footer className="text-lg flex flex-row items-center justify-between gap-2 w-2/3">
           {/* <button
             type="button"
             className="heart large before:bg-gray-400 after:bg-gray-400"
