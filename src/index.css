@@ -12,10 +12,10 @@
   --color-gold: var(--gold);
   --color-night: var(--night);
 
-  --spacing-postcard-width: 60rem;
-  --spacing-postcard-height: 41.5rem;
-  --spacing-postcard-width-half: 30rem;
-  --spacing-postcard-height-half: 20.75rem;
+  --spacing-postcard-width: var(--postcard-width);
+  --spacing-postcard-height: var(--postcard-height);
+  --spacing-postcard-width-half: var(--postcard-width-half);
+  --spacing-postcard-height-half: var(--postcard-height-half);
 
   --text-xxs: var(--text-xxs);
   --text-xs: var(--text-xs);
@@ -25,6 +25,9 @@
   --text-lg: var(--text-lg);
   --text-xl: var(--text-xl);
   --text-xxl: var(--text-xxl);
+
+  --breakpoint-tablet: 640px;
+  --breakpoint-desktop: 1023px;
 
   --font-alegro: "Alegro-star", serif;
 }
@@ -53,7 +56,14 @@
   --gold: rgb(231, 180, 70);
   --gold-rgb: 231, 180, 70;
   --night: #20223b;
+
+  --postcard-width: 60rem;
+  --postcard-height: 41.5rem;
+  --postcard-width-half: 30rem;
+  --postcard-height-half: 20.75rem;
 }
+
+
 
 html, body, #root {
   margin: 0;
@@ -71,14 +81,6 @@ html {
 canvas {
   width: 100%;
   height: 100%;
-}
-
-.moon {
-  width: 20rem;
-  height: 20rem;
-  border-radius: 100%;
-  background: transparent;
-  box-shadow: 20px 16px 0px 20px rgb(177, 177, 177);
 }
 
 .place-center {
@@ -119,6 +121,41 @@ button {
 h1 {
   font-size: 5.6rem;
   font-weight: 500;
+}
+
+.moon {
+  border-radius: 100%;
+  background-color: var(--night);
+  box-shadow: 30px 30px 0px 40px var(--gold), 31px 31px 20px 44px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  filter: drop-shadow(0 9px 7px rgb(0 0 0 / 0.1));
+  color: white;
+}
+
+/* adjust postcard size for mobile */
+@media screen and (max-width: 639px) {
+  :root {
+    --postcard-width:40rem;
+    --postcard-height: 27.6675rem;
+    --postcard-width-half: 20rem;
+    --postcard-height-half: 13.83375rem;
+
+    --text-sm: 1rem;
+    --text-md: 1.2rem;
+    --text-lg: 1.5rem;
+    --text-xl: 2rem;
+    --text-xxl: 2.6rem;
+  }
+
+  h1 {
+    font-size: 4rem;
+  }
+  
 }
 
 
