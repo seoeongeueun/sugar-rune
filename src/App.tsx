@@ -1,12 +1,61 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import HeartModel from "./components/HeartModel";
 import GemModel from "./components/GemModel";
-import PostCard from "./components/PostCard";
-import { AuthModal } from "@/ui";
+import { supabase, isSupabaseConfigured } from "@/lib";
+import { useAuth } from "@/stores";
+import { AuthModal } from "@/components/modals";
 
 export default function App() {
+  const isLoading = useAuth((state) => state.isLoading);
+  const user = useAuth((state) => state.user);
+  const setIsLoading = useAuth((state) => state.setIsLoading);
+  const setSession = useAuth((state) => state.setSession);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (error) {
+        setSession(null);
+      } else {
+        setSession(data.session);
+      }
+
+      setIsLoading(false);
+    };
+
+    void loadSession();
+
+    // Listen for auth state changes and update the session accordingly
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!isMounted) {
+        return;
+      }
+
+      setSession(nextSession);
+      setIsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [setIsLoading, setSession]);
+
   return (
     <>
       <Canvas camera={{ position: [-7, -0.5, 2], fov: 60 }}>
@@ -21,7 +70,7 @@ export default function App() {
 
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
-      <AuthModal />
+      {!isLoading && !user && <AuthModal />}
     </>
   );
 }

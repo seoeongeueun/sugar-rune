@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { signInWithEmail, signUpWithEmail } from "@/features";
-import { Modal } from "./Modal";
-import { getErrorMessage } from "../lib";
+import { Modal } from "@/ui";
+import { getErrorMessage } from "@/lib";
 
 interface LoginFormValues {
   username: string;
