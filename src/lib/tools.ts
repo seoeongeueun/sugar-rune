@@ -8,7 +8,7 @@ export function getErrorMessage(error: unknown) {
   return "Something went wrong. Please try again.";
 }
 
-//mask 40% of email for privacy
+//mask 50% of email for privacy
 export function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   if (!local || !domain) return email;
@@ -16,7 +16,7 @@ export function maskEmail(email: string): string {
   const len = local.length;
   if (len < 2) return email; // skip masking for very short local parts
 
-  const half = Math.floor(len * 0.4);
+  const half = Math.floor(len * 0.5);
   const start = Math.floor((len - half) / 2);
   const end = start + half;
 
