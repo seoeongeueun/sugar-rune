@@ -6,6 +6,7 @@ import GemModel from "./components/GemModel";
 import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth } from "@/stores";
 import { AuthModal } from "@/components/modals";
+import { AuthButton } from "@/ui";
 
 export default function App() {
   const isLoading = useAuth((state) => state.isLoading);
@@ -58,6 +59,9 @@ export default function App() {
 
   return (
     <>
+      <header className="z-99 pointer-events-none w-full fixed inset-0 h-fit flex flex-row justify-end items-center p-8">
+        <AuthButton />
+      </header>
       <Canvas camera={{ position: [-7, -0.5, 2], fov: 60 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[-2, 5, 0]} intensity={1.2} />
