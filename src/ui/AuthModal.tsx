@@ -155,15 +155,17 @@ export function AuthModal() {
               : `Welcome back, ${signedInUsername}!`}
           </p>
         )}
-        <button
-          type="button"
-          onClick={() => {
-            resetAuthState(isSignupMode ? "login" : "signup");
-          }}
-          className="underline underline-offset-2 decoration-1 text-background text-lg"
-        >
-          {isSignupMode ? "I already have an account" : "Make a new account"}
-        </button>
+        {!activeMutation.isSuccess && (
+          <button
+            type="button"
+            onClick={() => {
+              resetAuthState(isSignupMode ? "login" : "signup");
+            }}
+            className="underline underline-offset-2 decoration-1 text-background text-lg"
+          >
+            {isSignupMode ? "I already have an account" : "Make a new account"}
+          </button>
+        )}
       </form>
     </Modal>
   );
