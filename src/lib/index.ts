@@ -1,2 +1,2 @@
-export { getErrorMessage } from "./tools";
+export { getErrorMessage, maskEmail } from "./tools";
 export { supabase, isSupabaseConfigured } from "./supabase";
