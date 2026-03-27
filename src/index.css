@@ -114,12 +114,17 @@ button {
   justify-content: center;
 }
 
-#modal, #modal button {
+#modal, #modal button, #heart-button {
   text-shadow: 1px 1px 0px var(--night), -1px 1px 0px var(--night), 1px -1px 0px var(--night), -1px -1px 0px var(--night);
 }
 
 h1 {
   font-size: 5.6rem;
+  font-weight: 500;
+}
+
+h3 {
+  font-size: 2rem;
   font-weight: 500;
 }
 
@@ -154,6 +159,10 @@ h1 {
 
   h1 {
     font-size: 4rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
   }
   
 }
