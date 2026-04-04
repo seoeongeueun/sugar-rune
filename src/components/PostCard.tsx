@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { HEART_COLORS } from "@/lib/constants";
 import PostCardCut from "./PostCardCut";
-import { Trash2, SquarePen, Save } from "lucide-react";
+import { Trash2, SquarePen, Save, Crown } from "lucide-react";
 
 type POSTCARD_MODE = "view" | "edit";
 
@@ -110,8 +110,9 @@ export default function PostCard() {
                 className="flex flex-col w-[80%] h-[65%] place-center justify-between"
               >
                 <div className="flex flex-row items-end w-fit px-4 text-lg mb-4">
-                  <div className="flex flex-row w-full items-end">
-                    <span className="mr-2">♦ Date</span>
+                  <div className="flex flex-row items-center w-fit mb-2 gap-2">
+                    <Crown fill="var(--color-night)" className="w-4 h-4" />
+                    <span>Date</span>
                     <input
                       {...register("month", {
                         min: 1,
@@ -168,9 +169,10 @@ export default function PostCard() {
               </form>
             ) : (
               <section className="p-4 place-center text-lg flex flex-col w-[80%] h-[65%] place-center justify-between">
-                <div className="flex flex-row items-end w-fit mb-2">
-                  <span className="mr-2">♦ Date</span>
-                  <span className="text-background">
+                <div className="flex flex-row items-center w-fit mb-2 gap-2">
+                  <Crown fill="var(--color-night)" className="w-4 h-4" />
+                  <span>Date</span>
+                  <span className="text-background underline underline-offset-4 decoration-1">
                     {date.toLocaleDateString().replace(/\//g, ". ")}
                   </span>
                 </div>

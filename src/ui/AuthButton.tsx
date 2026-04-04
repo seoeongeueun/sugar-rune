@@ -39,7 +39,7 @@ export function AuthButton() {
         onClick={() => setIsOpen((prev) => !prev)}
         disabled={isDisabled}
         className={twMerge(
-          "pointer-events-auto text-lg rounded-full w-16 h-16 flex items-center justify-center bg-background hover:bg-night/20 text-night hover:text-white transition-colors",
+          "pointer-events-auto text-lg rounded-full w-16 h-16 flex items-center justify-center hover:bg-night/20 text-night hover:text-white transition-colors",
           isOpen && "bg-night/20 border border-white/30 ",
         )}
       >
