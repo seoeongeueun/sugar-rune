@@ -39,27 +39,35 @@ export function AuthButton() {
         onClick={() => setIsOpen((prev) => !prev)}
         disabled={isDisabled}
         className={twMerge(
-          "pointer-events-auto text-lg rounded-full w-16 h-16 flex items-center justify-center bg-background hover:bg-night text-night hover:text-white transition-colors",
-          isOpen && "bg-night text-white border border-white",
+          "pointer-events-auto text-lg rounded-full w-16 h-16 flex items-center justify-center bg-background hover:bg-night/20 text-night hover:text-white transition-colors",
+          isOpen && "bg-night/20 border border-white/30 ",
         )}
       >
-        <BookHeart className="w-8 h-8" />
+        <img
+          src={`/hearts/heart_${isOpen ? "white" : "black"}_icon.png`}
+          alt="Heart Icon"
+          className="w-10 h-10"
+        />
       </button>
       {isOpen && (
-        <section className="w-120 min-h-36 p-4 bg-night border-white border-4 border-double rounded-xs whitespace-prewrap break-all flex flex-col gap-6 pointer-events-auto">
-          <div className="flex flex-row gap-2 justify-start items-center">
-            <Crown className="w-6 h-6" />
-            <h3>Witch {username}</h3>
+        <section className="border border-white/30 w-116 min-h-36 h-80 p-12 bg-night/20 backdrop-blur-xl rounded-sm whitespace-prewrap break-all flex flex-col gap-2 pointer-events-auto">
+          <div className="pointer-events-none w-full h-full bg-[url('/assets/frame.svg')] bg-no-repeat bg-center bg-cover absolute inset-0 opacity-80" />
+          <div className="flex flex-col justify-start items-center">
+            <Crown
+              fill="var(--color-night)"
+              className="text-night w-6 h-6 -mb-2"
+            />
+            <h3 className="underline underline-offset-4 decoration-1">
+              {username}
+            </h3>
           </div>
-          <dl className="text-sm space-y-1">
+          <dl className="text-md space-y-1">
             <div className="flex flex-row gap-2 justify-start items-center">
-              <Mail className="w-4 h-4" />
-              <dt className="font-medium">Email:</dt>
+              <dt>Email:</dt>
               <dd className="ml-auto">{maskEmail(user?.email || "")}</dd>
             </div>
             <div className="flex flex-row gap-2 justify-start items-center">
-              <Heart className="w-4 h-4" />
-              <dt className="font-medium">Hearts:</dt>
+              <dt>Hearts:</dt>
               <dd className="ml-auto">0</dd>
             </div>
           </dl>
@@ -73,7 +81,7 @@ export function AuthButton() {
                 ? "Log out from your account"
                 : "Log in to your account"
             }
-            className="bg-[url('/hearts/heart_purple_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center"
+            className="bg-[url('/hearts/heart_black_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-md"
           >
             {isAuthenticated ? (
               isSigningOut ? (
