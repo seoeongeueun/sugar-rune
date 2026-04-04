@@ -33,7 +33,7 @@
 }
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Alegro-star", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -124,7 +124,7 @@ h1 {
 }
 
 h3 {
-  font-size: 2rem;
+  font-size: 2.6rem;
   font-weight: 500;
 }
 
@@ -151,7 +151,7 @@ h3 {
     --postcard-height-half: 13.83375rem;
 
     --text-sm: 1rem;
-    --text-md: 1.2rem;
+    --text-md: 1.3rem;
     --text-lg: 1.5rem;
     --text-xl: 2rem;
     --text-xxl: 2.6rem;
@@ -162,7 +162,7 @@ h3 {
   }
 
   h3 {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
   
 }

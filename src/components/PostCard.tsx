@@ -64,7 +64,7 @@ export default function PostCard() {
   };
 
   return (
-    <div className="font-alegro text-xl pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
+    <div className="text-xl pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
       <article
         ref={cardRef}
         className="pointer-events-auto group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height "

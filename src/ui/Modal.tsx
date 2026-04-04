@@ -11,7 +11,7 @@ export function Modal({ title, description, children, footer }: ModalProps) {
   return (
     <div
       id="modal"
-      className="font-alegro fixed inset-0 w-full h-full bg-black/30 flex items-center justify-center z-99"
+      className="fixed inset-0 w-full h-full bg-black/30 flex items-center justify-center z-99"
     >
       <div className="text-white pt-16 pl-14 tablet:pt-24 tablet:pl-22 text-lg w-postcard-height h-postcard-height rounded-full bg-night shadow-[20px_20px_0px_30px_var(--gold),21px_21px_10px_34px_rgba(0,0,0,0.2)] tablet:shadow-[30px_30px_0px_40px_var(--gold),31px_31px_20px_44px_rgba(0,0,0,0.2)] drop-shadow-xl flex flex-col items-center justify-center gap-1 tablet:gap-8 border border-white/50">
         <img
