@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/stores";
-import { Crown, Mail, Heart, BookHeart, LoaderCircle } from "lucide-react";
+import { Crown, Mail, Heart, LoaderCircle } from "lucide-react";
 import { maskEmail } from "@/lib";
 import { twMerge } from "tailwind-merge";
 
@@ -39,34 +39,35 @@ export function AuthButton() {
         onClick={() => setIsOpen((prev) => !prev)}
         disabled={isDisabled}
         className={twMerge(
-          "pointer-events-auto text-lg rounded-full w-16 h-16 flex items-center justify-center hover:bg-night/20 text-night hover:text-white transition-colors",
-          isOpen && "bg-night/20 border border-white/30 ",
+          "pointer-events-auto text-lg rounded-full w-16 h-16 flex items-center justify-center hover:bg-white/50 text-night hover:text-white transition-colors duration-200",
+          isOpen && "bg-white/50 border border-white/20 ",
         )}
       >
         <img
-          src={`/hearts/heart_${isOpen ? "white" : "black"}_icon.png`}
+          src={`/hearts/heart_${isOpen ? "black" : "white"}_icon.png`}
           alt="Heart Icon"
           className="w-10 h-10"
         />
       </button>
       {isOpen && (
-        <section className="border border-white/30 w-116 min-h-36 h-80 p-12 bg-night/20 backdrop-blur-xl rounded-sm whitespace-prewrap break-all flex flex-col gap-2 pointer-events-auto">
-          <div className="pointer-events-none w-full h-full bg-[url('/assets/frame.svg')] bg-no-repeat bg-center bg-cover absolute inset-0 opacity-80" />
-          <div className="flex flex-col justify-start items-center">
+        <section className="border border-white/20 w-116 min-h-36 py-4 px-6 bg-white/50 backdrop-blur-xl rounded-sm whitespace-prewrap break-all flex flex-col gap-2 pointer-events-auto">
+          <div className="flex flex-col justify-start items-center text-night">
             <Crown
               fill="var(--color-night)"
-              className="text-night w-6 h-6 -mb-2"
+              className="text-night w-6 h-6 -mb-3"
             />
             <h3 className="underline underline-offset-4 decoration-1">
               {username}
             </h3>
           </div>
-          <dl className="text-md space-y-1">
+          <dl className="text-md space-y-1 text-night">
             <div className="flex flex-row gap-2 justify-start items-center">
+              <Mail className="w-4 h-4 mr-1" />
               <dt>Email:</dt>
-              <dd className="ml-auto">{maskEmail(user?.email || "")}</dd>
+              <dd className="ml-auto ">{maskEmail(user?.email || "")}</dd>
             </div>
             <div className="flex flex-row gap-2 justify-start items-center">
+              <Heart className="w-4 h-4 mr-1" />
               <dt>Hearts:</dt>
               <dd className="ml-auto">0</dd>
             </div>

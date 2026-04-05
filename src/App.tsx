@@ -7,6 +7,7 @@ import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth } from "@/stores";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
+import PostCard from "./components/PostCard";
 
 export default function App() {
   const isLoading = useAuth((state) => state.isLoading);
@@ -74,6 +75,7 @@ export default function App() {
 
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
+      {/* <PostCard /> */}
       {!isLoading && !user && <AuthModal />}
     </>
   );
