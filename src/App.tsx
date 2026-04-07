@@ -1,15 +1,15 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import HeartModel from "./components/HeartModel";
 import GemModel from "./components/GemModel";
 import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth } from "@/stores";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
-import PostCard from "./components/PostCard";
 
 export default function App() {
+  const [heartOpen, setHeartOpen] = useState(false);
   const isLoading = useAuth((state) => state.isLoading);
   const user = useAuth((state) => state.user);
   const setIsLoading = useAuth((state) => state.setIsLoading);
@@ -68,8 +68,11 @@ export default function App() {
         <directionalLight position={[-2, 5, 0]} intensity={1.2} />
 
         <Suspense fallback={null}>
-          <HeartModel />
-          <GemModel />
+          <HeartModel
+            open={heartOpen}
+            onToggle={() => setHeartOpen((value) => !value)}
+          ></HeartModel>
+          <GemModel open={heartOpen} />
           <Environment preset="apartment" />
         </Suspense>
 

@@ -1,17 +1,34 @@
 import { useGLTF } from "@react-three/drei";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { createPortal, useFrame } from "@react-three/fiber";
+import { ReactNode, useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
 import { OPEN_ANGLE, OPEN_SPEED } from "@/lib/constants";
 
-export default function HeartModel() {
+type HeartModelProps = {
+  open: boolean;
+  onToggle: () => void;
+  children?: ReactNode;
+};
+
+export default function HeartModel({
+  open,
+  onToggle,
+  children,
+}: HeartModelProps) {
   const gltf = useGLTF("/models/heart.glb");
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const pivotRef = useRef<THREE.Object3D | null>(
     scene.getObjectByName("pivot"),
   );
+  const heartRef = useRef<THREE.Object3D | null>(scene.getObjectByName("heart"));
 
-  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    scene.renderOrder = 0;
+    scene.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+      child.renderOrder = 0;
+    });
+  }, [scene]);
 
   useEffect(() => {
     // apply glass material
@@ -52,10 +69,11 @@ export default function HeartModel() {
     <group
       onPointerDown={(e) => {
         e.stopPropagation();
-        setOpen((v) => !v);
+        onToggle();
       }}
     >
       <primitive object={scene} />
+      {heartRef.current ? createPortal(children, heartRef.current) : null}
     </group>
   );
 }
