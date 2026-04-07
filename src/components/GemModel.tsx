@@ -13,34 +13,35 @@ export default function GemModel({ open }: GemModelProps) {
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const gemRef = useRef<THREE.Group | null>(null);
   const spinRef = useRef<THREE.Group | null>(null);
+  const glowLightRef = useRef<THREE.PointLight | null>(null);
   const materialRefs = useRef<THREE.Material[]>([]);
   const cameraDirectionRef = useRef(new THREE.Vector3());
 
-  // useEffect(() => {
-  //   scene.renderOrder = 999;
-  //   scene.visible = open;
-  //   materialRefs.current = [];
+  useEffect(() => {
+    scene.renderOrder = 999;
+    materialRefs.current = [];
 
-  //   scene.traverse((child) => {
-  //     if (!(child instanceof THREE.Mesh)) return;
+    scene.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
 
-  //     child.renderOrder = 999;
-  //     child.frustumCulled = false;
+      child.renderOrder = 999;
+      child.frustumCulled = false;
 
-  //     const materials = Array.isArray(child.material)
-  //       ? child.material
-  //       : [child.material];
+      const materials = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
 
-  //     materials.forEach((material) => {
-  //       material.transparent = true;
-  //       material.depthTest = false;
-  //       material.depthWrite = false;
-  //       material.opacity = open ? 1 : 0;
-  //       material.needsUpdate = true;
-  //       materialRefs.current.push(material);
-  //     });
-  //   });
-  // }, [scene]);
+      materials.forEach((material) => {
+        material.transparent = true;
+        material.depthTest = false;
+        material.depthWrite = false;
+        material.opacity = open ? 1 : 0;
+
+        material.needsUpdate = true;
+        materialRefs.current.push(material);
+      });
+    });
+  }, [open, scene]);
 
   useEffect(() => {
     if (gemRef.current && !open) {
@@ -88,12 +89,29 @@ export default function GemModel({ open }: GemModelProps) {
       );
     });
 
+    const glowLight = glowLightRef.current;
+    if (glowLight) {
+      const pulse = 1 + Math.sin(performance.now() * 0.006) * 0.18;
+      glowLight.intensity = THREE.MathUtils.lerp(
+        glowLight.intensity,
+        (open ? 5 : 0) * pulse,
+        lerpValue,
+      );
+    }
+
     //make the gem disappear when it's closed and out of view
     gem.visible = open || gem.position.y > -0.18 || gem.scale.x > 0.22;
   });
 
   return (
     <group ref={gemRef} position={[0, 0, 0]}>
+      <pointLight
+        ref={glowLightRef}
+        color="#ff2929"
+        distance={4}
+        intensity={1}
+        position={[-0.2, -0.2, 0]}
+      />
       <group ref={spinRef}>
         <primitive object={scene} />
       </group>
