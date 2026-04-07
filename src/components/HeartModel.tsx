@@ -15,12 +15,14 @@ export default function HeartModel({
   onToggle,
   children,
 }: HeartModelProps) {
-  const gltf = useGLTF("/models/heart.glb");
+  const gltf = useGLTF("/models/heart_final.glb");
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const pivotRef = useRef<THREE.Object3D | null>(
     scene.getObjectByName("pivot"),
   );
-  const heartRef = useRef<THREE.Object3D | null>(scene.getObjectByName("heart"));
+  const heartRef = useRef<THREE.Object3D | null>(
+    scene.getObjectByName("heart"),
+  );
 
   useEffect(() => {
     scene.renderOrder = 0;
