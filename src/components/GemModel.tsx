@@ -17,31 +17,31 @@ export default function GemModel({ open }: GemModelProps) {
   const materialRefs = useRef<THREE.Material[]>([]);
   const cameraDirectionRef = useRef(new THREE.Vector3());
 
-  useEffect(() => {
-    scene.renderOrder = 999;
-    materialRefs.current = [];
+  // useEffect(() => {
+  //   scene.renderOrder = 999;
+  //   materialRefs.current = [];
 
-    scene.traverse((child) => {
-      if (!(child instanceof THREE.Mesh)) return;
+  //   scene.traverse((child) => {
+  //     if (!(child instanceof THREE.Mesh)) return;
 
-      child.renderOrder = 999;
-      child.frustumCulled = false;
+  //     child.renderOrder = 999;
+  //     child.frustumCulled = false;
 
-      const materials = Array.isArray(child.material)
-        ? child.material
-        : [child.material];
+  //     const materials = Array.isArray(child.material)
+  //       ? child.material
+  //       : [child.material];
 
-      materials.forEach((material) => {
-        material.transparent = true;
-        material.depthTest = false;
-        material.depthWrite = false;
-        material.opacity = open ? 1 : 0;
+  //     materials.forEach((material) => {
+  //       material.transparent = true;
+  //       material.depthTest = false;
+  //       material.depthWrite = false;
+  //       material.opacity = open ? 1 : 0;
 
-        material.needsUpdate = true;
-        materialRefs.current.push(material);
-      });
-    });
-  }, [open, scene]);
+  //       material.needsUpdate = true;
+  //       materialRefs.current.push(material);
+  //     });
+  //   });
+  // }, [open, scene]);
 
   useEffect(() => {
     if (gemRef.current && !open) {
@@ -57,7 +57,7 @@ export default function GemModel({ open }: GemModelProps) {
 
     const targetY = open ? 1.15 : -0.2;
     const targetX = open ? -1.3 : 0;
-    const targetScale = open ? 2 : 0.2;
+    const targetScale = open ? 2.2 : 0.2;
     const targetOpacity = open ? 1 : 0;
     const lerpValue = 1 - Math.exp(-6 * delta);
 
@@ -94,7 +94,7 @@ export default function GemModel({ open }: GemModelProps) {
       const pulse = 1 + Math.sin(performance.now() * 0.006) * 0.18;
       glowLight.intensity = THREE.MathUtils.lerp(
         glowLight.intensity,
-        (open ? 5 : 0) * pulse,
+        (open ? 1 : 0) * pulse,
         lerpValue,
       );
     }
@@ -108,7 +108,7 @@ export default function GemModel({ open }: GemModelProps) {
       <pointLight
         ref={glowLightRef}
         color="#ff2929"
-        distance={4}
+        distance={3}
         intensity={1}
         position={[-0.2, -0.2, 0]}
       />
