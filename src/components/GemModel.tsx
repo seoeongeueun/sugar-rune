@@ -1,6 +1,8 @@
 import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useEffect, useRef } from "react";
+import { useNote } from "@/stores";
+import { HEART_LIST, saturateHexColor } from "@/lib";
 import * as THREE from "three";
 
 type GemModelProps = {
@@ -16,6 +18,37 @@ export default function GemModel({ open }: GemModelProps) {
   const glowLightRef = useRef<THREE.PointLight | null>(null);
   const materialRefs = useRef<THREE.Material[]>([]);
   const cameraDirectionRef = useRef(new THREE.Vector3());
+
+  const heartColor = useNote((state) => state.note?.heart_content) || "pink";
+  const baseGemHexColor =
+    HEART_LIST.find((heart) => heart.color === heartColor)?.hex ?? "#eb77b4";
+  const gemHexColor = useMemo(
+    () => saturateHexColor(baseGemHexColor, 1.5),
+    [baseGemHexColor],
+  );
+
+  useEffect(() => {
+    const gemColor = new THREE.Color(gemHexColor);
+    materialRefs.current = [];
+
+    scene.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+
+      const materials = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
+
+      materials.forEach((material) => {
+        materialRefs.current.push(material);
+
+        if ("color" in material && material.color instanceof THREE.Color) {
+          material.color.copy(gemColor);
+        }
+
+        material.needsUpdate = true;
+      });
+    });
+  }, [gemHexColor, scene]);
 
   // useEffect(() => {
   //   scene.renderOrder = 999;
@@ -110,7 +143,7 @@ export default function GemModel({ open }: GemModelProps) {
         color="#ff2929"
         distance={6}
         intensity={1}
-        position={[-0.2, -0.2, 0]}
+        position={[-0.2, -0.3, 0]}
       />
       <group ref={spinRef}>
         <primitive object={scene} />
