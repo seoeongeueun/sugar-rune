@@ -7,6 +7,7 @@ import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth } from "@/stores";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
+import HeartsList from "./components/HeartsList";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
@@ -60,9 +61,11 @@ export default function App() {
 
   return (
     <>
-      <header className="z-99 pointer-events-none w-full fixed inset-0 h-fit flex flex-row justify-end items-center p-8">
+      <header className="z-99 pointer-events-none w-full fixed inset-0 h-fit flex flex-row justify-between items-center px-8">
+        <h1 className="text-white font-bold!">Sugar Heart</h1>
         <AuthButton />
       </header>
+
       <Canvas camera={{ position: [-7, -0.5, 2], fov: 60 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[-2, 5, 0]} intensity={1.2} />
@@ -78,6 +81,7 @@ export default function App() {
 
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
+      <HeartsList />
       {/* <PostCard /> */}
       {!isLoading && !user && <AuthModal />}
     </>

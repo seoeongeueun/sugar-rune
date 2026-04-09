@@ -3,6 +3,7 @@ import { useAuth } from "@/stores";
 import { Crown, Mail, Heart, LoaderCircle } from "lucide-react";
 import { maskEmail } from "@/lib";
 import { twMerge } from "tailwind-merge";
+import { HeartButton } from "./HeartButton";
 
 // Displays Sign In by default and Sign Out when the user is authenticated.
 export function AuthButton() {
@@ -72,28 +73,27 @@ export function AuthButton() {
               <dd className="ml-auto">0</dd>
             </div>
           </dl>
-          <button
-            id="heart-button"
-            type="button"
+          <HeartButton
+            heartColor="black"
             onClick={handleAuthButtonClick}
             disabled={isSigningOut}
-            aria-label={
+            ariaLabel={
               isAuthenticated
                 ? "Log out from your account"
                 : "Log in to your account"
             }
-            className="bg-[url('/hearts/heart_black_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-md"
-          >
-            {isAuthenticated ? (
-              isSigningOut ? (
-                <LoaderCircle className="w-8 h-8 animate-spin text-white" />
+            label={
+              isAuthenticated ? (
+                isSigningOut ? (
+                  <LoaderCircle className="w-8 h-8 animate-spin text-white" />
+                ) : (
+                  "Log Out"
+                )
               ) : (
-                "Log Out"
+                "Log In"
               )
-            ) : (
-              "Log In"
-            )}
-          </button>
+            }
+          />
         </section>
       )}
     </div>
