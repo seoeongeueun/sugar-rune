@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) {
     return error.message;
@@ -24,4 +26,14 @@ export function maskEmail(email: string): string {
     local.slice(0, start) + "*".repeat(end - start) + local.slice(end);
 
   return `${masked}@${domain}`;
+}
+
+export function saturateHexColor(hexColor: string, saturationLevel = 1) {
+  const color = new THREE.Color(hexColor);
+  const hsl = { h: 0, s: 0, l: 0 };
+
+  color.getHSL(hsl);
+  color.setHSL(hsl.h, Math.min(1, hsl.s * saturationLevel), hsl.l);
+
+  return `#${color.getHexString()}`;
 }
