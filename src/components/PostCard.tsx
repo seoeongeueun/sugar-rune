@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { HEART_COLORS } from "@/lib/constants";
 import PostCardCut from "./PostCardCut";
 import { Trash2, SquarePen, Save, Crown } from "lucide-react";
+import { useNote } from "@/stores";
 
 type POSTCARD_MODE = "view" | "edit";
 
@@ -21,7 +22,9 @@ export default function PostCard() {
   const [content, setContent] = useState<string>(
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 𖤐 ",
   );
-  const [hearColor, setHearColor] = useState<string>("pink");
+
+  const heartColor =
+    useNote((state) => state.note?.heart_content) || HEART_COLORS[0];
 
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -183,14 +186,14 @@ export default function PostCard() {
             )}
             <div className="heart-sticker pointer-events-none rotate-z-10 absolute -bottom-6 right-0 p-8 ">
               <img
-                src={`/hearts/heart_${hearColor}_icon.png`}
+                src={`/hearts/heart_${heartColor}_icon.png`}
                 alt="heart"
                 className="w-60 h-60 object-contain"
               />
             </div>
             <div className="heart-sticker pointer-events-none -rotate-z-15 absolute top-2 left-8 p-8">
               <img
-                src={`/hearts/heart_${hearColor}_icon.png`}
+                src={`/hearts/heart_${heartColor}_icon.png`}
                 alt="heart"
                 className="w-20 h-20 object-contain"
               />
