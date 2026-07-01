@@ -10,6 +10,16 @@ const HAND_LANDMARKER_MODEL =
 
 export type GestureDetectorStatus = "loading" | "ready" | "denied" | "error";
 
+function getCanvasPoint(
+  landmark: NormalizedLandmark,
+  canvas: HTMLCanvasElement,
+) {
+  return {
+    x: (1 - landmark.x) * canvas.width,
+    y: landmark.y * canvas.height,
+  };
+}
+
 function isFingerExtended(
   landmarks: NormalizedLandmark[],
   tipIndex: number,
@@ -51,6 +61,61 @@ export function hasVictoryGesture(result: HandLandmarkerResult) {
       thumbRelaxed
     );
   });
+}
+
+export function drawHandFrame(
+  result: HandLandmarkerResult,
+  canvas: HTMLCanvasElement,
+  video: HTMLVideoElement,
+) {
+  if (
+    canvas.width !== video.videoWidth ||
+    canvas.height !== video.videoHeight
+  ) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+  }
+
+  const context = canvas.getContext("2d", { alpha: true });
+
+  if (!context) {
+    return;
+  }
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const landmarks of result.landmarks) {
+    context.lineWidth = 6;
+    context.strokeStyle = "#8a70be";
+    context.lineCap = "round";
+    context.lineJoin = "round";
+
+    for (const connection of HandLandmarker.HAND_CONNECTIONS) {
+      const start = landmarks[connection.start];
+      const end = landmarks[connection.end];
+
+      if (!start || !end) {
+        continue;
+      }
+
+      const startPoint = getCanvasPoint(start, canvas);
+      const endPoint = getCanvasPoint(end, canvas);
+
+      context.beginPath();
+      context.moveTo(startPoint.x, startPoint.y);
+      context.lineTo(endPoint.x, endPoint.y);
+      context.stroke();
+    }
+
+    // for (const landmark of landmarks) {
+    //   const point = getCanvasPoint(landmark, canvas);
+
+    //   context.beginPath();
+    //   context.arc(point.x, point.y, 5, 0, Math.PI * 2);
+    //   context.fillStyle = "white";
+    //   context.fill();
+    // }
+  }
 }
 
 export async function createHandLandmarker() {

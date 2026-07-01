@@ -2,9 +2,10 @@ import type { HandLandmarker } from "@mediapipe/tasks-vision";
 import { useEffect, useRef, useState } from "react";
 import {
   createHandLandmarker,
+  drawHandFrame,
   hasVictoryGesture,
   type GestureDetectorStatus,
-} from "@/lib/gestureDetection";
+} from "@/lib";
 
 type GestureDetectorSize = "small" | "medium" | "large";
 
@@ -16,7 +17,7 @@ type Props = {
 const SIZE_CLASSES: Record<GestureDetectorSize, string> = {
   small: "w-40",
   medium: "w-56",
-  large: "w-72",
+  large: "w-110",
 };
 
 export default function GestureDetector({
@@ -24,6 +25,7 @@ export default function GestureDetector({
   size = "large",
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const lastVictoryRef = useRef(false);
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
@@ -47,6 +49,7 @@ export default function GestureDetector({
 
     const detectFrame = () => {
       const video = videoRef.current;
+      const canvas = canvasRef.current;
 
       if (!video || !landmarker || isCancelled) {
         return;
@@ -54,6 +57,9 @@ export default function GestureDetector({
 
       if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
         const result = landmarker.detectForVideo(video, performance.now());
+        if (canvas) {
+          drawHandFrame(result, canvas, video);
+        }
         setVictory(hasVictoryGesture(result));
       }
 
@@ -126,12 +132,24 @@ export default function GestureDetector({
       </button>
       {!isMinimized && (
         <>
-          <video
-            ref={videoRef}
-            className={`bg-secondary/70 aspect-video w-full rounded-md object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
-            muted
-            playsInline
-          />
+          <div
+            className={`relative aspect-video w-full overflow-hidden rounded-md transition-[box-shadow,filter] duration-500 ${
+              isVictory ? "shadow-[0_0_2px_2px_white] ring ring-secondary" : ""
+            }`}
+          >
+            <video
+              ref={videoRef}
+              className={`bg-secondary/70 h-full w-full object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
+              muted
+              playsInline
+            />
+            <canvas
+              ref={canvasRef}
+              className="pointer-events-none absolute inset-0 h-full w-full"
+              aria-hidden="true"
+              style={{ background: "transparent" }}
+            />
+          </div>
           <span
             className={`self-end h-3 w-3 shrink-0 border border-white rounded-full ${
               status === "error"
