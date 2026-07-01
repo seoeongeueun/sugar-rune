@@ -1,14 +1,14 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import HeartModel from "./components/HeartModel";
 import GemModel from "./components/GemModel";
+import GestureDetector from "./components/GestureDetector";
 import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth } from "@/stores";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
-import { DeleteModal } from "@/components/modals";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
@@ -16,6 +16,9 @@ export default function App() {
   const user = useAuth((state) => state.user);
   const setIsLoading = useAuth((state) => state.setIsLoading);
   const setSession = useAuth((state) => state.setSession);
+  const handleVictoryChange = useCallback((isVictory: boolean) => {
+    setHeartOpen(isVictory);
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -83,11 +86,12 @@ export default function App() {
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
       <HeartsList />
+      <GestureDetector onVictoryChange={handleVictoryChange} size="large" />
       {/* <PostCard /> */}
-      <DeleteModal
+      {/* <DeleteModal
         onCancel={() => console.log("Cancel")}
         onConfirm={() => console.log("Confirm")}
-      />
+      /> */}
       {!isLoading && !user && <AuthModal />}
     </>
   );

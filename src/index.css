@@ -12,6 +12,7 @@
   --color-postcard-background: var(--postcard-background);
   --color-gold: var(--gold);
   --color-night: var(--night);
+  --color-pink: var(--pink);
 
   --spacing-postcard-width: var(--postcard-width);
   --spacing-postcard-height: var(--postcard-height);
@@ -61,6 +62,8 @@
   --gold: rgb(231, 180, 70);
   --gold-rgb: 231, 180, 70;
   --night: #20223b;
+  --pink: #e977a3;
+
 
   --postcard-width: 60rem;
   --postcard-height: 41.5rem;
