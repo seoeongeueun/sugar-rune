@@ -8,6 +8,7 @@ import { useAuth } from "@/stores";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
+import { DeleteModal } from "@/components/modals";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
@@ -83,6 +84,10 @@ export default function App() {
       </Canvas>
       <HeartsList />
       {/* <PostCard /> */}
+      <DeleteModal
+        onCancel={() => console.log("Cancel")}
+        onConfirm={() => console.log("Confirm")}
+      />
       {!isLoading && !user && <AuthModal />}
     </>
   );

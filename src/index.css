@@ -7,6 +7,7 @@
 
 @theme {
   --color-background: var(--background);
+  --color-secondary: var(--secondary);
   --color-text: var(--text);
   --color-postcard-background: var(--postcard-background);
   --color-gold: var(--gold);
@@ -50,9 +51,13 @@
   --text-xl: 2.2rem;
   --text-xxl: 2.8rem;
 
-  --background: #a785da;
+  /*--background: #a785da;*/
+  --background: #8a70be;
+  --secondary: #937abd;
+  --stripe-color: rgba(223, 210, 183, 0.1);
+
   --text: #242424;
-  --postcard-background: #FFFDFA;
+  --postcard-background: #fffdfa;
   --gold: rgb(231, 180, 70);
   --gold-rgb: 231, 180, 70;
   --night: #20223b;
@@ -63,9 +68,9 @@
   --postcard-height-half: 20.75rem;
 }
 
-
-
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -81,6 +86,24 @@ html {
 canvas {
   width: 100%;
   height: 100%;
+
+  --cell: 81px;
+  --stripe: 22px;
+  --c: rgba(223, 210, 183, 0.1);
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--c) 0 var(--stripe),
+      transparent var(--stripe) var(--cell)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      var(--c) 0 var(--stripe),
+      transparent var(--stripe) var(--cell)
+    );
+
+  background-color: #8a70be;
 }
 
 .place-center {
@@ -114,8 +137,14 @@ button {
   justify-content: center;
 }
 
-#modal, #modal button, #heart-button {
-  text-shadow: 1px 1px 0px var(--night), -1px 1px 0px var(--night), 1px -1px 0px var(--night), -1px -1px 0px var(--night);
+#modal,
+#modal button,
+#heart-button {
+  text-shadow:
+    1px 1px 0px var(--night),
+    -1px 1px 0px var(--night),
+    1px -1px 0px var(--night),
+    -1px -1px 0px var(--night);
 }
 
 h1 {
@@ -131,7 +160,9 @@ h3 {
 .moon {
   border-radius: 100%;
   background-color: var(--night);
-  box-shadow: 30px 30px 0px 40px var(--gold), 31px 31px 20px 44px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    30px 30px 0px 40px var(--gold),
+    31px 31px 20px 44px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -145,7 +176,7 @@ h3 {
 /* adjust postcard size for mobile */
 @media screen and (max-width: 639px) {
   :root {
-    --postcard-width:40rem;
+    --postcard-width: 40rem;
     --postcard-height: 27.6675rem;
     --postcard-width-half: 20rem;
     --postcard-height-half: 13.83375rem;
@@ -164,9 +195,7 @@ h3 {
   h3 {
     font-size: 1.8rem;
   }
-  
 }
-
 
 /*
 Source - https://stackoverflow.com/a/17386187
@@ -181,12 +210,10 @@ Retrieved 2026-03-17, License - CC BY-SA 4.0
   display: flex;
   justify-content: center;
   align-items: center;
-  
 }
 
-
-
-.heart::before, .heart::after {
+.heart::before,
+.heart::after {
   content: "";
   position: absolute;
   top: 0;
@@ -194,10 +221,10 @@ Retrieved 2026-03-17, License - CC BY-SA 4.0
   height: 36px;
   border-radius: 20px 20px 0 0;
   transition: background-color 0.2s ease;
-  
 }
 
-.heart:hover::before, .heart:hover::after {
+.heart:hover::before,
+.heart:hover::after {
   background-color: var(--background);
 }
 
@@ -218,7 +245,8 @@ Retrieved 2026-03-17, License - CC BY-SA 4.0
   height: 48px;
 }
 
-.heart.large::before, .heart.large::after {
+.heart.large::before,
+.heart.large::after {
   width: 33px;
   height: 53px;
 }
