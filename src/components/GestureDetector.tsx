@@ -242,6 +242,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
     }
 
     dragStateRef.current = null;
+    didDragRef.current = false;
     event.currentTarget.releasePointerCapture(event.pointerId);
 
     if (currentPositionRef.current) {
@@ -277,47 +278,51 @@ export default function GestureDetector({ onVictoryChange }: Props) {
           あなたのハート、ピックアップ！
         </span>
       )}
-      <div className="flex flex-col bg-night/90 rounded-lg p-4  gap-4">
-        <button
-          aria-label={isMinimized ? "Expand" : "Minimize"}
+      <div className="flex flex-col bg-night/90 rounded-lg p-4 gap-4">
+        <div
           onClick={(event) => {
+            event.stopPropagation();
             if (didDragRef.current) {
               event.preventDefault();
               didDragRef.current = false;
               return;
             }
-
-            setIsMinimized((prev) => !prev);
           }}
-          className="flex flex-row !justify-between text-white text-md font-medium leading-2"
+          className="flex flex-row items-center !justify-between h-4 leading-2 text-white text-md font-medium"
         >
           <span>Camera</span>
-          {isMinimized ? "+" : "-"}
-        </button>
-        {!isMinimized && (
-          <>
-            <div
-              className={`relative aspect-square overflow-hidden rounded-md border border-secondary transition-[box-shadow,filter] duration-500 ${
-                isVictory
-                  ? "shadow-[0_0_2px_2px_white] ring ring-secondary"
-                  : ""
-              }`}
-            >
-              <video
-                ref={videoRef}
-                className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${status !== "ready" ? "animate-pulse" : ""}`}
-                muted
-                playsInline
-              />
-              <canvas
-                ref={canvasRef}
-                className="pointer-events-none absolute inset-0 h-full w-full"
-                aria-hidden="true"
-                style={{ background: "transparent" }}
-              />
-            </div>
-          </>
-        )}
+          <button
+            aria-label={isMinimized ? "Expand" : "Minimize"}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(e) => {
+              setIsMinimized((prev) => !prev);
+              e.stopPropagation();
+            }}
+            className="cursor-pointer text-lg pl-6 pr-1"
+          >
+            {isMinimized ? "+" : "-"}
+          </button>
+        </div>
+        <div
+          className={`${isMinimized ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-secondary transition-[box-shadow,filter] duration-500 ${
+            isVictory ? "shadow-[0_0_2px_2px_white] ring ring-secondary" : ""
+          }`}
+        >
+          <video
+            ref={videoRef}
+            className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${status !== "ready" ? "animate-pulse" : ""}`}
+            muted
+            playsInline
+          />
+          <canvas
+            ref={canvasRef}
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            aria-hidden="true"
+            style={{ background: "transparent" }}
+          />
+        </div>
       </div>
     </aside>
   );
