@@ -1,4 +1,5 @@
 import type { HandLandmarker } from "@mediapipe/tasks-vision";
+import type { PointerEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   createHandLandmarker,
@@ -11,16 +12,85 @@ type Props = {
   onVictoryChange: (isVictory: boolean) => void;
 };
 
+type DetectorPosition = {
+  x: number;
+  y: number;
+};
+
+type DragState = {
+  pointerId: number;
+  offsetX: number;
+  offsetY: number;
+};
+
+const DETECTOR_POSITION_KEY = "gestureDetectorPosition";
+
+function getSavedDetectorPosition(): DetectorPosition | null {
+  try {
+    const savedPosition = window.sessionStorage.getItem(DETECTOR_POSITION_KEY);
+
+    if (!savedPosition) {
+      return null;
+    }
+
+    const parsedPosition = JSON.parse(
+      savedPosition,
+    ) as Partial<DetectorPosition>;
+
+    if (
+      typeof parsedPosition.x !== "number" ||
+      typeof parsedPosition.y !== "number"
+    ) {
+      return null;
+    }
+
+    return {
+      x: parsedPosition.x,
+      y: parsedPosition.y,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveDetectorPosition(position: DetectorPosition) {
+  window.sessionStorage.setItem(
+    DETECTOR_POSITION_KEY,
+    JSON.stringify(position),
+  );
+}
+
+function clampDetectorPosition(
+  position: DetectorPosition,
+  element: HTMLElement,
+) {
+  const bounds = element.getBoundingClientRect();
+  const maxX = Math.max(0, window.innerWidth - bounds.width);
+  const maxY = Math.max(0, window.innerHeight - bounds.height);
+
+  return {
+    x: Math.min(Math.max(position.x, 0), maxX),
+    y: Math.min(Math.max(position.y, 0), maxY),
+  };
+}
+
 export default function GestureDetector({ onVictoryChange }: Props) {
+  const detectorRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const victoryMessageTimeoutRef = useRef<number | null>(null);
   const lastVictoryRef = useRef(false);
+  const dragStateRef = useRef<DragState | null>(null);
+  const didDragRef = useRef(false);
+  const currentPositionRef = useRef<DetectorPosition | null>(null);
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
   const [isVictory, setIsVictory] = useState(false);
   const [showVictoryMessage, setShowVictoryMessage] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [position, setPosition] = useState<DetectorPosition | null>(() =>
+    getSavedDetectorPosition(),
+  );
 
   useEffect(() => {
     let isCancelled = false;
@@ -46,7 +116,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
         victoryMessageTimeoutRef.current = window.setTimeout(() => {
           setShowVictoryMessage(false);
           victoryMessageTimeoutRef.current = null;
-        }, 3000);
+        }, 2000);
       }
     };
 
@@ -125,15 +195,100 @@ export default function GestureDetector({ onVictoryChange }: Props) {
     };
   }, [onVictoryChange]);
 
+  const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
+    if (event.button !== 0 || !detectorRef.current) {
+      return;
+    }
+
+    const bounds = detectorRef.current.getBoundingClientRect();
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - bounds.left,
+      offsetY: event.clientY - bounds.top,
+    };
+    didDragRef.current = false;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
+    const dragState = dragStateRef.current;
+
+    if (
+      !dragState ||
+      dragState.pointerId !== event.pointerId ||
+      !detectorRef.current
+    ) {
+      return;
+    }
+
+    const nextPosition = clampDetectorPosition(
+      {
+        x: event.clientX - dragState.offsetX,
+        y: event.clientY - dragState.offsetY,
+      },
+      detectorRef.current,
+    );
+
+    didDragRef.current = true;
+    currentPositionRef.current = nextPosition;
+    setPosition(nextPosition);
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragStateRef.current = null;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+
+    if (currentPositionRef.current) {
+      saveDetectorPosition(currentPositionRef.current);
+    }
+  };
+
+  const positionStyle =
+    position === null
+      ? undefined
+      : {
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+        };
+
   return (
-    <aside className="fixed bottom-8 right-8 z-90 w-100 flex flex-col text-white">
+    <aside
+      ref={detectorRef}
+      className={`fixed z-90 w-100 flex touch-none select-none hover:cursor-grab flex-col text-white opacity-95 ${
+        position === null ? "bottom-8 right-8" : ""
+      }`}
+      style={positionStyle}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
       {showVictoryMessage && (
-        <span className="text-sm text-end">あなたのハート、ピックアップ！</span>
+        <span
+          id="modal"
+          className="absolute bottom-1/2 font-bold z-99 rotate-15 right-4 text-sm text-end"
+        >
+          あなたのハート、ピックアップ！
+        </span>
       )}
       <div className="flex flex-col bg-night/90 rounded-lg p-4  gap-4">
         <button
           aria-label={isMinimized ? "Expand" : "Minimize"}
-          onClick={() => setIsMinimized((prev) => !prev)}
+          onClick={(event) => {
+            if (didDragRef.current) {
+              event.preventDefault();
+              didDragRef.current = false;
+              return;
+            }
+
+            setIsMinimized((prev) => !prev);
+          }}
           className="flex flex-row !justify-between text-white text-md font-medium leading-2"
         >
           <span>Camera</span>
@@ -150,7 +305,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
             >
               <video
                 ref={videoRef}
-                className={`bg-secondary/70  h-full object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
+                className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${status !== "ready" ? "animate-pulse" : ""}`}
                 muted
                 playsInline
               />
