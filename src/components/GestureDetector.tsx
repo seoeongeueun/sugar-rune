@@ -27,9 +27,11 @@ export default function GestureDetector({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const victoryMessageTimeoutRef = useRef<number | null>(null);
   const lastVictoryRef = useRef(false);
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
   const [isVictory, setIsVictory] = useState(false);
+  const [showVictoryMessage, setShowVictoryMessage] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
@@ -45,6 +47,19 @@ export default function GestureDetector({
       lastVictoryRef.current = nextValue;
       setIsVictory(nextValue);
       onVictoryChange(nextValue);
+
+      if (nextValue) {
+        setShowVictoryMessage(true);
+
+        if (victoryMessageTimeoutRef.current !== null) {
+          window.clearTimeout(victoryMessageTimeoutRef.current);
+        }
+
+        victoryMessageTimeoutRef.current = window.setTimeout(() => {
+          setShowVictoryMessage(false);
+          victoryMessageTimeoutRef.current = null;
+        }, 4000);
+      }
     };
 
     const detectFrame = () => {
@@ -112,6 +127,10 @@ export default function GestureDetector({
         cancelAnimationFrame(animationFrameRef.current);
       }
 
+      if (victoryMessageTimeoutRef.current !== null) {
+        window.clearTimeout(victoryMessageTimeoutRef.current);
+      }
+
       landmarker?.close();
       stream?.getTracks().forEach((track) => track.stop());
       onVictoryChange(false);
@@ -120,48 +139,45 @@ export default function GestureDetector({
 
   return (
     <aside
-      className={`border border-white/50 fixed bottom-8 right-8 z-90 flex ${SIZE_CLASSES[size]} flex-col gap-3 rounded-lg bg-pink p-3 text-white`}
+      className={`fixed bottom-8 right-8 z-90 flex ${SIZE_CLASSES[size]} flex-col text-white`}
     >
-      <button
-        aria-label={isMinimized ? "Expand" : "Minimize"}
-        onClick={() => setIsMinimized((prev) => !prev)}
-        className="flex flex-row !justify-between text-white text-md font-medium leading-2"
-      >
-        <span>Camera</span>
-        {isMinimized ? "+" : "-"}
-      </button>
-      {!isMinimized && (
-        <>
-          <div
-            className={`relative aspect-video w-full overflow-hidden rounded-md transition-[box-shadow,filter] duration-500 ${
-              isVictory ? "shadow-[0_0_2px_2px_white] ring ring-secondary" : ""
-            }`}
-          >
-            <video
-              ref={videoRef}
-              className={`bg-secondary/70 h-full w-full object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
-              muted
-              playsInline
-            />
-            <canvas
-              ref={canvasRef}
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              aria-hidden="true"
-              style={{ background: "transparent" }}
-            />
-          </div>
-          <span
-            className={`self-end h-3 w-3 shrink-0 border border-white rounded-full ${
-              status === "error"
-                ? "bg-red-500 animate-pulse"
-                : isVictory
-                  ? "bg-green-500 animate-pulse"
-                  : "bg-white/20"
-            }`}
-            aria-hidden="true"
-          />
-        </>
+      {showVictoryMessage && (
+        <span className="text-sm text-end">あなたのハート、ピックアップ！</span>
       )}
+      <div className="flex flex-col bg-pink rounded-lg p-4 border border-secondary gap-4">
+        <button
+          aria-label={isMinimized ? "Expand" : "Minimize"}
+          onClick={() => setIsMinimized((prev) => !prev)}
+          className="flex flex-row !justify-between text-white text-md font-medium leading-2"
+        >
+          <span>Camera</span>
+          {isMinimized ? "+" : "-"}
+        </button>
+        {!isMinimized && (
+          <>
+            <div
+              className={`relative aspect-video w-full overflow-hidden rounded-md transition-[box-shadow,filter] duration-500 ${
+                isVictory
+                  ? "shadow-[0_0_2px_2px_white] ring ring-secondary"
+                  : ""
+              }`}
+            >
+              <video
+                ref={videoRef}
+                className={`bg-secondary/70 h-full w-full object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
+                muted
+                playsInline
+              />
+              <canvas
+                ref={canvasRef}
+                className="pointer-events-none absolute inset-0 h-full w-full"
+                aria-hidden="true"
+                style={{ background: "transparent" }}
+              />
+            </div>
+          </>
+        )}
+      </div>
     </aside>
   );
 }

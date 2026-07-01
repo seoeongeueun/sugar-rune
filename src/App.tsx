@@ -16,8 +16,11 @@ export default function App() {
   const user = useAuth((state) => state.user);
   const setIsLoading = useAuth((state) => state.setIsLoading);
   const setSession = useAuth((state) => state.setSession);
+
+  // open the heart when gesture is detected, but do not close it even when gesture is no longer detected
+  // so that it can be closed by the user manually
   const handleVictoryChange = useCallback((isVictory: boolean) => {
-    setHeartOpen(isVictory);
+    if (isVictory) setHeartOpen(true);
   }, []);
 
   useEffect(() => {
