@@ -7,23 +7,11 @@ import {
   type GestureDetectorStatus,
 } from "@/lib";
 
-type GestureDetectorSize = "small" | "medium" | "large";
-
 type Props = {
   onVictoryChange: (isVictory: boolean) => void;
-  size?: GestureDetectorSize;
 };
 
-const SIZE_CLASSES: Record<GestureDetectorSize, string> = {
-  small: "w-40",
-  medium: "w-56",
-  large: "w-110",
-};
-
-export default function GestureDetector({
-  onVictoryChange,
-  size = "large",
-}: Props) {
+export default function GestureDetector({ onVictoryChange }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -58,7 +46,7 @@ export default function GestureDetector({
         victoryMessageTimeoutRef.current = window.setTimeout(() => {
           setShowVictoryMessage(false);
           victoryMessageTimeoutRef.current = null;
-        }, 4000);
+        }, 3000);
       }
     };
 
@@ -138,13 +126,11 @@ export default function GestureDetector({
   }, [onVictoryChange]);
 
   return (
-    <aside
-      className={`fixed bottom-8 right-8 z-90 flex ${SIZE_CLASSES[size]} flex-col text-white`}
-    >
+    <aside className="fixed bottom-8 right-8 z-90 w-100 flex flex-col text-white">
       {showVictoryMessage && (
         <span className="text-sm text-end">あなたのハート、ピックアップ！</span>
       )}
-      <div className="flex flex-col bg-pink rounded-lg p-4 border border-secondary gap-4">
+      <div className="flex flex-col bg-night/90 rounded-lg p-4  gap-4">
         <button
           aria-label={isMinimized ? "Expand" : "Minimize"}
           onClick={() => setIsMinimized((prev) => !prev)}
@@ -156,7 +142,7 @@ export default function GestureDetector({
         {!isMinimized && (
           <>
             <div
-              className={`relative aspect-video w-full overflow-hidden rounded-md transition-[box-shadow,filter] duration-500 ${
+              className={`relative aspect-square overflow-hidden rounded-md border border-secondary transition-[box-shadow,filter] duration-500 ${
                 isVictory
                   ? "shadow-[0_0_2px_2px_white] ring ring-secondary"
                   : ""
@@ -164,7 +150,7 @@ export default function GestureDetector({
             >
               <video
                 ref={videoRef}
-                className={`bg-secondary/70 h-full w-full object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
+                className={`bg-secondary/70  h-full object-cover [transform:scaleX(-1)] ${status !== "ready" ? "animate-pulse" : ""}`}
                 muted
                 playsInline
               />

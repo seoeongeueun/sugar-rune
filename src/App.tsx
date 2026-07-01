@@ -89,7 +89,7 @@ export default function App() {
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
       <HeartsList />
-      <GestureDetector onVictoryChange={handleVictoryChange} size="large" />
+      <GestureDetector onVictoryChange={handleVictoryChange} />
       {/* <PostCard /> */}
       {/* <DeleteModal
         onCancel={() => console.log("Cancel")}

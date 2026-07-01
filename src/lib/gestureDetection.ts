@@ -20,23 +20,37 @@ function getCanvasPoint(
   };
 }
 
-function isFingerExtended(
+function isFingerExtendedHorizontally(
   landmarks: NormalizedLandmark[],
+  mcpIndex: number,
   tipIndex: number,
   pipIndex: number,
 ) {
-  return landmarks[tipIndex].y < landmarks[pipIndex].y;
+  const mcp = landmarks[mcpIndex];
+  const pip = landmarks[pipIndex];
+  const tip = landmarks[tipIndex];
+  const horizontalReach = Math.abs(tip.x - mcp.x);
+  const verticalDrift = Math.abs(tip.y - mcp.y);
+  const tipPastPip = Math.abs(tip.x - mcp.x) > Math.abs(pip.x - mcp.x);
+
+  return (
+    horizontalReach > 0.05 &&
+    horizontalReach > verticalDrift * 0.8 &&
+    tipPastPip
+  );
 }
 
-function isThumbAwayFromPalm(landmarks: NormalizedLandmark[]) {
-  const thumbTip = landmarks[4];
-  const indexMcp = landmarks[5];
-  const pinkyMcp = landmarks[17];
-  const wrist = landmarks[0];
-  const palmWidth = Math.abs(indexMcp.x - pinkyMcp.x);
-  const thumbDistance = Math.hypot(thumbTip.x - wrist.x, thumbTip.y - wrist.y);
+function areTipsHorizontallyAligned(
+  landmarks: NormalizedLandmark[],
+  firstTipIndex: number,
+  secondTipIndex: number,
+) {
+  const firstTip = landmarks[firstTipIndex];
+  const secondTip = landmarks[secondTipIndex];
+  const xDistance = Math.abs(firstTip.x - secondTip.x);
+  const yDistance = Math.abs(firstTip.y - secondTip.y);
 
-  return thumbDistance > palmWidth * 0.85;
+  return yDistance < 0.15 && xDistance > 0.02;
 }
 
 export function hasVictoryGesture(result: HandLandmarkerResult) {
@@ -45,20 +59,18 @@ export function hasVictoryGesture(result: HandLandmarkerResult) {
       return false;
     }
 
-    const indexExtended = isFingerExtended(landmarks, 8, 6);
-    const middleExtended = isFingerExtended(landmarks, 12, 10);
-    const ringFolded = !isFingerExtended(landmarks, 16, 14);
-    const pinkyFolded = !isFingerExtended(landmarks, 20, 18);
-    const fingersSeparated = Math.abs(landmarks[8].x - landmarks[12].x) > 0.035;
-    const thumbRelaxed = !isThumbAwayFromPalm(landmarks);
+    const indexExtended = isFingerExtendedHorizontally(landmarks, 5, 8, 6);
+    const middleExtended = isFingerExtendedHorizontally(landmarks, 9, 12, 10);
+    const ringFolded = !isFingerExtendedHorizontally(landmarks, 13, 16, 14);
+    const pinkyFolded = !isFingerExtendedHorizontally(landmarks, 17, 20, 18);
+    const fingersHorizontal = areTipsHorizontallyAligned(landmarks, 8, 12);
 
     return (
       indexExtended &&
       middleExtended &&
       ringFolded &&
       pinkyFolded &&
-      fingersSeparated &&
-      thumbRelaxed
+      fingersHorizontal
     );
   });
 }
@@ -86,7 +98,7 @@ export function drawHandFrame(
 
   for (const landmarks of result.landmarks) {
     context.lineWidth = 6;
-    context.strokeStyle = "#8a70be";
+    context.strokeStyle = "white";
     context.lineCap = "round";
     context.lineJoin = "round";
 
@@ -107,14 +119,14 @@ export function drawHandFrame(
       context.stroke();
     }
 
-    // for (const landmark of landmarks) {
-    //   const point = getCanvasPoint(landmark, canvas);
+    for (const landmark of landmarks) {
+      const point = getCanvasPoint(landmark, canvas);
 
-    //   context.beginPath();
-    //   context.arc(point.x, point.y, 5, 0, Math.PI * 2);
-    //   context.fillStyle = "white";
-    //   context.fill();
-    // }
+      context.beginPath();
+      context.arc(point.x, point.y, 5, 0, Math.PI * 2);
+      context.fillStyle = "#e977a3";
+      context.fill();
+    }
   }
 }
 
