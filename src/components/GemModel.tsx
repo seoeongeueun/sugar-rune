@@ -127,7 +127,7 @@ export default function GemModel({ open }: GemModelProps) {
       const pulse = 1 + Math.sin(performance.now() * 0.006) * 0.18;
       glowLight.intensity = THREE.MathUtils.lerp(
         glowLight.intensity,
-        (open ? 2 : 0) * pulse,
+        (open ? 1 : 0) * pulse,
         lerpValue,
       );
     }
