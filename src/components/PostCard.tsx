@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
-import { HEART_COLORS } from "@/lib/constants";
+import { gsap } from "gsap";
+import { HEART_LIST } from "@/lib/constants";
 import PostCardCut from "./PostCardCut";
 import { Trash2, SquarePen, Save, Crown } from "lucide-react";
 import { useNote } from "@/stores";
@@ -24,8 +25,9 @@ export default function PostCard() {
   );
 
   const heartColor =
-    useNote((state) => state.note?.heart_content) || HEART_COLORS[0];
+    useNote((state) => state.note?.heart_content) || HEART_LIST[0].color;
 
+  const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
@@ -41,6 +43,52 @@ export default function PostCard() {
   useEffect(() => {
     setValue("content", content);
   }, [content, setValue]);
+
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    const card = cardRef.current;
+
+    if (!overlay || !card) return;
+
+    const ctx = gsap.context(() => {
+      gsap.set(overlay, { autoAlpha: 0 });
+      gsap.set(card, {
+        autoAlpha: 0,
+        y: 72,
+        scale: 0.84,
+        rotationX: 12,
+        rotationZ: -8,
+        transformOrigin: "50% 50%",
+        willChange: "transform, opacity",
+      });
+
+      gsap
+        .timeline()
+        .to(overlay, {
+          autoAlpha: 1,
+          duration: 0.18,
+          ease: "power1.out",
+        })
+        .to(
+          card,
+          {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            rotationX: 0,
+            rotationZ: 0,
+            duration: 0.85,
+            ease: "back.out(1.35)",
+            clearProps: "willChange",
+          },
+          "-=0.02",
+        );
+    }, overlay);
+
+    return () => {
+      ctx.revert();
+    };
+  }, []);
 
   const onSubmit = (data: FormData) => {
     const { month, day, year, content } = data;
@@ -67,7 +115,10 @@ export default function PostCard() {
   };
 
   return (
-    <div className="text-xl pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30">
+    <div
+      ref={overlayRef}
+      className="text-xl pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30"
+    >
       <article
         ref={cardRef}
         className="pointer-events-auto group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height "
@@ -127,6 +178,8 @@ export default function PostCard() {
                       placeholder={new Date().toLocaleString("default", {
                         month: "2-digit",
                       })}
+                      min="1"
+                      max="12"
                       maxLength={2}
                     />
                     <span>.</span>
@@ -141,6 +194,8 @@ export default function PostCard() {
                       placeholder={new Date().toLocaleString("default", {
                         day: "2-digit",
                       })}
+                      min="1"
+                      max="31"
                       maxLength={2}
                     />
                     <span>.</span>
@@ -155,6 +210,8 @@ export default function PostCard() {
                       placeholder={new Date().toLocaleString("default", {
                         year: "numeric",
                       })}
+                      min="2000"
+                      max="9999"
                       maxLength={4}
                     />
                   </div>
