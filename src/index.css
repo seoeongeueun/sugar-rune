@@ -5,6 +5,11 @@
   src: url("/fonts/Gawaa-Regular.otf") format("opentype");
 }
 
+@font-face {
+  font-family: "umeboshi";
+  src: url("/fonts/umeboshi.ttf") format("truetype");
+}
+
 @theme {
   --color-background: var(--background);
   --color-secondary: var(--secondary);
@@ -31,11 +36,11 @@
   --breakpoint-tablet: 640px;
   --breakpoint-desktop: 1023px;
 
-  --font-alegro: "Alegro-star", serif;
+  --font-alegro: "umeboshi", serif;
 }
 
 :root {
-  font-family: "Alegro-star", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "umeboshi", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
