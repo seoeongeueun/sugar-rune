@@ -7,6 +7,7 @@ import {
   hasVictoryGesture,
   type GestureDetectorStatus,
 } from "@/lib";
+import { Eye, EyeOff } from "lucide-react";
 
 type Props = {
   onVictoryChange: (isVictory: boolean) => void;
@@ -87,7 +88,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
   const [isVictory, setIsVictory] = useState(false);
   const [showVictoryMessage, setShowVictoryMessage] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isDetectionEnabled, setIsDetectionEnabled] = useState(true);
   const [position, setPosition] = useState<DetectorPosition | null>(() =>
     getSavedDetectorPosition(),
   );
@@ -96,6 +97,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
     let isCancelled = false;
     let stream: MediaStream | null = null;
     let landmarker: HandLandmarker | null = null;
+    const videoElement = videoRef.current;
 
     const setVictory = (nextValue: boolean) => {
       if (lastVictoryRef.current === nextValue) {
@@ -120,6 +122,17 @@ export default function GestureDetector({ onVictoryChange }: Props) {
       }
     };
 
+    const clearCanvas = () => {
+      const canvas = canvasRef.current;
+      const context = canvas?.getContext("2d");
+
+      if (!canvas || !context) {
+        return;
+      }
+
+      context.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
     const detectFrame = () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -140,18 +153,26 @@ export default function GestureDetector({ onVictoryChange }: Props) {
     };
 
     const startDetector = async () => {
+      if (!isDetectionEnabled) {
+        setStatus("loading");
+        setVictory(false);
+        clearCanvas();
+        return;
+      }
+
       try {
+        setStatus("loading");
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
           audio: false,
         });
 
-        if (isCancelled || !videoRef.current) {
+        if (isCancelled || !videoElement) {
           return;
         }
 
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoElement.srcObject = stream;
+        await videoElement.play();
 
         landmarker = await createHandLandmarker();
 
@@ -191,9 +212,16 @@ export default function GestureDetector({ onVictoryChange }: Props) {
 
       landmarker?.close();
       stream?.getTracks().forEach((track) => track.stop());
+      clearCanvas();
+
+      if (videoElement) {
+        videoElement.pause();
+        videoElement.srcObject = null;
+      }
+
       onVictoryChange(false);
     };
-  }, [onVictoryChange]);
+  }, [isDetectionEnabled, onVictoryChange]);
 
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
     if (event.button !== 0 || !detectorRef.current) {
@@ -290,29 +318,37 @@ export default function GestureDetector({ onVictoryChange }: Props) {
           }}
           className="flex flex-row items-center !justify-between h-4 leading-2 text-white text-md font-medium"
         >
-          <span>Camera</span>
-          <button
-            aria-label={isMinimized ? "Expand" : "Minimize"}
-            onPointerDown={(event) => {
-              event.stopPropagation();
-            }}
-            onClick={(e) => {
-              setIsMinimized((prev) => !prev);
-              e.stopPropagation();
-            }}
-            className="cursor-pointer text-lg pl-6 pr-1"
-          >
-            {isMinimized ? "+" : "-"}
-          </button>
+          <span>{status === "error" ? "Error" : "Camera"}</span>
+          <div className="flex flex-row items-center">
+            <button
+              aria-label={
+                isDetectionEnabled ? "Turn camera off" : "Turn camera on"
+              }
+              onPointerDown={(event) => {
+                event.stopPropagation();
+              }}
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsDetectionEnabled((prev) => !prev);
+              }}
+              className="cursor-pointer"
+            >
+              {isDetectionEnabled ? (
+                <Eye className="inline-block mr-2 h-6 w-6 mb-px" />
+              ) : (
+                <EyeOff className="inline-block mr-2 h-6 w-6 mb-px" />
+              )}
+            </button>
+          </div>
         </div>
         <div
-          className={`${isMinimized ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-secondary transition-[box-shadow,filter] duration-500 ${
+          className={`${!isDetectionEnabled ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-secondary transition-[box-shadow,filter] duration-500 ${
             isVictory ? "shadow-[0_0_2px_2px_white] ring ring-secondary" : ""
           }`}
         >
           <video
             ref={videoRef}
-            className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${status !== "ready" ? "animate-pulse" : ""}`}
+            className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${isDetectionEnabled && status !== "ready" ? "animate-pulse" : ""}`}
             muted
             playsInline
           />
