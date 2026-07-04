@@ -72,7 +72,7 @@ export default function App() {
   return (
     <>
       <header className="z-99 pointer-events-none w-full fixed inset-0 h-fit flex flex-row justify-between items-center px-8">
-        <h1 className="text-white font-bold!">Sugar Heart</h1>
+        <h1 className="text-white font-bold! text-shadow">Sugar Heart</h1>
         <AuthButton />
       </header>
 

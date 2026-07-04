@@ -146,6 +146,7 @@ button {
 }
 
 #modal,
+.text-shadow,
 #modal button:not(:is(#no-text-shadow, #no-text-shadow *)),
 #heart-button {
   text-shadow:

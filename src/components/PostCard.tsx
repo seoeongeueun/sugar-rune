@@ -206,7 +206,7 @@ export default function PostCard() {
               className="w-full h-auto object-contain absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
             />
           </div>
-          <div className="front bg-[url('/assets/frame.svg')] bg-no-repeat bg-center absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background ">
+          <div className="front bg-[url('/assets/frame.svg')] bg-no-repeat bg-center absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]">
             {mode === "edit" ? (
               <form
                 id="postcard-content"

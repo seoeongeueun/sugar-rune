@@ -334,9 +334,9 @@ export default function GestureDetector({ onVictoryChange }: Props) {
               className="cursor-pointer"
             >
               {isDetectionEnabled ? (
-                <Eye className="inline-block mr-2 h-6 w-6 mb-px" />
+                <Eye className="inline-block mr-1 h-6 w-6 mb-px" />
               ) : (
-                <EyeOff className="inline-block mr-2 h-6 w-6 mb-px" />
+                <EyeOff className="inline-block mr-1 h-6 w-6 mb-px" />
               )}
             </button>
           </div>
