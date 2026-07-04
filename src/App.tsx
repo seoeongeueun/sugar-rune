@@ -10,6 +10,7 @@ import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
 import PostCard from "./components/PostCard";
+import { DeleteModal } from "@/components/modals";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
@@ -19,7 +20,6 @@ export default function App() {
   const setSession = useAuth((state) => state.setSession);
   const isOpen = useNote((state) => state.isOpen);
   const openNote = useNote((state) => state.openNote);
-  const closeNote = useNote((state) => state.closeNote);
   // open the heart when gesture is detected, but do not close it even when gesture is no longer detected
   // so that it can be closed by the user manually
   const handleVictoryChange = useCallback((isVictory: boolean) => {

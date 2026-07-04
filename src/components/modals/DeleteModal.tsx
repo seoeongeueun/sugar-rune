@@ -8,6 +8,7 @@ interface DeleteModalProps {
 export function DeleteModal({ onConfirm, onCancel }: DeleteModalProps) {
   return (
     <Modal
+      isSimple={true}
       title="Delete Note?"
       description="This action cannot be undone"
       footer={
