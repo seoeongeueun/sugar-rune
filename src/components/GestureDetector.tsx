@@ -289,7 +289,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
   return (
     <aside
       ref={detectorRef}
-      className={`fixed z-90 w-100 flex touch-none select-none hover:cursor-grab flex-col text-white ${
+      className={`fixed z-90 w-100 flex touch-none select-none hover:cursor-grab flex-col bg-black/40 text-white ${
         position === null ? "bottom-8 right-8" : ""
       }`}
       style={positionStyle}
