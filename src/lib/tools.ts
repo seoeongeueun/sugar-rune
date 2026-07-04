@@ -37,3 +37,29 @@ export function saturateHexColor(hexColor: string, saturationLevel = 1) {
 
   return `#${color.getHexString()}`;
 }
+
+// Format a Date object to a string in the format "YYYY-MM-DD" for database storage
+export function formatDateForDb(date: Date) {
+  const year = date.getFullYear().toString();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+// Parse a date string in the format "YYYY-MM-DD" and return a Date object
+export function getSubmittedDate(
+  data: { month: string; day: string; year: string },
+  fallbackDate: Date,
+) {
+  const { month, day, year } = data;
+
+  if (!month || !day || !year) {
+    return fallbackDate;
+  }
+
+  const dateString = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  const nextDate = new Date(dateString);
+
+  return Number.isNaN(nextDate.getTime()) ? fallbackDate : nextDate;
+}

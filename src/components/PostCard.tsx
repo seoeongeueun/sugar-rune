@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { gsap } from "gsap";
-import { HEART_LIST } from "@/lib/constants";
+import { formatDateForDb, getSubmittedDate, HEART_LIST } from "@/lib";
+import { createNote } from "@/features";
 import PostCardCut from "./PostCardCut";
-import { Trash2, SquarePen, Save, Crown } from "lucide-react";
-import { useNote } from "@/stores";
+import { Trash2, SquarePen, Save, Crown, LoaderCircle } from "lucide-react";
+import { useAuth, useNote } from "@/stores";
 
 type POSTCARD_MODE = "view" | "edit";
 
@@ -20,9 +21,17 @@ export default function PostCard() {
   const [mode, setMode] = useState<POSTCARD_MODE>("view");
   const [date, setDate] = useState<Date>(new Date());
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  // const [content, setContent] = useState<string>(
+  //   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 𖤐 ",
+  // );
   const [content, setContent] = useState<string>(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 𖤐 ",
+    useNote((state) => state.note?.content) || "",
   );
+  const closeNote = useNote((state) => state.closeNote);
+  const updateContent = useNote((state) => state.updateContent);
+  const user = useAuth((state) => state.user);
 
   const heartColor =
     useNote((state) => state.note?.heart_content) || HEART_LIST[0].color;
@@ -90,23 +99,49 @@ export default function PostCard() {
     };
   }, []);
 
-  const onSubmit = (data: FormData) => {
-    const { month, day, year, content } = data;
-
-    if (month && day && year) {
-      const dateString = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-      setDate(new Date(dateString));
+  const onSubmit = async (data: FormData) => {
+    if (!user) {
+      setSaveError("Sign in before saving a note.");
+      return;
     }
 
-    setContent(content);
-    setMode("view");
+    const nextDate = getSubmittedDate(data, date);
+    const nextContent = data.content.trim();
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      await createNote({
+        content: nextContent,
+        date: formatDateForDb(nextDate),
+        userId: user.id,
+        heartColor,
+      });
+
+      setDate(nextDate);
+      setContent(nextContent);
+      updateContent(nextContent, heartColor);
+      setMode("view");
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "Failed to save note.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleButtonClick = () => {
+    if (isSaving) {
+      return;
+    }
+
     if (mode === "view") {
+      setSaveError(null);
       setMode("edit");
     } else {
-      handleSubmit(onSubmit)();
+      void handleSubmit(onSubmit)();
     }
   };
 
@@ -117,19 +152,28 @@ export default function PostCard() {
   return (
     <div
       ref={overlayRef}
-      className="text-xl pointer-events-none fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-text/30"
+      className="text-xl fixed inset-0 w-full h-full z-99 flex items-center justify-center bg-text/30"
+      onClick={(e) => {
+        if (e.target === overlayRef.current) {
+          e.stopPropagation();
+          closeNote();
+        }
+      }}
     >
       <article
         ref={cardRef}
-        className="pointer-events-auto group perspective-distant box-content p-16 rounded-xs w-postcard-width h-postcard-height "
+        className="pointer-events-auto group perspective-distant relative box-content p-16 rounded-xs w-postcard-width h-postcard-height "
       >
         <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none p-4 z-60">
           <button
             type="button"
             onClick={handleButtonClick}
+            disabled={isSaving}
             className="bg-black rounded-full p-2 hover:bg-background transition-colors flex items-center justify-center"
           >
-            {mode === "view" ? (
+            {isSaving ? (
+              <LoaderCircle size={16} color="white" className="animate-spin" />
+            ) : mode === "view" ? (
               <SquarePen size={16} color="white" />
             ) : (
               <Save size={16} color="white" />
@@ -143,6 +187,11 @@ export default function PostCard() {
             <Trash2 size={16} color="white" />
           </button>
         </div>
+        {saveError && (
+          <p className="pointer-events-none absolute left-1/2 top-16 z-70 w-max max-w-80 -translate-x-1/2 rounded-sm bg-black px-3 py-2 text-sm text-white">
+            {saveError}
+          </p>
+        )}
         <div
           id="postcard-container"
           className={twMerge(
