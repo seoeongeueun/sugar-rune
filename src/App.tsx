@@ -10,6 +10,7 @@ import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
 import PostCard from "./components/PostCard";
+import { DeleteModal } from "@/components/modals";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);

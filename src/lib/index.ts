@@ -13,4 +13,4 @@ export {
   hasVictoryGesture,
 } from "./gestureDetection";
 export type { GestureDetectorStatus } from "./gestureDetection";
-export type { Note } from "./types";
+export type { Note, ModalProps } from "./types";

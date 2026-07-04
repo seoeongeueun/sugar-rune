@@ -19,7 +19,7 @@ export function HeartButton({
   className = "",
   ariaLabel,
 }: HeartButtonProps) {
-  const heartImageUrl = `/hearts/heart_${heartColor}_icon.png`;
+  const heartImageUrl = `/hearts/heart_${String(heartColor ?? "white")}_icon.png`;
 
   return (
     <button
@@ -28,7 +28,7 @@ export function HeartButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`pointer-events-auto text-white shrink-0 bg-no-repeat bg-contain bg-center w-16 h-16 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-md disabled:opacity-70 disabled:hover:brightness-100 ${className}`.trim()}
+      className={`whitespace-nowrap pointer-events-auto text-white shrink-0 bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-lg disabled:opacity-70 disabled:hover:brightness-100 ${className}`.trim()}
       style={{
         backgroundImage: `url('${heartImageUrl}')`,
       }}

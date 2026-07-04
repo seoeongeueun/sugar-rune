@@ -62,6 +62,7 @@ export function AuthModal() {
 
   return (
     <Modal
+      isSimple={false}
       title="Sugar Heart"
       description="Le récit de l'apprentie sorcière"
       footer={

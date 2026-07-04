@@ -289,7 +289,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
   return (
     <aside
       ref={detectorRef}
-      className={`fixed z-90 w-100 flex touch-none select-none hover:cursor-grab flex-col text-white opacity-95 ${
+      className={`fixed z-90 w-100 flex touch-none select-none hover:cursor-grab flex-col text-white ${
         position === null ? "bottom-8 right-8" : ""
       }`}
       style={positionStyle}
@@ -306,7 +306,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
           あなたのハート、ピックアップ！
         </span>
       )}
-      <div className="flex flex-col bg-night/90 rounded-lg p-4 gap-4">
+      <div className="relative flex flex-col border-2 border-white outline outline-night bg-white/40 backdrop-blur-xl drop-shadow-2xl rounded-lg p-4 gap-4">
         <div
           onClick={(event) => {
             event.stopPropagation();
@@ -342,8 +342,8 @@ export default function GestureDetector({ onVictoryChange }: Props) {
           </div>
         </div>
         <div
-          className={`${!isDetectionEnabled ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-secondary transition-[box-shadow,filter] duration-500 ${
-            isVictory ? "shadow-[0_0_2px_2px_white] ring ring-secondary" : ""
+          className={`${!isDetectionEnabled ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-white transition-[box-shadow,filter] duration-100 ${
+            isVictory ? "shadow-[0_0_5px_1px_var(--secondary)]" : ""
           }`}
         >
           <video
