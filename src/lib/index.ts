@@ -1,4 +1,10 @@
-export { getErrorMessage, maskEmail, saturateHexColor } from "./tools";
+export {
+  getErrorMessage,
+  maskEmail,
+  saturateHexColor,
+  getSubmittedDate,
+  formatDateForDb,
+} from "./tools";
 export { supabase, isSupabaseConfigured } from "./supabase";
 export { HEART_LIST } from "./constants";
 export {

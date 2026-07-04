@@ -1,3 +1,4 @@
+import { useNote } from "@/stores/noteStore";
 import { gsap } from "gsap";
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
@@ -11,6 +12,7 @@ export default function PostCardCut({ originalRef, deleteTrigger }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const cardLeftRef = useRef<HTMLDivElement>(null);
   const cardRightRef = useRef<HTMLDivElement>(null);
+  const closeNote = useNote((state) => state.closeNote);
 
   useEffect(() => {
     const card = cardRef.current;
@@ -45,7 +47,11 @@ export default function PostCardCut({ originalRef, deleteTrigger }: Props) {
       .to(card, { opacity: 1, duration: 0 }, "<")
       .to(left, { rotateZ: -10, x: -10, duration: 1, delay: 0.1 }, ">")
       .to(right, { rotateZ: 10, y: 20, duration: 1 }, "<")
-      .to(card, { opacity: 0, duration: 0.7 }, ">-0.2");
+      .to(
+        card,
+        { opacity: 0, duration: 0.7, onComplete: () => closeNote() },
+        ">-0.2",
+      ); // close postcard on completion of the animation
 
     return () => {
       tl.kill();
