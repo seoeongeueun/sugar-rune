@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
+import { HEART_LIST } from "@/lib";
 
 interface ModalProps {
   title: string;
   description?: string;
   children?: ReactNode;
   footer: ReactNode;
+  heartColor?: keyof typeof HEART_LIST;
 }
 
 export function ModalSimple({
@@ -12,15 +14,16 @@ export function ModalSimple({
   description,
   children,
   footer,
+  heartColor,
 }: ModalProps) {
   return (
     <div
       id="modal"
-      className="fixed inset-0 w-full h-full bg-black/30 flex items-center justify-center z-99"
+      className="fixed inset-0 w-full h-full bg-black/40 flex items-center justify-center z-99"
     >
-      <div className="text-white text-lg w-postcard-height h-fit py-20 rounded-lg flex flex-col items-center justify-center gap-1 tablet:gap-8 border-24 border-background outline outline-white/50 bg-secondary">
+      <div className="text-white text-lg w-postcard-height h-fit py-20 rounded-lg flex flex-col items-center justify-center gap-1 tablet:gap-8 border-6 border-white outline outline-night bg-white/10 backdrop-blur-xl drop-shadow-2xl">
         <img
-          src="/hearts/heart_purple_icon.png"
+          src={`/hearts/heart_${String(heartColor ?? "white")}_icon.png`}
           alt="Heart Icon"
           aria-hidden="true"
           className="w-8 tablet:w-10 h-auto animate-bounce [animation-duration:1.8s]"
