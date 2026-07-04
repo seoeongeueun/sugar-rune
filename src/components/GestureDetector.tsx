@@ -278,7 +278,7 @@ export default function GestureDetector({ onVictoryChange }: Props) {
           あなたのハート、ピックアップ！
         </span>
       )}
-      <div className="relative flex flex-col border-2 border-white outline outline-night bg-white/10 backdrop-blur-xl drop-shadow-2xl rounded-lg p-4 gap-4">
+      <div className="relative flex flex-col border-2 border-white outline outline-night bg-white/40 backdrop-blur-xl drop-shadow-2xl rounded-lg p-4 gap-4">
         <div
           onClick={(event) => {
             event.stopPropagation();
@@ -306,8 +306,8 @@ export default function GestureDetector({ onVictoryChange }: Props) {
           </button>
         </div>
         <div
-          className={`${isMinimized ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-night transition-[box-shadow,filter] duration-500 ${
-            isVictory ? "shadow-[0_0_2px_2px_white] ring ring-secondary" : ""
+          className={`${isMinimized ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-white transition-[box-shadow,filter] duration-100 ${
+            isVictory ? "shadow-[0_0_5px_1px_var(--secondary)]" : ""
           }`}
         >
           <video
