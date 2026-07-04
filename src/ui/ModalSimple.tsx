@@ -5,14 +5,20 @@ export function ModalSimple({
   description,
   children,
   footer,
+  onClose,
   heartColor,
 }: ModalProps) {
   return (
     <div
       id="modal"
-      className="fixed inset-0 w-full h-full bg-black/40 flex items-center justify-center z-99"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) {
+          onClose();
+        }
+      }}
+      className="pointer-events-auto fixed inset-0 w-full h-full bg-black/40 flex items-center justify-center z-99"
     >
-      <div className="text-white text-lg w-postcard-height h-fit py-20 rounded-lg flex flex-col items-center justify-center gap-1 tablet:gap-8 border-6 border-white outline outline-night bg-white/10 backdrop-blur-xl drop-shadow-2xl">
+      <div className="text-white text-lg w-postcard-height h-fit py-20 rounded-lg flex flex-col items-center justify-center gap-1 tablet:gap-8 border-2 border-white outline-2 outline-night bg-white/40 backdrop-blur-xl drop-shadow-2xl">
         <img
           src={`/hearts/heart_${String(heartColor ?? "white")}_icon.png`}
           alt="Heart Icon"

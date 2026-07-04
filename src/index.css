@@ -146,13 +146,18 @@ button {
 }
 
 #modal,
-#modal button,
+#modal button:not(:is(#no-text-shadow, #no-text-shadow *)),
 #heart-button {
   text-shadow:
     1px 1px 0px var(--night),
     -1px 1px 0px var(--night),
     1px -1px 0px var(--night),
     -1px -1px 0px var(--night);
+}
+
+#no-text-shadow,
+#no-text-shadow * {
+  text-shadow: none !important;
 }
 
 h1 {

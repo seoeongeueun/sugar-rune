@@ -13,5 +13,6 @@ export interface ModalProps {
   description?: string;
   children?: ReactNode;
   footer: ReactNode;
+  onClose?: () => void;
   heartColor?: keyof typeof HEART_LIST;
 }
