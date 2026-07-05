@@ -53,6 +53,16 @@ export default function PostCard() {
     setValue("content", content);
   }, [content, setValue]);
 
+  //refresh error state after 5 seconds
+  useEffect(() => {
+    if (saveError) {
+      const timer = setTimeout(() => {
+        setSaveError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveError]);
+
   useEffect(() => {
     const overlay = overlayRef.current;
     const card = cardRef.current;
@@ -107,6 +117,11 @@ export default function PostCard() {
 
     const nextDate = getSubmittedDate(data, date);
     const nextContent = data.content.trim();
+
+    if (!nextContent || nextContent.length === 0) {
+      setSaveError("Content is empty.");
+      return;
+    }
 
     setIsSaving(true);
     setSaveError(null);
@@ -188,7 +203,7 @@ export default function PostCard() {
           </button>
         </div>
         {saveError && (
-          <p className="pointer-events-none absolute left-1/2 top-16 z-70 w-max max-w-80 -translate-x-1/2 rounded-sm bg-black px-3 py-2 text-sm text-white">
+          <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-max max-w-80 -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
             {saveError}
           </p>
         )}
