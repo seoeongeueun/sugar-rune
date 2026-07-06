@@ -11,6 +11,7 @@ import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
 import PostCard from "./components/PostCard";
 import { DeleteModal } from "@/components/modals";
+import Calendar from "./components/Calendar";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
@@ -120,6 +121,7 @@ export default function App() {
         onCancel={() => console.log("Cancel")}
         onConfirm={() => console.log("Confirm")}
       /> */}
+      <Calendar />
       {!isLoading && !user && <AuthModal />}
     </>
   );
