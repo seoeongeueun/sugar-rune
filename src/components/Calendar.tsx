@@ -1,5 +1,6 @@
+import { CalendarSearch } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
 
 const START_YEAR = 2026;
@@ -52,6 +53,7 @@ const buildCalendarDays = (year: number, month: number): CalendarDay[] => {
 export default function Calendar() {
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
   const minMonthIndex = 0;
@@ -64,6 +66,14 @@ export default function Calendar() {
   const [visibleMonthIndex, setVisibleMonthIndex] = useState(initialMonthIndex);
   const { year, month } = getYearAndMonth(visibleMonthIndex);
   const days = useMemo(() => buildCalendarDays(year, month), [year, month]);
+  const yearOptions = useMemo(
+    () =>
+      Array.from(
+        { length: Math.max(currentYear - START_YEAR + 1, 1) },
+        (_, index) => START_YEAR + index,
+      ),
+    [currentYear],
+  );
 
   const showPreviousMonth = useCallback(() => {
     setVisibleMonthIndex((value) => Math.max(value - 1, minMonthIndex));
@@ -82,6 +92,32 @@ export default function Calendar() {
       setSelectedDate(date);
     },
     [maxMonthIndex],
+  );
+
+  const showSelectedMonthYear = useCallback(
+    (nextYear: number, nextMonth: number) => {
+      const nextMonthIndex = getMonthIndex(nextYear, nextMonth);
+      setVisibleMonthIndex(
+        Math.min(Math.max(nextMonthIndex, minMonthIndex), maxMonthIndex),
+      );
+    },
+    [maxMonthIndex],
+  );
+
+  const handleMonthChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      showSelectedMonthYear(year, Number(event.target.value));
+      setIsMonthYearSelectorOpen(false);
+    },
+    [showSelectedMonthYear, year],
+  );
+
+  const handleYearChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      showSelectedMonthYear(Number(event.target.value), month);
+      setIsMonthYearSelectorOpen(false);
+    },
+    [month, showSelectedMonthYear],
   );
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -117,9 +153,53 @@ export default function Calendar() {
           >
             &lt;
           </button>
-          <h2 className="text-xl font-semibold text-shadow">
-            {MONTH_NAMES[month]} {year}
-          </h2>
+          <div className="relative flex flex-row items-center justify-center gap-4">
+            {isMonthYearSelectorOpen ? (
+              <div className="flex gap-2 rounded border border-white bg-white/30 p-2 ">
+                <select
+                  value={month}
+                  onChange={handleMonthChange}
+                  aria-label="Select month"
+                  className="rounded border border-white bg-white px-2 py-1 text-night"
+                >
+                  {Array.from({ length: 12 }, (_, monthIndex) => (
+                    <option key={monthIndex} value={monthIndex}>
+                      {monthIndex + 1}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={year}
+                  onChange={handleYearChange}
+                  aria-label="Select year"
+                  className="rounded border border-white bg-white px-2 py-1 text-night"
+                >
+                  {yearOptions.map((yearOption) => (
+                    <option key={yearOption} value={yearOption}>
+                      {yearOption}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="border border-white bg-white text-night px-1 rounded-sm"
+                  onClick={() => handleDateClick(new Date())}
+                >
+                  Today
+                </button>
+              </div>
+            ) : (
+              <span className="text-lg font-bold text-shadow">
+                {MONTH_NAMES[month]} {year}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
+            >
+              <CalendarSearch className="w-10 h-10 text-white bg-background px-1 border border-white" />
+            </button>
+          </div>
           <button
             type="button"
             onClick={showNextMonth}
