@@ -179,12 +179,12 @@ export default function PostCard() {
         ref={cardRef}
         className="pointer-events-auto group perspective-distant relative box-content p-16 rounded-xs w-postcard-width h-postcard-height "
       >
-        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none p-4 z-60">
+        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none py-4 px-2 z-60">
           <button
             type="button"
             onClick={handleButtonClick}
             disabled={isSaving}
-            className="bg-black rounded-full p-2 hover:bg-background transition-colors flex items-center justify-center"
+            className="bg-white/30 border border-white rounded outline-night hover:outline p-2 hover:bg-background transition-colors flex items-center justify-center"
           >
             {isSaving ? (
               <LoaderCircle size={16} color="white" className="animate-spin" />
@@ -197,7 +197,7 @@ export default function PostCard() {
           <button
             type="button"
             onClick={() => handleRemoveCard()}
-            className="bg-black rounded-full p-2 hover:bg-background transition-colors flex items-center justify-center"
+            className="bg-white/30 border border-white rounded outline-night hover:outline p-2 hover:bg-background transition-colors flex items-center justify-center"
           >
             <Trash2 size={16} color="white" />
           </button>

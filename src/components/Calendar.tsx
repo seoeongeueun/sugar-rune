@@ -199,13 +199,13 @@ export default function Calendar() {
               onClick={showPreviousMonth}
               disabled={!canShowPreviousMonth}
               aria-label="Show previous month"
-              className="rounded border border-white bg-white/30 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-30 outline outline-night text-night font-bold"
+              className="hover:bg-background transition-colors duration-100 rounded border border-white bg-white/30 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-30 outline outline-night text-night font-bold"
             >
               &lt;
             </button>
             <div className="relative flex flex-row items-center justify-center gap-4">
               {isMonthYearSelectorOpen ? (
-                <div className="flex gap-2 rounded border border-white bg-white/30 p-2 ">
+                <div className="text-sm flex gap-2 rounded border border-white bg-white/30 p-2 ">
                   <select
                     value={month}
                     onChange={handleMonthChange}
@@ -248,9 +248,9 @@ export default function Calendar() {
                 onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
               >
                 {isMonthYearSelectorOpen ? (
-                  <SearchX className="h-full w-auto p-3 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
+                  <SearchX className="hover:bg-background transition-colors duration-100 outline-night hover:outline h-full w-auto p-3 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
                 ) : (
-                  <Search className="h-full w-auto p-3 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
+                  <Search className="hover:bg-background transition-colors duration-100 outline-night hover:outline h-full w-auto p-3 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
                 )}
               </button>
             </div>
@@ -259,7 +259,7 @@ export default function Calendar() {
               onClick={showNextMonth}
               disabled={!canShowNextMonth}
               aria-label="Show next month"
-              className="rounded border border-white bg-white/30 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-30 outline outline-night text-night font-bold"
+              className="hover:bg-background transition-colors duration-100 rounded border border-white bg-white/30 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-30 outline outline-night text-night font-bold"
             >
               &gt;
             </button>
