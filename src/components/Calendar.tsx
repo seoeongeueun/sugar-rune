@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { twMerge } from "tailwind-merge";
 
 const START_YEAR = 2026;
 const MONTH_NAMES = [
@@ -50,6 +51,7 @@ const buildCalendarDays = (year: number, month: number): CalendarDay[] => {
 
 export default function Calendar() {
   const today = useMemo(() => new Date(), []);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth();
   const minMonthIndex = 0;
@@ -70,6 +72,17 @@ export default function Calendar() {
   const showNextMonth = useCallback(() => {
     setVisibleMonthIndex((value) => Math.min(value + 1, maxMonthIndex));
   }, [maxMonthIndex]);
+
+  const handleDateClick = useCallback(
+    (date: Date) => {
+      const dateMonthIndex = getMonthIndex(date.getFullYear(), date.getMonth());
+      setVisibleMonthIndex(
+        Math.min(Math.max(dateMonthIndex, minMonthIndex), maxMonthIndex),
+      );
+      setSelectedDate(date);
+    },
+    [maxMonthIndex],
+  );
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") {
@@ -132,9 +145,17 @@ export default function Calendar() {
             <button
               type="button"
               key={date.date.toISOString()}
-              className={`relative !items-start !justify-start border-b [:nth-last-child(-n+7)]:border-b-0 border-white text-sm aspect-square min-h-10 py-2 px-4 ${
-                date.isCurrentMonth ? "text-white" : "opacity-30"
-              } ${date.date.toDateString() === today.toDateString() ? "border !border-night/70 outline-2 outline-background" : ""}`}
+              onClick={() => handleDateClick(date.date)}
+              className={twMerge(
+                "relative !items-start !justify-start border-b border-white text-sm aspect-square min-h-10 py-2 px-4 [:nth-last-child(-n+7)]:border-b-0",
+                date.isCurrentMonth ? "text-white" : "opacity-30",
+                date.date.toDateString() === today.toDateString()
+                  ? "before:content-['今日'] before:absolute before:top-2 before:left-1/2 before:-translate-x-1/2 before:bg-background before:px-1 before:text-white before:font-medium border-background border-b-3"
+                  : "",
+                date.date.toDateString() === selectedDate?.toDateString()
+                  ? "border !border-night/70 outline-2 outline-background"
+                  : "",
+              )}
             >
               {date.day}
               <img
@@ -142,7 +163,6 @@ export default function Calendar() {
                 alt="Heart Icon"
                 className="place-center w-1/2 min-w-4 tablet:min-w-10"
               />
-              <span className="place-center text-shadow">10</span>
             </button>
           ))}
         </div>
