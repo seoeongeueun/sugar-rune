@@ -1,4 +1,4 @@
-import { CalendarSearch } from "lucide-react";
+import { Search, SearchX } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
@@ -197,7 +197,11 @@ export default function Calendar() {
               type="button"
               onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
             >
-              <CalendarSearch className="w-10 h-10 text-white bg-background px-1 border border-white" />
+              {isMonthYearSelectorOpen ? (
+                <SearchX className="h-full w-auto p-2 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
+              ) : (
+                <Search className="h-full w-auto p-2 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
+              )}
             </button>
           </div>
           <button
