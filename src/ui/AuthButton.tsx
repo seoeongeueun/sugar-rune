@@ -54,7 +54,7 @@ export function AuthButton() {
       {isOpen && (
         <Modal
           isSimple={true}
-          title={username}
+          title={username ?? "Account"}
           heartColor={"black"}
           onClose={() => setIsOpen(false)}
           footer={

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
 import { formatDateForDb, getSubmittedDate, HEART_LIST } from "@/lib";
-import { createNote } from "@/features";
+import { createNote, notesQueryKeys } from "@/features";
 import PostCardCut from "./PostCardCut";
 import { Trash2, SquarePen, Save, Crown, LoaderCircle } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
@@ -32,6 +33,7 @@ export default function PostCard() {
   const closeNote = useNote((state) => state.closeNote);
   const updateContent = useNote((state) => state.updateContent);
   const user = useAuth((state) => state.user);
+  const queryClient = useQueryClient();
 
   const heartColor =
     useNote((state) => state.note?.heart_content) || HEART_LIST[0].color;
@@ -137,6 +139,9 @@ export default function PostCard() {
       setDate(nextDate);
       setContent(nextContent);
       updateContent(nextContent, heartColor);
+      await queryClient.invalidateQueries({
+        queryKey: notesQueryKeys.byUserYear(user.id, nextDate.getFullYear()),
+      });
       setMode("view");
     } catch (error) {
       setSaveError(

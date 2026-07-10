@@ -1,11 +1,13 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import HeartModel from "./components/HeartModel";
 import GemModel from "./components/GemModel";
 import GestureDetector from "./components/GestureDetector";
 import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth, useNote } from "@/stores";
+import { clearNotesQueryCache, useUserNotes } from "@/features";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
@@ -19,7 +21,10 @@ export default function App() {
   const setIsLoading = useAuth((state) => state.setIsLoading);
   const setSession = useAuth((state) => state.setSession);
   const isOpen = useNote((state) => state.isOpen);
-  const openNote = useNote((state) => state.openNote);
+  const queryClient = useQueryClient();
+
+  useUserNotes(user?.id);
+
   // open the heart when gesture is detected, but do not close it even when gesture is no longer detected
   // so that it can be closed by the user manually
   const handleVictoryChange = useCallback((isVictory: boolean) => {
@@ -60,6 +65,9 @@ export default function App() {
       }
 
       setSession(nextSession);
+      if (!nextSession) {
+        clearNotesQueryCache(queryClient);
+      }
       setIsLoading(false);
     });
 
@@ -67,7 +75,7 @@ export default function App() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [setIsLoading, setSession]);
+  }, [queryClient, setIsLoading, setSession]);
 
   return (
     <>
