@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { HEART_LIST } from "@/lib";
+import type { HeartColor } from "./constants";
 
 //used in zustand store for note content management
 export type Note = {
@@ -14,5 +14,5 @@ export interface ModalProps {
   children?: ReactNode;
   footer: ReactNode;
   onClose?: () => void;
-  heartColor?: keyof typeof HEART_LIST;
+  heartColor?: HeartColor;
 }
