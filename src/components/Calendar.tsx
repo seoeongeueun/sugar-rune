@@ -3,6 +3,9 @@ import { gsap } from "gsap";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
+import { useUserNotes } from "@/features";
+import { formatDateForDb } from "@/lib";
+import { useAuth } from "@/stores";
 
 const START_YEAR = 2026;
 const MONTH_NAMES = [
@@ -54,6 +57,8 @@ const buildCalendarDays = (year: number, month: number): CalendarDay[] => {
 export default function Calendar() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLElement>(null);
+  const user = useAuth((state) => state.user);
+  const { data: notes = [] } = useUserNotes(user?.id);
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
@@ -69,6 +74,10 @@ export default function Calendar() {
   const [visibleMonthIndex, setVisibleMonthIndex] = useState(initialMonthIndex);
   const { year, month } = getYearAndMonth(visibleMonthIndex);
   const days = useMemo(() => buildCalendarDays(year, month), [year, month]);
+  const notesByDate = useMemo(
+    () => new Map(notes.map((note) => [note.date, note.heart_color])),
+    [notes],
+  );
   const yearOptions = useMemo(
     () =>
       Array.from(
@@ -275,7 +284,10 @@ export default function Calendar() {
               </div>
             ))}
 
-            {days.map((date) => (
+            {days.map((date) => {
+              const heartColor = notesByDate.get(formatDateForDb(date.date));
+
+              return (
               <button
                 type="button"
                 key={date.date.toISOString()}
@@ -292,13 +304,16 @@ export default function Calendar() {
                 )}
               >
                 {date.day}
-                <img
-                  src="/hearts/heart_white_icon.png"
-                  alt="Heart Icon"
-                  className="place-center w-1/3 min-w-4 tablet:min-w-10"
-                />
+                {heartColor && (
+                  <img
+                    src={`/hearts/heart_${heartColor}_icon.png`}
+                    alt="Heart Icon"
+                    className="place-center w-1/3 min-w-4 tablet:min-w-10"
+                  />
+                )}
               </button>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>
