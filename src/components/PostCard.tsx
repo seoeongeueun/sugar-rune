@@ -140,7 +140,7 @@ export default function PostCard() {
       setContent(nextContent);
       updateContent(nextContent, heartColor);
       await queryClient.invalidateQueries({
-        queryKey: notesQueryKeys.byUserId(user.id),
+        queryKey: notesQueryKeys.byUserYear(user.id, nextDate.getFullYear()),
       });
       setMode("view");
     } catch (error) {

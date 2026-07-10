@@ -8,6 +8,11 @@ export type CreateNoteInput = {
   heartColor: string;
 };
 
+export type NotesYearInput = {
+  userId: string;
+  year: number;
+};
+
 export type UserNote = {
   id: string;
   content: string;
@@ -19,17 +24,35 @@ export type UserNote = {
 export const notesQueryKeys = {
   all: ["notes"] as const,
   byUserId: (userId: string) => [...notesQueryKeys.all, userId] as const,
+  byUserYear: (userId: string, year: number) =>
+    [...notesQueryKeys.byUserId(userId), year] as const,
 };
 
-export async function fetchNotesByUserId(userId: string) {
+function formatDateForQuery(date: Date) {
+  const year = date.getFullYear().toString();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+export async function fetchNotesByUserYear({
+  userId,
+  year,
+}: NotesYearInput) {
   if (!isSupabaseConfigured) {
     throw new Error("Supabase is not configured.");
   }
+
+  const yearStart = formatDateForQuery(new Date(year, 0, 1));
+  const nextYearStart = formatDateForQuery(new Date(year + 1, 0, 1));
 
   const { data, error } = await supabase
     .from("notes")
     .select("id, content, date, user_id, heart_color")
     .eq("user_id", userId)
+    .gte("date", yearStart)
+    .lt("date", nextYearStart)
     .order("date", { ascending: false });
 
   if (error) {
@@ -39,15 +62,17 @@ export async function fetchNotesByUserId(userId: string) {
   return data satisfies UserNote[];
 }
 
-export function useUserNotes(userId: string | undefined) {
+export function useUserNotes(userId: string | undefined, year: number) {
   return useQuery({
-    queryKey: userId ? notesQueryKeys.byUserId(userId) : notesQueryKeys.all,
-    queryFn: () => {
+    queryKey: userId
+      ? notesQueryKeys.byUserYear(userId, year)
+      : notesQueryKeys.all,
+    queryFn: async () => {
       if (!userId) {
         throw new Error("User id is required to fetch notes.");
       }
 
-      return fetchNotesByUserId(userId);
+      return fetchNotesByUserYear({ userId, year });
     },
     enabled: Boolean(userId) && isSupabaseConfigured,
   });

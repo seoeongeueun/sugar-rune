@@ -58,7 +58,6 @@ export default function Calendar() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLElement>(null);
   const user = useAuth((state) => state.user);
-  const { data: notes = [] } = useUserNotes(user?.id);
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
@@ -73,6 +72,7 @@ export default function Calendar() {
 
   const [visibleMonthIndex, setVisibleMonthIndex] = useState(initialMonthIndex);
   const { year, month } = getYearAndMonth(visibleMonthIndex);
+  const { data: notes = [] } = useUserNotes(user?.id, year);
   const days = useMemo(() => buildCalendarDays(year, month), [year, month]);
   const notesByDate = useMemo(
     () => new Map(notes.map((note) => [note.date, note.heart_color])),

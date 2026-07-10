@@ -2,8 +2,8 @@ export { signInWithEmail, signUpWithEmail } from "./auth";
 export {
   clearNotesQueryCache,
   createNote,
-  fetchNotesByUserId,
+  fetchNotesByUserYear,
   notesQueryKeys,
   useUserNotes,
 } from "./notes";
-export type { CreateNoteInput, UserNote } from "./notes";
+export type { CreateNoteInput, NotesYearInput, UserNote } from "./notes";
