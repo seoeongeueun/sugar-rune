@@ -8,6 +8,13 @@ export type CreateNoteInput = {
   heartColor: string;
 };
 
+export type UpdateNoteInput = {
+  id: string;
+  content: string;
+  date: string;
+  heartColor: string;
+};
+
 export type NotesYearInput = {
   userId: string;
   year: number;
@@ -100,6 +107,34 @@ export async function createNote({
       user_id: userId,
       heart_color: heartColor,
     })
+    .select("id")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateNote({
+  id,
+  content,
+  date,
+  heartColor,
+}: UpdateNoteInput) {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("notes")
+    .update({
+      content,
+      date,
+      heart_color: heartColor,
+    })
+    .eq("id", id)
     .select("id")
     .single();
 

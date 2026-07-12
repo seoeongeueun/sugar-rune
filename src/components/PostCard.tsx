@@ -3,8 +3,13 @@ import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
-import { formatDateForDb, getSubmittedDate, HEART_LIST } from "@/lib";
-import { createNote, notesQueryKeys } from "@/features";
+import {
+  formatDateForDb,
+  getSubmittedDate,
+  HEART_LIST,
+  parseNoteDate,
+} from "@/lib";
+import { createNote, notesQueryKeys, updateNote } from "@/features";
 import PostCardCut from "./PostCardCut";
 import { Trash2, SquarePen, Save, Crown, LoaderCircle } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
@@ -19,24 +24,24 @@ interface FormData {
 }
 
 export default function PostCard() {
-  const [mode, setMode] = useState<POSTCARD_MODE>("view");
-  const [date, setDate] = useState<Date>(new Date());
+  const note = useNote((state) => state.note);
+  const [mode, setMode] = useState<POSTCARD_MODE>(
+    note?.content ? "view" : "edit",
+  );
+  const [date, setDate] = useState<Date>(() => parseNoteDate(note?.date));
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   // const [content, setContent] = useState<string>(
   //   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 𖤐 ",
   // );
-  const [content, setContent] = useState<string>(
-    useNote((state) => state.note?.content) || "",
-  );
+  const [content, setContent] = useState<string>(note?.content || "");
   const closeNote = useNote((state) => state.closeNote);
   const updateContent = useNote((state) => state.updateContent);
   const user = useAuth((state) => state.user);
   const queryClient = useQueryClient();
 
-  const heartColor =
-    useNote((state) => state.note?.heart_content) || HEART_LIST[0].color;
+  const heartColor = note?.heart_content || HEART_LIST[0].color;
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -54,6 +59,15 @@ export default function PostCard() {
   useEffect(() => {
     setValue("content", content);
   }, [content, setValue]);
+
+  useEffect(() => {
+    const nextContent = note?.content || "";
+
+    setDate(parseNoteDate(note?.date));
+    setContent(nextContent);
+    setValue("content", nextContent);
+    setMode(nextContent ? "view" : "edit");
+  }, [note?.content, note?.date, setValue]);
 
   //refresh error state after 5 seconds
   useEffect(() => {
@@ -129,19 +143,36 @@ export default function PostCard() {
     setSaveError(null);
 
     try {
-      await createNote({
-        content: nextContent,
-        date: formatDateForDb(nextDate),
-        userId: user.id,
-        heartColor,
-      });
+      const nextDateKey = formatDateForDb(nextDate);
+      const savedNote = note?.id
+        ? await updateNote({
+            id: note.id,
+            content: nextContent,
+            date: nextDateKey,
+            heartColor,
+          })
+        : await createNote({
+            content: nextContent,
+            date: nextDateKey,
+            userId: user.id,
+            heartColor,
+          });
 
       setDate(nextDate);
       setContent(nextContent);
-      updateContent(nextContent, heartColor);
+      updateContent(nextContent, heartColor, nextDateKey, savedNote.id);
       await queryClient.invalidateQueries({
         queryKey: notesQueryKeys.byUserYear(user.id, nextDate.getFullYear()),
       });
+      const previousYear = note?.date
+        ? parseNoteDate(note.date).getFullYear()
+        : nextDate.getFullYear();
+
+      if (previousYear !== nextDate.getFullYear()) {
+        await queryClient.invalidateQueries({
+          queryKey: notesQueryKeys.byUserYear(user.id, previousYear),
+        });
+      }
       setMode("view");
     } catch (error) {
       setSaveError(

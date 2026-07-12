@@ -3,7 +3,9 @@ import type { HeartColor } from "./constants";
 
 //used in zustand store for note content management
 export type Note = {
+  id?: string;
   content: string;
+  date?: string;
   heart_content: string;
 };
 

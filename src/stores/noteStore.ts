@@ -4,10 +4,15 @@ import type { Note } from "@/lib";
 interface NoteState {
   note: Note | null;
   isOpen: boolean;
-  openNote: () => void;
+  openNote: (note?: Note) => void;
   closeNote: () => void;
   updateHeartColor: (heartColor: string) => void;
-  updateContent: (content: string, heartContent: string) => void;
+  updateContent: (
+    content: string,
+    heartContent: string,
+    date?: string,
+    id?: string,
+  ) => void;
   clearContent: () => void;
   resetNote: () => void;
 }
@@ -15,7 +20,11 @@ interface NoteState {
 export const useNote = create<NoteState>((set) => ({
   note: null,
   isOpen: false,
-  openNote: () => set({ isOpen: true }),
+  openNote: (note) =>
+    set((state) => ({
+      note: note ?? state.note,
+      isOpen: true,
+    })),
   closeNote: () => set({ isOpen: false }),
   updateHeartColor: (heartColor) =>
     set((state) => ({
@@ -29,13 +38,16 @@ export const useNote = create<NoteState>((set) => ({
             heart_content: heartColor,
           },
     })),
-  updateContent: (content, heartContent) =>
-    set({
+  updateContent: (content, heartContent, date, id) =>
+    set((state) => ({
       note: {
+        ...state.note,
         content,
+        date: date ?? state.note?.date,
         heart_content: heartContent,
+        id: id ?? state.note?.id,
       },
-    }),
+    })),
   clearContent: () =>
     set((state) => ({
       note: state.note

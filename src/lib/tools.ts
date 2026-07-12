@@ -63,3 +63,14 @@ export function getSubmittedDate(
 
   return Number.isNaN(nextDate.getTime()) ? fallbackDate : nextDate;
 }
+
+// Parse a date string in the format "YYYY-MM-DD" and return a Date object
+export function parseNoteDate(date: string | undefined) {
+  if (!date) return new Date();
+
+  const [year, month, day] = date.split("-").map(Number);
+
+  if (!year || !month || !day) return new Date();
+
+  return new Date(year, month - 1, day);
+}

@@ -23,7 +23,7 @@ export default function App() {
   const isOpen = useNote((state) => state.isOpen);
   const queryClient = useQueryClient();
 
-  useUserNotes(user?.id);
+  useUserNotes(user?.id, new Date().getFullYear());
 
   // open the heart when gesture is detected, but do not close it even when gesture is no longer detected
   // so that it can be closed by the user manually

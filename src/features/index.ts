@@ -4,6 +4,12 @@ export {
   createNote,
   fetchNotesByUserYear,
   notesQueryKeys,
+  updateNote,
   useUserNotes,
 } from "./notes";
-export type { CreateNoteInput, NotesYearInput, UserNote } from "./notes";
+export type {
+  CreateNoteInput,
+  NotesYearInput,
+  UpdateNoteInput,
+  UserNote,
+} from "./notes";

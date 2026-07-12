@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
 import { useUserNotes } from "@/features";
-import { formatDateForDb } from "@/lib";
-import { useAuth } from "@/stores";
+import { formatDateForDb, HEART_LIST } from "@/lib";
+import { useAuth, useNote } from "@/stores";
 
 const START_YEAR = 2026;
 const MONTH_NAMES = [
@@ -58,6 +58,8 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const user = useAuth((state) => state.user);
+  const openNote = useNote((state) => state.openNote);
+  const isOpen = useNote((state) => state.isOpen);
   const [today, setToday] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
@@ -75,7 +77,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
   const { data: notes = [] } = useUserNotes(user?.id, year);
   const days = useMemo(() => buildCalendarDays(year, month), [year, month]);
   const notesByDate = useMemo(
-    () => new Map(notes.map((note) => [note.date, note.heart_color])),
+    () => new Map(notes.map((note) => [note.date, note])),
     [notes],
   );
   const yearOptions = useMemo(
@@ -97,13 +99,31 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
 
   const handleDateClick = useCallback(
     (date: Date) => {
+      const dateKey = formatDateForDb(date);
+      const note = notesByDate.get(dateKey);
       const dateMonthIndex = getMonthIndex(date.getFullYear(), date.getMonth());
+
       setVisibleMonthIndex(
         Math.min(Math.max(dateMonthIndex, minMonthIndex), maxMonthIndex),
       );
       setSelectedDate(date);
+
+      openNote(
+        note
+          ? {
+              id: note.id,
+              content: note.content,
+              date: note.date,
+              heart_content: note.heart_color,
+            }
+          : {
+              content: "",
+              date: dateKey,
+              heart_content: HEART_LIST[0].color,
+            },
+      );
     },
-    [maxMonthIndex],
+    [maxMonthIndex, notesByDate, openNote],
   );
 
   const showSelectedMonthYear = useCallback(
@@ -202,7 +222,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
   return (
     <div
       ref={overlayRef}
-      className="z-99 fixed w-full h-full inset-0 bg-black/30"
+      className={`${isOpen ? "!opacity-0" : "!opacity-100"} pointer-events-none duration-50 transition-opacity z-99 fixed w-full h-full inset-0 bg-black/30`}
     >
       <div
         ref={calendarRef}
@@ -310,7 +330,9 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
             ))}
 
             {days.map((date) => {
-              const heartColor = notesByDate.get(formatDateForDb(date.date));
+              const heartColor = notesByDate.get(
+                formatDateForDb(date.date),
+              )?.heart_color;
 
               return (
                 <button
