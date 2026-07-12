@@ -208,7 +208,7 @@ export default function Calendar() {
               onClick={showPreviousMonth}
               disabled={!canShowPreviousMonth}
               aria-label="Show previous month"
-              className="hover:bg-background transition-colors duration-100 rounded border border-white bg-white/30 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-30 outline outline-night text-night font-bold"
+              className="black-button px-3 disabled:cursor-not-allowed disabled:opacity-30 font-bold"
             >
               &lt;
             </button>
@@ -257,9 +257,15 @@ export default function Calendar() {
                 onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
               >
                 {isMonthYearSelectorOpen ? (
-                  <SearchX className="hover:bg-background transition-colors duration-100 outline-night hover:outline h-full w-auto p-3 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
+                  <SearchX
+                    size={16}
+                    className="white-button px-2 h-full w-auto"
+                  />
                 ) : (
-                  <Search className="hover:bg-background transition-colors duration-100 outline-night hover:outline h-full w-auto p-3 aspect-square rounded-sm text-white bg-white/30 px-1 border border-white" />
+                  <Search
+                    size={16}
+                    className="white-button px-2 h-full w-auto"
+                  />
                 )}
               </button>
             </div>
@@ -268,7 +274,7 @@ export default function Calendar() {
               onClick={showNextMonth}
               disabled={!canShowNextMonth}
               aria-label="Show next month"
-              className="hover:bg-background transition-colors duration-100 rounded border border-white bg-white/30 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-30 outline outline-night text-night font-bold"
+              className="black-button px-3 disabled:cursor-not-allowed disabled:opacity-30 font-bold"
             >
               &gt;
             </button>
@@ -288,30 +294,30 @@ export default function Calendar() {
               const heartColor = notesByDate.get(formatDateForDb(date.date));
 
               return (
-              <button
-                type="button"
-                key={date.date.toISOString()}
-                onClick={() => handleDateClick(date.date)}
-                className={twMerge(
-                  "relative hover:bg-background/30 !items-start !justify-start border-b border-white text-sm aspect-square min-h-10 py-2 px-4 [:nth-last-child(-n+7)]:border-b-0",
-                  date.isCurrentMonth ? "text-white" : "opacity-20",
-                  date.date.toDateString() === today.toDateString()
-                    ? "before:content-['今日'] before:absolute before:top-2 before:left-1/2 before:-translate-x-1/2 before:bg-background before:px-1 before:text-white before:font-medium border-background border-b-3"
-                    : "",
-                  date.date.toDateString() === selectedDate?.toDateString()
-                    ? "border !border-night/70 outline-2 outline-background bg-background/20"
-                    : "",
-                )}
-              >
-                {date.day}
-                {heartColor && (
-                  <img
-                    src={`/hearts/heart_${heartColor}_icon.png`}
-                    alt="Heart Icon"
-                    className="place-center w-1/3 min-w-4 tablet:min-w-10"
-                  />
-                )}
-              </button>
+                <button
+                  type="button"
+                  key={date.date.toISOString()}
+                  onClick={() => handleDateClick(date.date)}
+                  className={twMerge(
+                    "relative hover:bg-background/30 !items-start !justify-start border-b border-white text-sm aspect-square min-h-10 py-2 px-4 [:nth-last-child(-n+7)]:border-b-0",
+                    date.isCurrentMonth ? "text-white" : "opacity-20",
+                    date.date.toDateString() === today.toDateString()
+                      ? "before:content-['今日'] before:absolute before:top-2 before:left-1/2 before:-translate-x-1/2 before:bg-background before:px-1 before:text-white before:font-medium border-background border-b-3"
+                      : "",
+                    date.date.toDateString() === selectedDate?.toDateString()
+                      ? "border !border-night/70 outline-2 outline-background bg-background/20"
+                      : "",
+                  )}
+                >
+                  {date.day}
+                  {heartColor && (
+                    <img
+                      src={`/hearts/heart_${heartColor}_icon.png`}
+                      alt="Heart Icon"
+                      className="place-center w-1/3 min-w-4 tablet:min-w-10"
+                    />
+                  )}
+                </button>
               );
             })}
           </div>

@@ -212,6 +212,14 @@ h3 {
   }
 }
 
+.black-button {
+  @apply flex items-center justify-center rounded outline outline-night text-night hover:bg-background transition-colors duration-100 border border-white bg-white/30;
+}
+
+.white-button {
+  @apply flex items-center justify-center rounded text-white bg-white/30 border border-white hover:bg-background transition-colors duration-100 outline-night hover:outline aspect-square;
+}
+
 /*
 Source - https://stackoverflow.com/a/17386187
 Posted by Yotam Omer, modified by community. See post 'Timeline' for change history
