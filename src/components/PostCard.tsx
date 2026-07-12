@@ -64,6 +64,8 @@ export default function PostCard() {
     },
   });
 
+  console.log("PostCard render", { note, content, date, mode });
+
   //sync content state with react form
   useEffect(() => {
     setValue("content", content);
@@ -270,7 +272,9 @@ export default function PostCard() {
               <button
                 type="button"
                 aria-label="Close Postcard"
-                onClick={() => setIsCloseModalOpen(true)}
+                onClick={() =>
+                  content.length > 0 ? setIsCloseModalOpen(true) : closeNote()
+                }
                 className="white-button px-2"
               >
                 <X size={16} />
@@ -280,7 +284,9 @@ export default function PostCard() {
             <button
               type="button"
               aria-label="Close Postcard"
-              onClick={() => setIsCloseModalOpen(true)}
+              onClick={() =>
+                content.length > 0 ? setIsCloseModalOpen(true) : closeNote()
+              }
               className="white-button px-2"
             >
               <X size={16} />
