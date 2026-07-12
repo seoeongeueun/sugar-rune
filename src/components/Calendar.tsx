@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
 import { useUserNotes } from "@/features";
-import { formatDateForDb, HEART_LIST } from "@/lib";
+import { CALENDAR_START_YEAR, formatDateForDb, HEART_LIST } from "@/lib";
 import { useAuth, useNote } from "@/stores";
 
-const START_YEAR = 2026;
+const START_YEAR = CALENDAR_START_YEAR;
 const MONTH_NAMES = [
   "January",
   "February",

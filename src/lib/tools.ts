@@ -74,3 +74,12 @@ export function parseNoteDate(date: string | undefined) {
 
   return new Date(year, month - 1, day);
 }
+
+// Get the month, day, and year from a Date object for form values
+export function getDateFormValues(date: Date) {
+  return {
+    month: (date.getMonth() + 1).toString().padStart(2, "0"),
+    day: date.getDate().toString().padStart(2, "0"),
+    year: date.getFullYear().toString(),
+  };
+}

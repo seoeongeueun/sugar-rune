@@ -4,10 +4,11 @@ import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
 import {
-  formatDateForDb,
+  CALENDAR_START_YEAR,
   getSubmittedDate,
   HEART_LIST,
   parseNoteDate,
+  getDateFormValues,
 } from "@/lib";
 import { createNote, notesQueryKeys, updateNote } from "@/features";
 import PostCardCut from "./PostCardCut";
@@ -25,10 +26,12 @@ interface FormData {
 
 export default function PostCard() {
   const note = useNote((state) => state.note);
+  const currentYear = new Date().getFullYear();
+  const initialDate = parseNoteDate(note?.date);
   const [mode, setMode] = useState<POSTCARD_MODE>(
     note?.content ? "view" : "edit",
   );
-  const [date, setDate] = useState<Date>(() => parseNoteDate(note?.date));
+  const [date, setDate] = useState<Date>(initialDate);
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -48,9 +51,7 @@ export default function PostCard() {
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
-      month: "",
-      day: "",
-      year: "",
+      ...getDateFormValues(initialDate),
       content: content,
     },
   });
@@ -62,9 +63,14 @@ export default function PostCard() {
 
   useEffect(() => {
     const nextContent = note?.content || "";
+    const nextDate = parseNoteDate(note?.date);
+    const nextDateValues = getDateFormValues(nextDate);
 
-    setDate(parseNoteDate(note?.date));
+    setDate(nextDate);
     setContent(nextContent);
+    setValue("month", nextDateValues.month);
+    setValue("day", nextDateValues.day);
+    setValue("year", nextDateValues.year);
     setValue("content", nextContent);
     setMode(nextContent ? "view" : "edit");
   }, [note?.content, note?.date, setValue]);
@@ -133,6 +139,15 @@ export default function PostCard() {
 
     const nextDate = getSubmittedDate(data, date);
     const nextContent = data.content.trim();
+    const minDate = new Date(CALENDAR_START_YEAR, 0, 1);
+    const maxDate = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+
+    if (nextDate < minDate || nextDate > maxDate) {
+      setSaveError(
+        `Date must be between ${CALENDAR_START_YEAR} and ${currentYear}.`,
+      );
+      return;
+    }
 
     if (!nextContent || nextContent.length === 0) {
       setSaveError("Content is empty.");
@@ -143,7 +158,8 @@ export default function PostCard() {
     setSaveError(null);
 
     try {
-      const nextDateKey = formatDateForDb(nextDate);
+      const nextDateValues = getDateFormValues(nextDate);
+      const nextDateKey = `${nextDateValues.year}-${nextDateValues.month}-${nextDateValues.day}`;
       const savedNote = note?.id
         ? await updateNote({
             id: note.id,
@@ -159,6 +175,9 @@ export default function PostCard() {
           });
 
       setDate(nextDate);
+      setValue("month", nextDateValues.month);
+      setValue("day", nextDateValues.day);
+      setValue("year", nextDateValues.year);
       setContent(nextContent);
       updateContent(nextContent, heartColor, nextDateKey, savedNote.id);
       await queryClient.invalidateQueries({
@@ -275,9 +294,7 @@ export default function PostCard() {
                       })}
                       type="number"
                       className="w-16 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
-                      placeholder={new Date().toLocaleString("default", {
-                        month: "2-digit",
-                      })}
+                      placeholder={getDateFormValues(date).month}
                       min="1"
                       max="12"
                       maxLength={2}
@@ -291,9 +308,7 @@ export default function PostCard() {
                       })}
                       type="number"
                       className="w-16 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
-                      placeholder={new Date().toLocaleString("default", {
-                        day: "2-digit",
-                      })}
+                      placeholder={getDateFormValues(date).day}
                       min="1"
                       max="31"
                       maxLength={2}
@@ -301,17 +316,15 @@ export default function PostCard() {
                     <span>.</span>
                     <input
                       {...register("year", {
-                        min: 2000,
-                        max: 9999,
+                        min: CALENDAR_START_YEAR,
+                        max: currentYear,
                         valueAsNumber: false,
                       })}
                       type="number"
                       className="w-24 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
-                      placeholder={new Date().toLocaleString("default", {
-                        year: "numeric",
-                      })}
-                      min="2000"
-                      max="9999"
+                      placeholder={getDateFormValues(date).year}
+                      min={CALENDAR_START_YEAR}
+                      max={currentYear}
                       maxLength={4}
                     />
                   </div>
