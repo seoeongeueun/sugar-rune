@@ -24,7 +24,9 @@ export default function FooterButtons() {
       >
         <span className="z-10">List</span>
       </button>
-      {isOpenCalendar && <Calendar />}
+      {isOpenCalendar && (
+        <Calendar handleClose={() => setIsOpenCalendar(false)} />
+      )}
     </div>
   );
 }

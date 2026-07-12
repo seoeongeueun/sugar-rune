@@ -1,4 +1,4 @@
-import { Search, SearchX } from "lucide-react";
+import { Search, SearchX, X } from "lucide-react";
 import { gsap } from "gsap";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
@@ -54,9 +54,9 @@ const buildCalendarDays = (year: number, month: number): CalendarDay[] => {
   });
 };
 
-export default function Calendar() {
+export default function Calendar({ handleClose }: { handleClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const calendarRef = useRef<HTMLElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const user = useAuth((state) => state.user);
   const today = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -119,7 +119,6 @@ export default function Calendar() {
   const handleMonthChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       showSelectedMonthYear(year, Number(event.target.value));
-      setIsMonthYearSelectorOpen(false);
     },
     [showSelectedMonthYear, year],
   );
@@ -127,7 +126,6 @@ export default function Calendar() {
   const handleYearChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       showSelectedMonthYear(Number(event.target.value), month);
-      setIsMonthYearSelectorOpen(false);
     },
     [month, showSelectedMonthYear],
   );
@@ -194,9 +192,70 @@ export default function Calendar() {
       ref={overlayRef}
       className="z-99 fixed w-full h-full inset-0 bg-black/30"
     >
-      <div className="pointer-events-auto w-full max-w-1/3 place-center">
+      <div
+        ref={calendarRef}
+        className="pointer-events-auto w-full max-w-1/3 place-center flex flex-col gap-4 items-end"
+      >
+        <div className="flex flex-row justify-between w-full gap-2">
+          <div className="gap-4 flex flex-row shrink-0 items-center">
+            <button
+              type="button"
+              aria-label="Search Date"
+              className="white-button px-2"
+              onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
+            >
+              {isMonthYearSelectorOpen ? (
+                <SearchX size={16} />
+              ) : (
+                <Search size={16} />
+              )}
+            </button>
+            {isMonthYearSelectorOpen && (
+              <div className="text-sm flex gap-2 rounded border border-white bg-white/30 h-full px-1 py-1">
+                <select
+                  value={month}
+                  onChange={handleMonthChange}
+                  aria-label="Select month"
+                  className="rounded border border-white bg-white/90 px-2 py-1 text-night text-center"
+                >
+                  {Array.from({ length: 12 }, (_, monthIndex) => (
+                    <option key={monthIndex} value={monthIndex}>
+                      {monthIndex + 1}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={year}
+                  onChange={handleYearChange}
+                  aria-label="Select year"
+                  className="rounded border border-white bg-white px-2 py-1 text-night"
+                >
+                  {yearOptions.map((yearOption) => (
+                    <option key={yearOption} value={yearOption}>
+                      {yearOption}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="border border-white bg-white text-night px-1 rounded-sm"
+                  onClick={() => handleDateClick(new Date())}
+                >
+                  Today
+                </button>
+              </div>
+            )}
+          </div>
+          <button
+            aria-label="Close Calendar"
+            type="button"
+            onClick={handleClose}
+            className="white-button px-2"
+          >
+            <X size={16} />
+          </button>
+        </div>
         <section
-          ref={calendarRef}
           tabIndex={0}
           onKeyDown={handleKeyDown}
           aria-label="Calendar"
@@ -213,61 +272,9 @@ export default function Calendar() {
               &lt;
             </button>
             <div className="relative flex flex-row items-center justify-center gap-4">
-              {isMonthYearSelectorOpen ? (
-                <div className="text-sm flex gap-2 rounded border border-white bg-white/30 p-2 ">
-                  <select
-                    value={month}
-                    onChange={handleMonthChange}
-                    aria-label="Select month"
-                    className="rounded border border-white bg-white px-2 py-1 text-night"
-                  >
-                    {Array.from({ length: 12 }, (_, monthIndex) => (
-                      <option key={monthIndex} value={monthIndex}>
-                        {monthIndex + 1}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={year}
-                    onChange={handleYearChange}
-                    aria-label="Select year"
-                    className="rounded border border-white bg-white px-2 py-1 text-night"
-                  >
-                    {yearOptions.map((yearOption) => (
-                      <option key={yearOption} value={yearOption}>
-                        {yearOption}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="border border-white bg-white text-night px-1 rounded-sm"
-                    onClick={() => handleDateClick(new Date())}
-                  >
-                    Today
-                  </button>
-                </div>
-              ) : (
-                <span className="text-lg font-bold text-shadow">
-                  {MONTH_NAMES[month]} {year}
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
-              >
-                {isMonthYearSelectorOpen ? (
-                  <SearchX
-                    size={16}
-                    className="white-button px-2 h-full w-auto"
-                  />
-                ) : (
-                  <Search
-                    size={16}
-                    className="white-button px-2 h-full w-auto"
-                  />
-                )}
-              </button>
+              <span className="text-lg font-bold text-shadow">
+                {MONTH_NAMES[month]} {year}
+              </span>
             </div>
             <button
               type="button"
