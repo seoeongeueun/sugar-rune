@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,10 +30,18 @@ export default function PostCard() {
   const note = useNote((state) => state.note);
   const currentYear = new Date().getFullYear();
   const initialDate = parseNoteDate(note?.date);
+  const initialDateValues = getDateFormValues(initialDate);
+  const initialDateKey = `${initialDateValues.year}-${initialDateValues.month}-${initialDateValues.day}`;
   const [mode, setMode] = useState<POSTCARD_MODE>(
     note?.content ? "view" : "edit",
   );
   const [date, setDate] = useState<Date>(initialDate);
+  const [dateValues, setDateValues] = useState(initialDateValues);
+  const [savedSnapshot, setSavedSnapshot] = useState({
+    content: note?.content || "",
+    date: initialDateKey,
+    heartColor: note?.heart_content || HEART_LIST[0].color,
+  });
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
@@ -51,6 +59,14 @@ export default function PostCard() {
 
   const heartColor = note?.heart_content || HEART_LIST[0].color;
   const canDeleteNote = Boolean(note?.id);
+  const currentDateKey = `${dateValues.year}-${dateValues.month}-${dateValues.day}`;
+  const hasUnsavedChanges = useMemo(
+    () =>
+      content !== savedSnapshot.content ||
+      currentDateKey !== savedSnapshot.date ||
+      heartColor !== savedSnapshot.heartColor,
+    [content, currentDateKey, heartColor, savedSnapshot],
+  );
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -59,12 +75,25 @@ export default function PostCard() {
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
-      ...getDateFormValues(initialDate),
+      ...initialDateValues,
       content: content,
     },
   });
-
-  console.log("PostCard render", { note, content, date, mode });
+  const monthField = register("month", {
+    min: 1,
+    max: 12,
+    valueAsNumber: false,
+  });
+  const dayField = register("day", {
+    min: 1,
+    max: 31,
+    valueAsNumber: false,
+  });
+  const yearField = register("year", {
+    min: CALENDAR_START_YEAR,
+    max: currentYear,
+    valueAsNumber: false,
+  });
 
   //sync content state with react form
   useEffect(() => {
@@ -77,13 +106,19 @@ export default function PostCard() {
     const nextDateValues = getDateFormValues(nextDate);
 
     setDate(nextDate);
+    setDateValues(nextDateValues);
     setContent(nextContent);
+    setSavedSnapshot({
+      content: nextContent,
+      date: `${nextDateValues.year}-${nextDateValues.month}-${nextDateValues.day}`,
+      heartColor,
+    });
     setValue("month", nextDateValues.month);
     setValue("day", nextDateValues.day);
     setValue("year", nextDateValues.year);
     setValue("content", nextContent);
     setMode(nextContent ? "view" : "edit");
-  }, [note?.content, note?.date, setValue]);
+  }, [heartColor, note?.content, note?.date, setValue]);
 
   //refresh error state after 5 seconds
   useEffect(() => {
@@ -189,6 +224,12 @@ export default function PostCard() {
       setValue("day", nextDateValues.day);
       setValue("year", nextDateValues.year);
       setContent(nextContent);
+      setDateValues(nextDateValues);
+      setSavedSnapshot({
+        content: nextContent,
+        date: nextDateKey,
+        heartColor,
+      });
       updateContent(nextContent, heartColor, nextDateKey, savedNote.id);
       await queryClient.invalidateQueries({
         queryKey: notesQueryKeys.byUserYear(user.id, nextDate.getFullYear()),
@@ -236,6 +277,15 @@ export default function PostCard() {
     closeNote();
   };
 
+  const handleCloseClick = () => {
+    if (hasUnsavedChanges) {
+      setIsCloseModalOpen(true);
+      return;
+    }
+
+    closeNote();
+  };
+
   return (
     <div
       ref={overlayRef}
@@ -272,9 +322,7 @@ export default function PostCard() {
               <button
                 type="button"
                 aria-label="Close Postcard"
-                onClick={() =>
-                  content.length > 0 ? setIsCloseModalOpen(true) : closeNote()
-                }
+                onClick={handleCloseClick}
                 className="white-button px-2"
               >
                 <X size={16} />
@@ -284,9 +332,7 @@ export default function PostCard() {
             <button
               type="button"
               aria-label="Close Postcard"
-              onClick={() =>
-                content.length > 0 ? setIsCloseModalOpen(true) : closeNote()
-              }
+              onClick={handleCloseClick}
               className="white-button px-2"
             >
               <X size={16} />
@@ -327,45 +373,54 @@ export default function PostCard() {
                     <Crown fill="var(--color-night)" className="w-4 h-4" />
                     <span>Date</span>
                     <input
-                      {...register("month", {
-                        min: 1,
-                        max: 12,
-                        valueAsNumber: false,
-                      })}
+                      {...monthField}
                       type="number"
                       className="w-16 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
                       placeholder={getDateFormValues(date).month}
                       min="1"
                       max="12"
                       maxLength={2}
+                      onChange={(event) => {
+                        void monthField.onChange(event);
+                        setDateValues((value) => ({
+                          ...value,
+                          month: event.target.value.padStart(2, "0"),
+                        }));
+                      }}
                     />
                     <span>.</span>
                     <input
-                      {...register("day", {
-                        min: 1,
-                        max: 31,
-                        valueAsNumber: false,
-                      })}
+                      {...dayField}
                       type="number"
                       className="w-16 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
                       placeholder={getDateFormValues(date).day}
                       min="1"
                       max="31"
                       maxLength={2}
+                      onChange={(event) => {
+                        void dayField.onChange(event);
+                        setDateValues((value) => ({
+                          ...value,
+                          day: event.target.value.padStart(2, "0"),
+                        }));
+                      }}
                     />
                     <span>.</span>
                     <input
-                      {...register("year", {
-                        min: CALENDAR_START_YEAR,
-                        max: currentYear,
-                        valueAsNumber: false,
-                      })}
+                      {...yearField}
                       type="number"
                       className="w-24 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
                       placeholder={getDateFormValues(date).year}
                       min={CALENDAR_START_YEAR}
                       max={currentYear}
                       maxLength={4}
+                      onChange={(event) => {
+                        void yearField.onChange(event);
+                        setDateValues((value) => ({
+                          ...value,
+                          year: event.target.value,
+                        }));
+                      }}
                     />
                   </div>
                   <div className=" text-sm">
