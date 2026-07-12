@@ -12,8 +12,10 @@ import {
 } from "@/lib";
 import { createNote, notesQueryKeys, updateNote } from "@/features";
 import PostCardCut from "./PostCardCut";
-import { Trash2, SquarePen, Save, Crown, LoaderCircle } from "lucide-react";
+import { Trash2, SquarePen, Save, Crown, LoaderCircle, X } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
+import { DeleteModal } from "@/components/modals";
+import { ModalSimple } from "@/ui";
 
 type POSTCARD_MODE = "view" | "edit";
 
@@ -33,6 +35,8 @@ export default function PostCard() {
   );
   const [date, setDate] = useState<Date>(initialDate);
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   // const [content, setContent] = useState<string>(
@@ -45,6 +49,7 @@ export default function PostCard() {
   const queryClient = useQueryClient();
 
   const heartColor = note?.heart_content || HEART_LIST[0].color;
+  const canDeleteNote = Boolean(note?.id);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -218,19 +223,19 @@ export default function PostCard() {
   };
 
   const handleRemoveCard = () => {
+    setIsDeleteModalOpen(false);
     setDeleteTrigger((prev) => prev + 1);
+  };
+
+  const handleConfirmClose = () => {
+    setIsCloseModalOpen(false);
+    closeNote();
   };
 
   return (
     <div
       ref={overlayRef}
       className="text-xl fixed inset-0 w-full h-full z-99 flex items-center justify-center bg-text/30"
-      onClick={(e) => {
-        if (e.target === overlayRef.current) {
-          e.stopPropagation();
-          closeNote();
-        }
-      }}
     >
       <article
         ref={cardRef}
@@ -251,13 +256,34 @@ export default function PostCard() {
               <Save size={16} color="white" />
             )}
           </button>
-          <button
-            type="button"
-            onClick={() => handleRemoveCard()}
-            className="white-button px-2"
-          >
-            <Trash2 size={16} color="white" />
-          </button>
+          {canDeleteNote ? (
+            <div className="flex flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="white-button px-2"
+              >
+                <Trash2 size={16} color="white" />
+              </button>
+              <button
+                type="button"
+                aria-label="Close Postcard"
+                onClick={() => setIsCloseModalOpen(true)}
+                className="white-button px-2"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label="Close Postcard"
+              onClick={() => setIsCloseModalOpen(true)}
+              className="white-button px-2"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
         {saveError && (
           <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-max max-w-80 -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
@@ -268,7 +294,8 @@ export default function PostCard() {
           id="postcard-container"
           className={twMerge(
             "w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
-            mode === "edit" && "rotate-y-0 rotate-z-0",
+            (mode === "edit" || isDeleteModalOpen || isCloseModalOpen) &&
+              "rotate-y-0 rotate-z-0",
           )}
         >
           <div className="back absolute inset-0 w-full h-full backface-hidden rotate-y-180 flex items-center justify-center bg-night border-2 border-amber-50 outline-night outline-6">
@@ -382,6 +409,37 @@ export default function PostCard() {
           </div>
         </div>
       </article>
+      {isDeleteModalOpen && canDeleteNote && (
+        <DeleteModal
+          onCancel={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleRemoveCard}
+        />
+      )}
+      {isCloseModalOpen && (
+        <ModalSimple
+          title="Close Card?"
+          description="Unsaved changes will be gone."
+          onClose={() => setIsCloseModalOpen(false)}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setIsCloseModalOpen(false)}
+                className="bg-[url('/hearts/heart_white_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
+              >
+                <span className="z-10">No</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmClose}
+                className="bg-[url('/hearts/heart_purple_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
+              >
+                <span className="z-10">Yes</span>
+              </button>
+            </>
+          }
+        />
+      )}
       <PostCardCut originalRef={cardRef} deleteTrigger={deleteTrigger} />
     </div>
   );
