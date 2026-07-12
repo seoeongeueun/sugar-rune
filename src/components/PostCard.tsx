@@ -49,6 +49,8 @@ export default function PostCard() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const MAX_CONTENT_LENGTH = 300; // Maximum number of characters allowed in the content
+
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
       ...getDateFormValues(initialDate),
@@ -282,7 +284,7 @@ export default function PostCard() {
                 id="postcard-content"
                 className="flex flex-col w-[80%] h-[65%] place-center justify-between"
               >
-                <div className="flex flex-row items-end w-fit px-4 text-lg mb-4">
+                <div className="flex flex-row items-center justify-between w-full px-2 text-md">
                   <div className="flex flex-row items-center w-fit mb-2 gap-2">
                     <Crown fill="var(--color-night)" className="w-4 h-4" />
                     <span>Date</span>
@@ -328,12 +330,21 @@ export default function PostCard() {
                       maxLength={4}
                     />
                   </div>
+                  <div className=" text-sm">
+                    <span
+                      className={`${content.length >= MAX_CONTENT_LENGTH ? "text-background" : ""}`}
+                    >
+                      {content.length}
+                    </span>{" "}
+                    / {MAX_CONTENT_LENGTH}
+                  </div>
                 </div>
                 <textarea
                   {...register("content")}
-                  className="p-4 w-full h-full bg-transparent resize-none outline-background"
+                  className="tracking-tighter px-4 w-full h-full text-lg bg-transparent resize-none outline-background"
                   placeholder="Write your story here..."
                   value={content}
+                  maxLength={MAX_CONTENT_LENGTH}
                   onChange={(e) => {
                     setContent(e.target.value);
                     setValue("content", e.target.value);
@@ -341,7 +352,7 @@ export default function PostCard() {
                 />
               </form>
             ) : (
-              <section className="p-4 place-center text-lg flex flex-col w-[80%] h-[65%] place-center justify-between">
+              <section className="p-2 place-center text-md flex flex-col w-[80%] h-[65%] place-center justify-between">
                 <div className="flex flex-row items-center w-fit mb-2 gap-2">
                   <Crown fill="var(--color-night)" className="w-4 h-4" />
                   <span>Date</span>
@@ -349,7 +360,7 @@ export default function PostCard() {
                     {date.toLocaleDateString().replace(/\//g, ". ")}
                   </span>
                 </div>
-                <p className="w-full h-full overflow-y-auto  decoration-gray-400">
+                <p className="tracking-tighter w-full h-full overflow-y-auto  decoration-gray-400 text-lg">
                   {content}
                 </p>
               </section>
