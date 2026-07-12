@@ -7,6 +7,7 @@ interface AuthState {
   session: Session | null;
   user: User | null;
   username: string | null;
+  totalNotes: number;
   setSession: (session: Session | null) => void;
   setIsLoading: (isLoading: boolean) => void;
   signOut: () => Promise<void>;
@@ -29,12 +30,35 @@ export const useAuth = create<AuthState>((set) => ({
   session: null,
   user: null,
   username: null,
-  setSession: (session) =>
+  totalNotes: 0,
+  setSession: (session) => {
+    const user = session?.user ?? null;
+
     set({
       session,
-      user: session?.user ?? null,
-      username: getUsername(session?.user ?? null),
-    }),
+      user,
+      username: getUsername(user),
+      totalNotes: 0,
+    });
+
+    if (!isSupabaseConfigured || !user) {
+      return;
+    }
+
+    void supabase
+      .from("users")
+      .select("total_notes")
+      .eq("id", user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error loading total notes:", error);
+          return;
+        }
+
+        set({ totalNotes: data?.total_notes ?? 0 });
+      });
+  },
   setIsLoading: (isLoading) => set({ isLoading }),
   signOut: async () => {
     if (!isSupabaseConfigured) {
