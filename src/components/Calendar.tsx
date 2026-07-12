@@ -58,7 +58,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const user = useAuth((state) => state.user);
-  const today = useMemo(() => new Date(), []);
+  const [today, setToday] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
   const currentYear = today.getFullYear();
@@ -144,6 +144,18 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
 
   const canShowPreviousMonth = visibleMonthIndex > minMonthIndex;
   const canShowNextMonth = visibleMonthIndex < maxMonthIndex;
+
+  useEffect(() => {
+    const refreshToday = () => {
+      setToday(new Date());
+    };
+
+    window.addEventListener("focus", refreshToday);
+
+    return () => {
+      window.removeEventListener("focus", refreshToday);
+    };
+  }, []);
 
   useEffect(() => {
     const overlay = overlayRef.current;
