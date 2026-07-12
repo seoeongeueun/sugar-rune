@@ -10,6 +10,11 @@
   src: url("/fonts/umeboshi.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "kyobolyb";
+  src: url("/fonts/KyoboHandwriting2025lyb.ttf") format("truetype");
+}
+
 @theme {
   --color-background: var(--background);
   --color-secondary: var(--secondary);
@@ -36,11 +41,11 @@
   --breakpoint-tablet: 640px;
   --breakpoint-desktop: 1023px;
 
-  --font-alegro: "umeboshi", serif;
+  --font-alegro: "umeboshi", "kyobolyb", serif;
 }
 
 :root {
-  font-family: "umeboshi", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "umeboshi", "kyobolyb", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
