@@ -4,8 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
 import { useUserNotes } from "@/features";
-import { CALENDAR_START_YEAR, formatDateForDb, HEART_LIST } from "@/lib";
-import { useAuth, useNote } from "@/stores";
+import {
+  CALENDAR_START_YEAR,
+  formatDateForDb,
+  HEART_LIST,
+  parseNoteDate,
+} from "@/lib";
+import { useAuth, useCalendar, useNote } from "@/stores";
 
 const START_YEAR = CALENDAR_START_YEAR;
 const MONTH_NAMES = [
@@ -54,13 +59,15 @@ const buildCalendarDays = (year: number, month: number): CalendarDay[] => {
   });
 };
 
-export default function Calendar({ handleClose }: { handleClose: () => void }) {
+export default function Calendar() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const user = useAuth((state) => state.user);
   const openNote = useNote((state) => state.openNote);
   const isOpen = useNote((state) => state.isOpen);
   const noteDate = useNote((state) => state.note?.date);
+  const calendarTargetDate = useCalendar((state) => state.targetDate);
+  const closeCalendar = useCalendar((state) => state.closeCalendar);
   const [today, setToday] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
@@ -98,16 +105,24 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
     setVisibleMonthIndex((value) => Math.min(value + 1, maxMonthIndex));
   }, [maxMonthIndex]);
 
+  const showDate = useCallback(
+    (date: Date) => {
+      const nextMonthIndex = getMonthIndex(date.getFullYear(), date.getMonth());
+
+      setVisibleMonthIndex(
+        Math.min(Math.max(nextMonthIndex, minMonthIndex), maxMonthIndex),
+      );
+      setSelectedDate(date);
+    },
+    [maxMonthIndex],
+  );
+
   const handleDateClick = useCallback(
     (date: Date) => {
       const dateKey = formatDateForDb(date);
       const note = notesByDate.get(dateKey);
-      const dateMonthIndex = getMonthIndex(date.getFullYear(), date.getMonth());
 
-      setVisibleMonthIndex(
-        Math.min(Math.max(dateMonthIndex, minMonthIndex), maxMonthIndex),
-      );
-      setSelectedDate(date);
+      showDate(date);
 
       openNote(
         note
@@ -124,7 +139,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
             },
       );
     },
-    [maxMonthIndex, notesByDate, openNote],
+    [notesByDate, openNote, showDate],
   );
 
   const showSelectedMonthYear = useCallback(
@@ -139,17 +154,10 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
 
   const showToday = useCallback(() => {
     const nextToday = new Date();
-    const nextMonthIndex = getMonthIndex(
-      nextToday.getFullYear(),
-      nextToday.getMonth(),
-    );
 
     setToday(nextToday);
-    setVisibleMonthIndex(
-      Math.min(Math.max(nextMonthIndex, minMonthIndex), maxMonthIndex),
-    );
-    setSelectedDate(nextToday);
-  }, [maxMonthIndex]);
+    showDate(nextToday);
+  }, [showDate]);
 
   const handleMonthChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -181,23 +189,16 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
   const canShowNextMonth = visibleMonthIndex < maxMonthIndex;
 
   useEffect(() => {
+    if (!calendarTargetDate) return;
+
+    showDate(parseNoteDate(calendarTargetDate));
+  }, [calendarTargetDate, showDate]);
+
+  useEffect(() => {
     if (!noteDate) return;
 
-    const [nextYear, nextMonth, nextDay] = noteDate.split("-").map(Number);
-
-    if (!nextYear || !nextMonth || !nextDay) return;
-
-    const nextDate = new Date(nextYear, nextMonth - 1, nextDay);
-    const nextMonthIndex = getMonthIndex(
-      nextDate.getFullYear(),
-      nextDate.getMonth(),
-    );
-
-    setVisibleMonthIndex(
-      Math.min(Math.max(nextMonthIndex, minMonthIndex), maxMonthIndex),
-    );
-    setSelectedDate(nextDate);
-  }, [maxMonthIndex, noteDate]);
+    showDate(parseNoteDate(noteDate));
+  }, [noteDate, showDate]);
 
   useEffect(() => {
     const refreshToday = () => {
@@ -315,7 +316,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
           <button
             aria-label="Close Calendar"
             type="button"
-            onClick={handleClose}
+            onClick={closeCalendar}
             className="white-button px-2"
           >
             <X size={16} />

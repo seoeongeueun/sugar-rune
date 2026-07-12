@@ -6,13 +6,14 @@ import HeartModel from "./components/HeartModel";
 import GemModel from "./components/GemModel";
 import GestureDetector from "./components/GestureDetector";
 import { supabase, isSupabaseConfigured } from "@/lib";
-import { useAuth, useNote } from "@/stores";
+import { useAuth, useCalendar, useNote } from "@/stores";
 import { clearNotesQueryCache, useUserNotes } from "@/features";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
 import PostCard from "./components/PostCard";
 import FooterButtons from "./components/FooterButtons";
+import Calendar from "./components/Calendar";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
@@ -21,6 +22,7 @@ export default function App() {
   const setIsLoading = useAuth((state) => state.setIsLoading);
   const setSession = useAuth((state) => state.setSession);
   const isOpen = useNote((state) => state.isOpen);
+  const isCalendarOpen = useCalendar((state) => state.isOpen);
   const queryClient = useQueryClient();
 
   useUserNotes(user?.id, new Date().getFullYear());
@@ -103,6 +105,7 @@ export default function App() {
       <GestureDetector onVictoryChange={handleVictoryChange} />
       {heartOpen && <FooterButtons />}
 
+      {isCalendarOpen && <Calendar />}
       {isOpen && <PostCard />}
       {/* <DeleteModal
         onCancel={() => console.log("Cancel")}

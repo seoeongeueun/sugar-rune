@@ -33,7 +33,7 @@ export function HeartButton({
       aria-label={ariaLabel}
       className={twMerge(
         `whitespace-nowrap pointer-events-auto text-white shrink-0 bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-lg disabled:opacity-70 disabled:hover:brightness-100`,
-        size === "small" ? "w-12 h-12 tablet:w-16 tablet:h-16 text-md" : "",
+        size === "small" ? "w-10 h-10 tablet:w-12 tablet:h-12 text-md" : "",
         className,
       ).trim()}
       style={{

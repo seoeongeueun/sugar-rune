@@ -1,11 +1,12 @@
 import { HEART_LIST } from "@/lib";
 import { HeartButton } from "@/ui";
-import { useAuth, useNote } from "@/stores";
+import { useAuth, useCalendar, useNote } from "@/stores";
 import { useUserAllNotes } from "@/features";
 import { useMemo } from "react";
 
 export default function HeartsList() {
   const updateHeartColor = useNote((state) => state.updateHeartColor);
+  const openCalendar = useCalendar((state) => state.openCalendar);
   const user = useAuth((state) => state.user);
   const { data: notes = [] } = useUserAllNotes(user?.id);
   const heartCounts = useMemo(
@@ -13,6 +14,19 @@ export default function HeartsList() {
       notes.reduce<Record<string, number>>((counts, note) => {
         counts[note.heart_color] = (counts[note.heart_color] ?? 0) + 1;
         return counts;
+      }, {}),
+    [notes],
+  );
+  const latestNoteDateByHeartColor = useMemo(
+    () =>
+      notes.reduce<Record<string, string>>((latestDates, note) => {
+        const currentLatestDate = latestDates[note.heart_color];
+
+        if (!currentLatestDate || note.date > currentLatestDate) {
+          latestDates[note.heart_color] = note.date;
+        }
+
+        return latestDates;
       }, {}),
     [notes],
   );
@@ -31,7 +45,15 @@ export default function HeartsList() {
             key={heart.color}
             heartColor={heart.color}
             size="small"
-            onClick={() => updateHeartColor(heart.color)}
+            onClick={() => {
+              updateHeartColor(heart.color);
+
+              const latestDate = latestNoteDateByHeartColor[heart.color];
+
+              if (latestDate) {
+                openCalendar(latestDate);
+              }
+            }}
             label={heartCounts[heart.color] ?? 0}
           />
         </div>
