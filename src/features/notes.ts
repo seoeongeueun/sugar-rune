@@ -20,6 +20,10 @@ export type NotesYearInput = {
   year: number;
 };
 
+export type NotesUserInput = {
+  userId: string;
+};
+
 export type UserNote = {
   id: string;
   content: string;
@@ -67,6 +71,38 @@ export async function fetchNotesByUserYear({
   }
 
   return data satisfies UserNote[];
+}
+
+export async function fetchNotesByUser({ userId }: NotesUserInput) {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("notes")
+    .select("id, content, date, user_id, heart_color")
+    .eq("user_id", userId)
+    .order("date", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data satisfies UserNote[];
+}
+
+export function useUserAllNotes(userId: string | undefined) {
+  return useQuery({
+    queryKey: userId ? notesQueryKeys.byUserId(userId) : notesQueryKeys.all,
+    queryFn: async () => {
+      if (!userId) {
+        throw new Error("User id is required to fetch notes.");
+      }
+
+      return fetchNotesByUser({ userId });
+    },
+    enabled: Boolean(userId) && isSupabaseConfigured,
+  });
 }
 
 export function useUserNotes(userId: string | undefined, year: number) {

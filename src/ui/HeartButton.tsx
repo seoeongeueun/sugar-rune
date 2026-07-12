@@ -1,5 +1,6 @@
 import type { MouseEventHandler, ReactNode } from "react";
 import type { HeartColor } from "@/lib/constants";
+import { twMerge } from "tailwind-merge";
 
 type HeartButtonProps = {
   label: ReactNode;
@@ -9,6 +10,7 @@ type HeartButtonProps = {
   className?: string;
   id?: string;
   ariaLabel?: string;
+  size?: "small" | "default";
 };
 
 export function HeartButton({
@@ -18,6 +20,7 @@ export function HeartButton({
   disabled = false,
   className = "",
   ariaLabel,
+  size = "default",
 }: HeartButtonProps) {
   const heartImageUrl = `/hearts/heart_${String(heartColor ?? "white")}_icon.png`;
 
@@ -28,7 +31,11 @@ export function HeartButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`whitespace-nowrap pointer-events-auto text-white shrink-0 bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-lg disabled:opacity-70 disabled:hover:brightness-100 ${className}`.trim()}
+      className={twMerge(
+        `whitespace-nowrap pointer-events-auto text-white shrink-0 bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75 text-center gap-2 flex flex-row items-center justify-center text-lg disabled:opacity-70 disabled:hover:brightness-100`,
+        size === "small" ? "w-12 h-12 tablet:w-16 tablet:h-16 text-md" : "",
+        className,
+      ).trim()}
       style={{
         backgroundImage: `url('${heartImageUrl}')`,
       }}

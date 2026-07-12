@@ -232,17 +232,8 @@ export default function PostCard() {
       });
       updateContent(nextContent, heartColor, nextDateKey, savedNote.id);
       await queryClient.invalidateQueries({
-        queryKey: notesQueryKeys.byUserYear(user.id, nextDate.getFullYear()),
+        queryKey: notesQueryKeys.byUserId(user.id),
       });
-      const previousYear = note?.date
-        ? parseNoteDate(note.date).getFullYear()
-        : nextDate.getFullYear();
-
-      if (previousYear !== nextDate.getFullYear()) {
-        await queryClient.invalidateQueries({
-          queryKey: notesQueryKeys.byUserYear(user.id, previousYear),
-        });
-      }
       setMode("view");
     } catch (error) {
       setSaveError(
