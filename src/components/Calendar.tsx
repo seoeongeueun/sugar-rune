@@ -60,6 +60,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
   const user = useAuth((state) => state.user);
   const openNote = useNote((state) => state.openNote);
   const isOpen = useNote((state) => state.isOpen);
+  const noteDate = useNote((state) => state.note?.date);
   const [today, setToday] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isMonthYearSelectorOpen, setIsMonthYearSelectorOpen] = useState(false);
@@ -136,6 +137,20 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
     [maxMonthIndex],
   );
 
+  const showToday = useCallback(() => {
+    const nextToday = new Date();
+    const nextMonthIndex = getMonthIndex(
+      nextToday.getFullYear(),
+      nextToday.getMonth(),
+    );
+
+    setToday(nextToday);
+    setVisibleMonthIndex(
+      Math.min(Math.max(nextMonthIndex, minMonthIndex), maxMonthIndex),
+    );
+    setSelectedDate(nextToday);
+  }, [maxMonthIndex]);
+
   const handleMonthChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       showSelectedMonthYear(year, Number(event.target.value));
@@ -164,6 +179,25 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
 
   const canShowPreviousMonth = visibleMonthIndex > minMonthIndex;
   const canShowNextMonth = visibleMonthIndex < maxMonthIndex;
+
+  useEffect(() => {
+    if (!noteDate) return;
+
+    const [nextYear, nextMonth, nextDay] = noteDate.split("-").map(Number);
+
+    if (!nextYear || !nextMonth || !nextDay) return;
+
+    const nextDate = new Date(nextYear, nextMonth - 1, nextDay);
+    const nextMonthIndex = getMonthIndex(
+      nextDate.getFullYear(),
+      nextDate.getMonth(),
+    );
+
+    setVisibleMonthIndex(
+      Math.min(Math.max(nextMonthIndex, minMonthIndex), maxMonthIndex),
+    );
+    setSelectedDate(nextDate);
+  }, [maxMonthIndex, noteDate]);
 
   useEffect(() => {
     const refreshToday = () => {
@@ -271,7 +305,7 @@ export default function Calendar({ handleClose }: { handleClose: () => void }) {
                 <button
                   type="button"
                   className="border border-white bg-white text-night px-1 rounded-sm"
-                  onClick={() => handleDateClick(new Date())}
+                  onClick={showToday}
                 >
                   Today
                 </button>
