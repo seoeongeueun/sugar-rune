@@ -37,6 +37,7 @@ export default function PostCard() {
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   // const [content, setContent] = useState<string>(
@@ -223,6 +224,7 @@ export default function PostCard() {
   };
 
   const handleRemoveCard = () => {
+    setIsDeleting(true);
     setIsDeleteModalOpen(false);
     setDeleteTrigger((prev) => prev + 1);
   };
@@ -294,7 +296,10 @@ export default function PostCard() {
           id="postcard-container"
           className={twMerge(
             "w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
-            (mode === "edit" || isDeleteModalOpen || isCloseModalOpen) &&
+            (mode === "edit" ||
+              isDeleteModalOpen ||
+              isCloseModalOpen ||
+              isDeleting) &&
               "rotate-y-0 rotate-z-0",
           )}
         >
