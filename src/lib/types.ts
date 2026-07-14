@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { HeartColor } from "./constants";
+import type { HeartColor } from "@/shared";
 
 //used in zustand store for note content management
 export type Note = {

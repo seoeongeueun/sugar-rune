@@ -1,5 +1,5 @@
 import type { MouseEventHandler, ReactNode } from "react";
-import type { HeartColor } from "@/lib/constants";
+import type { HeartColor } from "@/shared";
 import { twMerge } from "tailwind-merge";
 
 type HeartButtonProps = {

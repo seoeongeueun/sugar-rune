@@ -1,0 +1,23 @@
+{
+  "name": "analyze-note-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild ././src/index.ts --bundle --platform=node --target=node22 --format=cjs --tsconfig=../../tsconfig.lambda.json --outfile=dist/index.js",
+    "package:windows": "npm run build && powershell -Command \"Compress-Archive -Path dist/index.js -DestinationPath dist/function.zip -Force\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1086.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.162",
+    "@types/node": "^26.1.1",
+    "esbuild": "^0.28.1",
+    "typescript": "^7.0.2"
+  }
+}
