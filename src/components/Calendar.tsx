@@ -131,7 +131,7 @@ export default function Calendar() {
           : {
               content: "",
               date: dateKey,
-              heart_content: HEART_LIST[0].color,
+              heart_content: HEART_LIST[HEART_LIST.length - 1].color,
             },
       );
     },

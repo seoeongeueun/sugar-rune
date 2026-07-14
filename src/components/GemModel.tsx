@@ -20,7 +20,9 @@ export default function GemModel({ open }: GemModelProps) {
   const materialRefs = useRef<THREE.Material[]>([]);
   const cameraDirectionRef = useRef(new THREE.Vector3());
 
-  const heartColor = useNote((state) => state.note?.heart_content) || "pink";
+  const heartColor =
+    useNote((state) => state.note?.heart_content) ||
+    HEART_LIST[HEART_LIST.length - 1].color;
   const baseGemHexColor =
     HEART_LIST.find((heart) => heart.color === heartColor)?.hex ?? "#eb77b4";
   const gemHexColor = useMemo(

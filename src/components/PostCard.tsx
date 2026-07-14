@@ -10,7 +10,12 @@ import {
   getDateFormValues,
 } from "@/lib";
 import { HEART_LIST } from "@/shared";
-import { createNote, notesQueryKeys, updateNote } from "@/features";
+import {
+  analyzeNoteHeartColor,
+  createNote,
+  notesQueryKeys,
+  updateNote,
+} from "@/features";
 import PostCardCut from "./PostCardCut";
 import { Trash2, SquarePen, Save, Crown, LoaderCircle, X } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
@@ -40,7 +45,7 @@ export default function PostCard() {
   const [savedSnapshot, setSavedSnapshot] = useState({
     content: note?.content || "",
     date: initialDateKey,
-    heartColor: note?.heart_content || HEART_LIST[0].color,
+    heartColor: note?.heart_content || HEART_LIST[HEART_LIST.length - 1].color,
   });
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -57,7 +62,8 @@ export default function PostCard() {
   const user = useAuth((state) => state.user);
   const queryClient = useQueryClient();
 
-  const heartColor = note?.heart_content || HEART_LIST[0].color;
+  const heartColor =
+    note?.heart_content || HEART_LIST[HEART_LIST.length - 1].color;
   const canDeleteNote = Boolean(note?.id);
   const currentDateKey = `${dateValues.year}-${dateValues.month}-${dateValues.day}`;
   const hasUnsavedChanges = useMemo(
@@ -205,18 +211,21 @@ export default function PostCard() {
     try {
       const nextDateValues = getDateFormValues(nextDate);
       const nextDateKey = `${nextDateValues.year}-${nextDateValues.month}-${nextDateValues.day}`;
+      const nextHeartColor = note?.id
+        ? heartColor
+        : await analyzeNoteHeartColor(nextContent);
       const savedNote = note?.id
         ? await updateNote({
             id: note.id,
             content: nextContent,
             date: nextDateKey,
-            heartColor,
+            heartColor: nextHeartColor,
           })
         : await createNote({
             content: nextContent,
             date: nextDateKey,
             userId: user.id,
-            heartColor,
+            heartColor: nextHeartColor,
           });
 
       setDate(nextDate);
@@ -228,9 +237,9 @@ export default function PostCard() {
       setSavedSnapshot({
         content: nextContent,
         date: nextDateKey,
-        heartColor,
+        heartColor: nextHeartColor,
       });
-      updateContent(nextContent, heartColor, nextDateKey, savedNote.id);
+      updateContent(nextContent, nextHeartColor, nextDateKey, savedNote.id);
       await queryClient.invalidateQueries({
         queryKey: notesQueryKeys.byUserId(user.id),
       });

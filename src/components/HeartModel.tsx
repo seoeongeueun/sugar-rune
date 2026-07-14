@@ -174,7 +174,9 @@ export default function HeartModel({
   children,
 }: HeartModelProps) {
   const gltf = useGLTF("/models/heart_final.glb");
-  const heartColor = useNote((state) => state.note?.heart_content) || "pink";
+  const heartColor =
+    useNote((state) => state.note?.heart_content) ||
+    HEART_LIST[HEART_LIST.length - 1].color;
   const floatingHeartColor = useMemo(() => {
     const selectedHex =
       HEART_LIST.find((heart) => heart.color === heartColor)?.hex ?? "#eb77b4";

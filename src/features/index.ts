@@ -1,4 +1,5 @@
 export { signInWithEmail, signUpWithEmail } from "./auth";
+export { analyzeNoteHeartColor } from "./analyzeNote";
 export {
   clearNotesQueryCache,
   createNote,
