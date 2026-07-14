@@ -2,7 +2,8 @@ import { useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useEffect, useRef } from "react";
 import { useNote } from "@/stores";
-import { HEART_LIST, saturateHexColor } from "@/lib";
+import { saturateHexColor } from "@/lib";
+import { HEART_LIST } from "@/shared";
 import * as THREE from "three";
 
 type GemModelProps = {

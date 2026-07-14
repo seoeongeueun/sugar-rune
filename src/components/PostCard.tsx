@@ -6,10 +6,10 @@ import { gsap } from "gsap";
 import {
   CALENDAR_START_YEAR,
   getSubmittedDate,
-  HEART_LIST,
   parseNoteDate,
   getDateFormValues,
 } from "@/lib";
+import { HEART_LIST } from "@/shared";
 import { createNote, notesQueryKeys, updateNote } from "@/features";
 import PostCardCut from "./PostCardCut";
 import { Trash2, SquarePen, Save, Crown, LoaderCircle, X } from "lucide-react";

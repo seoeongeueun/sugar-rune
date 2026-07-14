@@ -4,12 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { twMerge } from "tailwind-merge";
 import { useUserNotes } from "@/features";
-import {
-  CALENDAR_START_YEAR,
-  formatDateForDb,
-  HEART_LIST,
-  parseNoteDate,
-} from "@/lib";
+import { CALENDAR_START_YEAR, formatDateForDb, parseNoteDate } from "@/lib";
+import { HEART_LIST } from "@/shared";
 import { useAuth, useCalendar, useNote } from "@/stores";
 
 const START_YEAR = CALENDAR_START_YEAR;

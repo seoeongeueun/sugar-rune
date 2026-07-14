@@ -8,7 +8,7 @@ export {
   getDateFormValues,
 } from "./tools";
 export { supabase, isSupabaseConfigured } from "./supabase";
-export { CALENDAR_START_YEAR, HEART_LIST } from "./constants";
+export { CALENDAR_START_YEAR, OPEN_ANGLE, OPEN_SPEED } from "./constants";
 export {
   createHandLandmarker,
   drawHandFrame,

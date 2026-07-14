@@ -3,7 +3,8 @@ import { createPortal, useFrame } from "@react-three/fiber";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { HEART_LIST, OPEN_ANGLE, OPEN_SPEED } from "@/lib/constants";
+import { OPEN_ANGLE, OPEN_SPEED } from "@/lib";
+import { HEART_LIST } from "@/shared";
 import { useNote } from "@/stores";
 
 type HeartModelProps = {

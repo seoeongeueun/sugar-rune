@@ -1,4 +1,4 @@
-import { HEART_LIST } from "@/lib";
+import { HEART_LIST } from "@/shared";
 import { HeartButton } from "@/ui";
 import { useAuth, useCalendar, useNote } from "@/stores";
 import { useUserAllNotes } from "@/features";
