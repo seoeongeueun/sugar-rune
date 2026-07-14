@@ -1,11 +1,10 @@
 import { HEART_LIST } from "@/shared";
 import { HeartButton } from "@/ui";
-import { useAuth, useCalendar, useNote } from "@/stores";
+import { useAuth, useCalendar } from "@/stores";
 import { useUserAllNotes } from "@/features";
 import { useMemo } from "react";
 
 export default function HeartsList() {
-  const updateHeartColor = useNote((state) => state.updateHeartColor);
   const openCalendar = useCalendar((state) => state.openCalendar);
   const user = useAuth((state) => state.user);
   const { data: notes = [] } = useUserAllNotes(user?.id);
@@ -46,8 +45,6 @@ export default function HeartsList() {
             heartColor={heart.color}
             size="small"
             onClick={() => {
-              updateHeartColor(heart.color);
-
               const latestDate = latestNoteDateByHeartColor[heart.color];
 
               if (latestDate) {
