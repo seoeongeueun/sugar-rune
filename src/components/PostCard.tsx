@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, type PointerEvent } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,12 +17,51 @@ import {
   updateNote,
 } from "@/features";
 import PostCardCut from "./PostCardCut";
-import { Trash2, SquarePen, Save, Crown, LoaderCircle, X } from "lucide-react";
+import {
+  Trash2,
+  SquarePen,
+  Save,
+  Crown,
+  LoaderCircle,
+  X,
+  Stamp,
+} from "lucide-react";
 import { useAuth, useNote } from "@/stores";
 import { DeleteModal } from "@/components/modals";
 import { ModalSimple } from "@/ui";
 
-type POSTCARD_MODE = "view" | "edit";
+type POSTCARD_MODE = "view" | "edit" | "stamp";
+
+type StampHeartId = "large" | "small";
+
+type StampHeartPlacement = {
+  x: number;
+  y: number;
+};
+
+type StampDragState = {
+  id: StampHeartId;
+  offsetX: number;
+  offsetY: number;
+};
+
+function clampStampPlacement(
+  x: number,
+  y: number,
+  targetRect: DOMRect,
+  containerRect: DOMRect,
+): StampHeartPlacement {
+  const maxX = Math.max(0, 100 - (targetRect.width / containerRect.width) * 100);
+  const maxY = Math.max(
+    0,
+    100 - (targetRect.height / containerRect.height) * 100,
+  );
+
+  return {
+    x: Math.min(Math.max(x, 0), maxX),
+    y: Math.min(Math.max(y, 0), maxY),
+  };
+}
 
 interface FormData {
   month: string;
@@ -76,6 +115,14 @@ export default function PostCard() {
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const postcardFrontRef = useRef<HTMLDivElement>(null);
+  const stampDragRef = useRef<StampDragState | null>(null);
+  const [stampPlacements, setStampPlacements] = useState<
+    Record<StampHeartId, StampHeartPlacement>
+  >({
+    large: { x: 62, y: 56 },
+    small: { x: 8, y: 4 },
+  });
 
   const MAX_CONTENT_LENGTH = 300; // Maximum number of characters allowed in the content
 
@@ -261,9 +308,82 @@ export default function PostCard() {
     if (mode === "view") {
       setSaveError(null);
       setMode("edit");
+    } else if (mode === "stamp") {
+      setSaveError(null);
+      setMode("view");
     } else {
       void handleSubmit(onSubmit)();
     }
+  };
+
+  const handleStampPointerDown = (
+    event: PointerEvent<HTMLDivElement>,
+    id: StampHeartId,
+  ) => {
+    if (mode !== "stamp") return;
+
+    const front = postcardFrontRef.current;
+    const target = event.currentTarget;
+
+    if (!front) return;
+
+    const frontRect = front.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+
+    stampDragRef.current = {
+      id,
+      offsetX: event.clientX - targetRect.left,
+      offsetY: event.clientY - targetRect.top,
+    };
+    target.setPointerCapture(event.pointerId);
+
+    const nextX =
+      ((event.clientX - frontRect.left - stampDragRef.current.offsetX) /
+        frontRect.width) *
+      100;
+    const nextY =
+      ((event.clientY - frontRect.top - stampDragRef.current.offsetY) /
+        frontRect.height) *
+      100;
+
+    setStampPlacements((placements) => ({
+      ...placements,
+      [id]: clampStampPlacement(nextX, nextY, targetRect, frontRect),
+    }));
+  };
+
+  const handleStampPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (mode !== "stamp" || !stampDragRef.current) return;
+
+    const front = postcardFrontRef.current;
+    const target = event.currentTarget;
+
+    if (!front) return;
+
+    const frontRect = front.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const nextX =
+      ((event.clientX - frontRect.left - stampDragRef.current.offsetX) /
+        frontRect.width) *
+      100;
+    const nextY =
+      ((event.clientY - frontRect.top - stampDragRef.current.offsetY) /
+        frontRect.height) *
+      100;
+    const id = stampDragRef.current.id;
+
+    setStampPlacements((placements) => ({
+      ...placements,
+      [id]: clampStampPlacement(nextX, nextY, targetRect, frontRect),
+    }));
+  };
+
+  const handleStampPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (stampDragRef.current) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    stampDragRef.current = null;
   };
 
   const handleRemoveCard = () => {
@@ -296,20 +416,36 @@ export default function PostCard() {
         className="pointer-events-auto group perspective-distant relative box-content p-16 rounded-xs w-postcard-width h-postcard-height "
       >
         <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none py-4 px-1 z-60">
-          <button
-            type="button"
-            onClick={handleButtonClick}
-            disabled={isSaving}
-            className="white-button px-2"
-          >
-            {isSaving ? (
-              <LoaderCircle size={16} color="white" className="animate-spin" />
-            ) : mode === "view" ? (
-              <SquarePen size={16} color="white" />
-            ) : (
-              <Save size={16} color="white" />
+          <div className="flex flex-row gap-2">
+            <button
+              type="button"
+              onClick={handleButtonClick}
+              disabled={isSaving}
+              className="white-button px-2"
+            >
+              {isSaving ? (
+                <LoaderCircle
+                  size={16}
+                  color="white"
+                  className="animate-spin"
+                />
+              ) : mode === "view" ? (
+                <SquarePen size={16} color="white" />
+              ) : (
+                <Save size={16} color="white" />
+              )}
+            </button>
+            {mode === "view" && (
+              <button
+                type="button"
+                aria-label="Heart Stamp"
+                className="white-button px-2"
+                onClick={() => setMode("stamp")}
+              >
+                <Stamp size={16} color="white" />
+              </button>
             )}
-          </button>
+          </div>
           {canDeleteNote ? (
             <div className="flex flex-row gap-2">
               <button
@@ -349,6 +485,7 @@ export default function PostCard() {
           className={twMerge(
             "w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
             (mode === "edit" ||
+              mode === "stamp" ||
               isDeleteModalOpen ||
               isCloseModalOpen ||
               isDeleting) &&
@@ -362,7 +499,10 @@ export default function PostCard() {
               className="w-full h-auto object-contain absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
             />
           </div>
-          <div className="front absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]">
+          <div
+            ref={postcardFrontRef}
+            className="front absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]"
+          >
             {mode === "edit" ? (
               <form
                 id="postcard-content"
@@ -458,18 +598,56 @@ export default function PostCard() {
                 </p>
               </section>
             )}
-            <div className="heart-sticker pointer-events-none rotate-z-10 absolute -bottom-6 right-0 p-8 ">
+            <div
+              className={twMerge(
+                "heart-sticker absolute z-50 p-8 touch-none select-none",
+                mode === "stamp"
+                  ? "pointer-events-auto cursor-move"
+                  : "pointer-events-none rotate-z-10",
+              )}
+              onPointerDown={(event) => handleStampPointerDown(event, "large")}
+              onPointerMove={handleStampPointerMove}
+              onPointerUp={handleStampPointerUp}
+              onPointerCancel={handleStampPointerUp}
+              style={{
+                left: `${stampPlacements.large.x}%`,
+                top: `${stampPlacements.large.y}%`,
+                transform:
+                  mode === "stamp" ? "translate(0, 0) rotate(10deg)" : undefined,
+              }}
+            >
               <img
                 src={`/hearts/heart_${heartColor}_icon.png`}
                 alt="heart"
                 className="w-60 h-60 object-contain"
+                draggable={false}
               />
             </div>
-            <div className="heart-sticker pointer-events-none -rotate-z-15 absolute top-2 left-8 p-8">
+            <div
+              className={twMerge(
+                "heart-sticker absolute z-50 p-8 touch-none select-none",
+                mode === "stamp"
+                  ? "pointer-events-auto cursor-move"
+                  : "pointer-events-none -rotate-z-15",
+              )}
+              onPointerDown={(event) => handleStampPointerDown(event, "small")}
+              onPointerMove={handleStampPointerMove}
+              onPointerUp={handleStampPointerUp}
+              onPointerCancel={handleStampPointerUp}
+              style={{
+                left: `${stampPlacements.small.x}%`,
+                top: `${stampPlacements.small.y}%`,
+                transform:
+                  mode === "stamp"
+                    ? "translate(0, 0) rotate(-15deg)"
+                    : undefined,
+              }}
+            >
               <img
                 src={`/hearts/heart_${heartColor}_icon.png`}
                 alt="heart"
                 className="w-20 h-20 object-contain"
+                draggable={false}
               />
             </div>
           </div>
