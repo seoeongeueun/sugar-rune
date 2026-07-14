@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Alegro-star";
-  src: url("/fonts/Gawaa-Regular.otf") format("opentype");
-}
-
-@font-face {
   font-family: "umeboshi";
   src: url("/fonts/umeboshi.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: "kyobolyb";
-  src: url("/fonts/KyoboHandwriting2025lyb.ttf") format("truetype");
+  font-family: 'SpecialSymbols';
+  src: local('Segoe UI');
+  unicode-range: U+0080-00FF, U+2000-206F, U+2030-205E; /* 라틴 보충 + 특수문자 */
+}
+
+@font-face {
+  font-family: "sonmat";
+  src: url("/fonts/sonmat.ttf") format("truetype");
 }
 
 @theme {
@@ -41,11 +42,12 @@
   --breakpoint-tablet: 640px;
   --breakpoint-desktop: 1023px;
 
-  --font-alegro: "umeboshi", "kyobolyb", serif;
+  --font-sonmat: "SpecialSymbols", "sonmat", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-umeboshi: "SpecialSymbols", "umeboshi", system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 :root {
-  font-family: "umeboshi", "kyobolyb", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "SpecialSymbols", "umeboshi", "sonmat", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -123,6 +125,29 @@ canvas {
   background-color: #8a70be;
 }
 
+#postcard-container > .front {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.18'/%3E%3C/svg%3E"),
+    url("/assets/frame.svg");
+
+  background-repeat:
+    repeat,
+    no-repeat;
+
+  background-position:
+    center,
+    center;
+
+  background-size:
+    auto,
+    contain;
+}
+
+#postcard-container > .back {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.45' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.08'/%3E%3C/svg%3E");
+}
+
 .place-center {
   position: absolute;
   top: 50%;
@@ -132,7 +157,7 @@ canvas {
 
 ::selection {
   background: var(--background);
-  color: var(--text);
+  color: white;
 }
 
 ::-webkit-scrollbar {

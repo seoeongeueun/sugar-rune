@@ -68,19 +68,19 @@ export function AuthModal() {
       footer={
         <>
           <button
+            type="button"
+            onClick={() => reset()}
+            className="whitespace-nowrap text-shadow bg-[url('/hearts/heart_white_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
+          >
+            <span className="z-10">Clear</span>
+          </button>
+          <button
             form="auth-form"
             type="submit"
             disabled={isSubmitting}
-            className="bg-[url('/hearts/heart_white_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
+            className="whitespace-nowrap text-shadow bg-[url('/hearts/heart_purple_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
           >
-            <span className="z-10">{isSignupMode ? "Sign Up" : "Log In"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => resetAuthState("signup")}
-            className="bg-[url('/hearts/heart_purple_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
-          >
-            <span className="z-10">Reset</span>
+            <span className="z-10">Confirm</span>
           </button>
         </>
       }
@@ -88,44 +88,50 @@ export function AuthModal() {
       <form
         id="auth-form"
         onSubmit={handlePrimaryAction}
-        className="flex flex-col w-full tablet:px-8"
+        className="flex flex-col gap-2 w-full tablet:px-8 font-sonmat tracking-wide"
       >
-        <input
-          type="email"
-          placeholder="Email"
-          aria-invalid={errors.email ? "true" : "false"}
-          {...register("email", {
-            required: "Email is required",
-            pattern: {
-              value: /^\S+@\S+\.\S+$/,
-              message: "Use a valid email format",
-            },
-          })}
-          className="mb-1 tablet:p-1 tablet:mb-3 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
-        />
-        {errors.email && (
-          <p className="px-1 text-md text-background">{errors.email.message}</p>
-        )}
-        <input
-          type="password"
-          placeholder="Password"
-          aria-invalid={errors.password ? "true" : "false"}
-          {...register("password", {
-            required: "Password is required",
-            minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters",
-            },
-          })}
-          className="mb-1 tablet:p-1 tablet:mb-3 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
-        />
-        {errors.password && (
-          <p className="px-1 text-md text-background">
-            {errors.password.message}
-          </p>
-        )}
+        <div className="w-full flex flex-col">
+          <input
+            type="email"
+            placeholder="Email"
+            aria-invalid={errors.email ? "true" : "false"}
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^\S+@\S+\.\S+$/,
+                message: "Use a valid email format",
+              },
+            })}
+            className="tablet:p-1 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
+          />
+          {errors.email && (
+            <p className="px-1 text-md text-background font-medium">
+              {errors.email.message}
+            </p>
+          )}
+        </div>
+        <div className="w-full flex flex-col">
+          <input
+            type="password"
+            placeholder="Password"
+            aria-invalid={errors.password ? "true" : "false"}
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters",
+              },
+            })}
+            className="tablet:p-1 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
+          />
+          {errors.password && (
+            <p className="px-1 text-md text-background font-medium">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
         {isSignupMode && (
-          <>
+          <div className="w-full flex flex-col">
             <input
               type="text"
               placeholder="Witch name"
@@ -137,17 +143,19 @@ export function AuthModal() {
                   message: "Username must be at least 2 characters",
                 },
               })}
-              className="mb-1 tablet:p-1 tablet:mb-3 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
+              className="tablet:p-1 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
             />
             {errors.username && (
-              <p className="px-1 text-md text-background">
+              <p className="px-1 text-md text-background font-medium">
                 {errors.username.message}
               </p>
             )}
-          </>
+          </div>
         )}
         {errorMessage && (
-          <p className="mt-2 px-1 text-md text-background">{errorMessage}</p>
+          <p className="mt-2 px-1 text-md text-background font-medium">
+            {errorMessage}
+          </p>
         )}
         {activeMutation.isSuccess && (
           <p className="mt-2 px-1 text-lg text-white text-center">
@@ -162,7 +170,7 @@ export function AuthModal() {
             onClick={() => {
               resetAuthState(isSignupMode ? "login" : "signup");
             }}
-            className="underline underline-offset-2 decoration-1 text-background text-lg"
+            className="text-lg font-sonmat underline underline-offset-3 mt-4 hover:text-background transition-colors duration-100 text-white w-fit px-8 self-center text-center"
           >
             {isSignupMode ? "I already have an account" : "Make a new account"}
           </button>
