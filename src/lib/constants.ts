@@ -5,6 +5,7 @@ export const CALENDAR_START_YEAR = 2026;
 
 export type HeartColor =
   | "red"
+  | "cyan"
   | "yellow"
   | "green"
   | "pink"
@@ -35,21 +36,43 @@ export const HEART_LIST: HeartCategory[] = [
     hex: "#fb120e",
     label: "Love",
     description:
-      "Romantic love, deep emotional attachment, devotion, gratitude toward a partner or loved one.",
+      "Deep, mature, and committed romantic love. Strong emotional attachment, devotion, lasting affection, and gratitude toward a romantic partner.",
 
     keywords: [
       "love",
-      "romance",
-      "gratitude",
       "devotion",
-      "relationship",
+      "commitment",
+      "gratitude",
       "partner",
+      "relationship",
     ],
 
     examples: [
-      "I spent a wonderful day with my partner.",
-      "I feel grateful to have someone who truly loves me.",
-      "오늘 여자친구와 데이트를 해서 정말 행복했다.",
+      "I felt grateful spending the day with my spouse.",
+      "Even after all this time, I still deeply love them.",
+      "오랜 연인과 함께하며 다시 한 번 사랑을 느꼈다.",
+    ],
+  },
+  {
+    color: "pink",
+    hex: "#eb77b4",
+    label: "Affection",
+    description:
+      "The excitement and butterflies of new romantic feelings. A crush, infatuation, admiration, or the first buds of love before it becomes deep commitment.",
+
+    keywords: [
+      "crush",
+      "infatuation",
+      "admiration",
+      "romance",
+      "attraction",
+      "butterflies",
+    ],
+
+    examples: [
+      "I couldn't stop thinking about them today.",
+      "My heart raced every time I saw them.",
+      "좋아하는 사람이 웃어줘서 하루 종일 설렜다.",
     ],
   },
 
@@ -84,20 +107,27 @@ export const HEART_LIST: HeartCategory[] = [
       "친구와 즐거운 시간을 보냈다.",
     ],
   },
-
   {
-    color: "pink",
-    hex: "#eb77b4",
-    label: "Affection",
+    color: "cyan",
+    hex: "#00BCD4",
+    label: "Family",
     description:
-      "Warmth, kindness, caring, family affection, comfort, empathy, emotional closeness.",
+      "Love, care, comfort, and emotional warmth shared within a family. Feeling protected, caring for family members, or appreciating their support.",
 
-    keywords: ["care", "kindness", "comfort", "family", "warmth", "empathy"],
+    keywords: [
+      "family",
+      "mother",
+      "father",
+      "parents",
+      "siblings",
+      "home",
+      "care",
+    ],
 
     examples: [
-      "My mom cooked my favorite meal.",
-      "I felt loved by my family today.",
-      "가족과 함께 시간을 보내며 따뜻함을 느꼈다.",
+      "My mom cooked my favorite meal today.",
+      "I felt thankful for my family's support.",
+      "부모님과 함께 저녁을 먹으며 따뜻함을 느꼈다.",
     ],
   },
 
