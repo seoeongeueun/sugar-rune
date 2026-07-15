@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, type PointerEvent } from "react";
+import { useState, useEffect, useMemo, useRef, type MouseEvent } from "react";
 import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -20,46 +20,25 @@ import {
   X,
   Stamp,
   Check,
+  HeartOff,
 } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
 import { DeleteModal } from "@/components/modals";
 import { ModalSimple } from "@/ui";
+import Sticker, { type StickerSize } from "./Sticker";
 
 type POSTCARD_MODE = "view" | "edit" | "stamp";
 
-type StampHeartId = "large" | "small";
-
-type StampHeartPlacement = {
+type PlacedSticker = {
+  id: number;
+  heartColor: string;
+  size: StickerSize;
   x: number;
   y: number;
 };
 
-type StampDragState = {
-  id: StampHeartId;
-  offsetX: number;
-  offsetY: number;
-};
-
-function clampStampPlacement(
-  x: number,
-  y: number,
-  targetRect: DOMRect,
-  containerRect: DOMRect,
-): StampHeartPlacement {
-  const maxX = Math.max(
-    0,
-    100 - (targetRect.width / containerRect.width) * 100,
-  );
-  const maxY = Math.max(
-    0,
-    100 - (targetRect.height / containerRect.height) * 100,
-  );
-
-  return {
-    x: Math.min(Math.max(x, 0), maxX),
-    y: Math.min(Math.max(y, 0), maxY),
-  };
-}
+const STICKER_SIZE_ORDER: StickerSize[] = ["small", "medium", "large"];
+const MAX_STICKERS = 5;
 
 interface FormData {
   content: string;
@@ -109,13 +88,9 @@ export default function PostCard() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const postcardFrontRef = useRef<HTMLDivElement>(null);
-  const stampDragRef = useRef<StampDragState | null>(null);
-  const [stampPlacements, setStampPlacements] = useState<
-    Record<StampHeartId, StampHeartPlacement>
-  >({
-    large: { x: 62, y: 56 },
-    small: { x: 8, y: 4 },
-  });
+  const stickerIdRef = useRef(0);
+  const [stickers, setStickers] = useState<PlacedSticker[]>([]);
+  const [nextStickerIndex, setNextStickerIndex] = useState(0);
 
   const MAX_CONTENT_LENGTH = 350; // Maximum number of characters allowed in the content
 
@@ -295,74 +270,31 @@ export default function PostCard() {
     void handleSubmit(onSubmit)();
   };
 
-  const handleStampPointerDown = (
-    event: PointerEvent<HTMLDivElement>,
-    id: StampHeartId,
-  ) => {
+  const handlePostcardClick = (event: MouseEvent<HTMLDivElement>) => {
     if (mode !== "stamp") return;
+    if (stickers.length >= MAX_STICKERS) return;
 
-    const front = postcardFrontRef.current;
-    const target = event.currentTarget;
+    const frontRect = event.currentTarget.getBoundingClientRect();
+    const size = STICKER_SIZE_ORDER[nextStickerIndex];
+    const x = ((event.clientX - frontRect.left) / frontRect.width) * 100;
+    const y = ((event.clientY - frontRect.top) / frontRect.height) * 100;
 
-    if (!front) return;
-
-    const frontRect = front.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-
-    stampDragRef.current = {
-      id,
-      offsetX: event.clientX - targetRect.left,
-      offsetY: event.clientY - targetRect.top,
-    };
-    target.setPointerCapture(event.pointerId);
-
-    const nextX =
-      ((event.clientX - frontRect.left - stampDragRef.current.offsetX) /
-        frontRect.width) *
-      100;
-    const nextY =
-      ((event.clientY - frontRect.top - stampDragRef.current.offsetY) /
-        frontRect.height) *
-      100;
-
-    setStampPlacements((placements) => ({
-      ...placements,
-      [id]: clampStampPlacement(nextX, nextY, targetRect, frontRect),
-    }));
+    setStickers((currentStickers) => [
+      ...currentStickers,
+      {
+        id: stickerIdRef.current++,
+        heartColor,
+        size,
+        x: Math.min(Math.max(x, 0), 100),
+        y: Math.min(Math.max(y, 0), 100),
+      },
+    ]);
   };
 
-  const handleStampPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (mode !== "stamp" || !stampDragRef.current) return;
-
-    const front = postcardFrontRef.current;
-    const target = event.currentTarget;
-
-    if (!front) return;
-
-    const frontRect = front.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    const nextX =
-      ((event.clientX - frontRect.left - stampDragRef.current.offsetX) /
-        frontRect.width) *
-      100;
-    const nextY =
-      ((event.clientY - frontRect.top - stampDragRef.current.offsetY) /
-        frontRect.height) *
-      100;
-    const id = stampDragRef.current.id;
-
-    setStampPlacements((placements) => ({
-      ...placements,
-      [id]: clampStampPlacement(nextX, nextY, targetRect, frontRect),
-    }));
-  };
-
-  const handleStampPointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    if (stampDragRef.current) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    stampDragRef.current = null;
+  const handleRemoveSticker = (id: number) => {
+    setStickers((currentStickers) =>
+      currentStickers.filter((sticker) => sticker.id !== id),
+    );
   };
 
   const handleRemoveCard = () => {
@@ -446,14 +378,36 @@ export default function PostCard() {
               </button>
             )}
             {showStampSaveAction && (
-              <button
-                type="button"
-                aria-label="Save heart stamp positions"
-                onClick={handleStampSaveClick}
-                className="white-button px-2"
-              >
-                <Check size={16} color="white" />
-              </button>
+              <>
+                <button
+                  type="button"
+                  aria-label="Save heart stamp positions"
+                  onClick={handleStampSaveClick}
+                  className="white-button px-2 aspect-square w-auto"
+                >
+                  <Check size={16} color="white" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Stamp size change"
+                  className="white-button text-md h-12 font-sonmat"
+                  onClick={() =>
+                    setNextStickerIndex(
+                      (prev) => (prev + 1) % STICKER_SIZE_ORDER.length,
+                    )
+                  }
+                >
+                  {`${STICKER_SIZE_ORDER[nextStickerIndex].charAt(0).toUpperCase()}`}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Clear all stickers"
+                  onClick={() => setStickers([])}
+                  className="white-button h-12 w-12"
+                >
+                  <HeartOff size={16} color="white" />
+                </button>
+              </>
             )}
           </div>
           <button
@@ -469,6 +423,13 @@ export default function PostCard() {
           <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-[80%] text-center -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
             {saveMessage}
           </p>
+        )}
+        {mode === "stamp" && (
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-16 text-white text-md">
+            {stickers.length <= 0
+              ? "Click on the postcard to add stickers"
+              : `${stickers.length} / ${MAX_STICKERS}`}
+          </div>
         )}
         <div
           id="postcard-container"
@@ -491,7 +452,11 @@ export default function PostCard() {
           </div>
           <div
             ref={postcardFrontRef}
-            className="front absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]"
+            onClick={handlePostcardClick}
+            className={twMerge(
+              "front absolute inset-0 w-full h-full backface-hidden overflow-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]",
+              mode === "stamp" && "cursor-copy",
+            )}
           >
             <section className="flex flex-col w-[80%] h-[65%] place-center justify-start">
               <div className="flex flex-row items-center justify-between w-full pr-2 text-md">
@@ -535,6 +500,18 @@ export default function PostCard() {
                 </p>
               )}
             </section>
+
+            {stickers.map((sticker) => (
+              <Sticker
+                key={sticker.id}
+                heartColor={sticker.heartColor}
+                size={sticker.size}
+                x={sticker.x}
+                y={sticker.y}
+                isEditable={mode === "stamp"}
+                onRemove={() => handleRemoveSticker(sticker.id)}
+              />
+            ))}
           </div>
         </div>
       </article>

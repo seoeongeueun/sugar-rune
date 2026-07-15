@@ -1,7 +1,3 @@
-function normalizeText(text: string): string {
-  return text.normalize("NFKC").replace(/\s+/g, " ").trim();
-}
-
 function tokenize(text: string): string[] {
   return text
     .toLowerCase()
