@@ -16,7 +16,6 @@ import {
   Trash2,
   SquarePen,
   Save,
-  Crown,
   LoaderCircle,
   X,
   Stamp,
@@ -87,6 +86,7 @@ export default function PostCard() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [content, setContent] = useState<string>(note?.content || "");
+
   const closeNote = useNote((state) => state.closeNote);
   const updateContent = useNote((state) => state.updateContent);
   const user = useAuth((state) => state.user);
@@ -212,6 +212,13 @@ export default function PostCard() {
 
     if (!nextContent || nextContent.length === 0) {
       setSaveError("Content is empty.");
+      return;
+    }
+
+    // If no changes, skip the saving and anlaysis process and return early
+    if (!hasUnsavedChanges) {
+      console.log("No changes detected, skipping save.");
+      setMode("view");
       return;
     }
 
@@ -478,108 +485,48 @@ export default function PostCard() {
             ref={postcardFrontRef}
             className="front absolute inset-0 w-full h-full backface-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]"
           >
-            {mode === "edit" ? (
-              <form
-                id="postcard-content"
-                className="flex flex-col w-[80%] h-[65%] place-center justify-between"
-              >
-                <div className="flex flex-row items-center justify-between w-full px-2 text-md">
-                  <div className="flex flex-row items-center w-fit mb-2 gap-2">
-                    <Crown fill="var(--color-night)" className="w-4 h-4" />
-                    <span>Date</span>
-                    <span className="text-background underline underline-offset-4 decoration-1">
-                      {displayDate.toLocaleDateString().replace(/\//g, ". ")}
-                    </span>
-                  </div>
-                  <div className=" text-sm">
-                    <span
-                      className={`${content.length >= MAX_CONTENT_LENGTH ? "text-background" : ""}`}
-                    >
-                      {content.length}
-                    </span>{" "}
-                    / {MAX_CONTENT_LENGTH}
-                  </div>
-                </div>
-                <textarea
-                  {...register("content")}
-                  className="px-4 w-full h-full text-lg bg-transparent resize-none outline-background"
-                  placeholder="Write your story here..."
-                  value={content}
-                  maxLength={MAX_CONTENT_LENGTH}
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    setValue("content", e.target.value);
-                  }}
-                />
-              </form>
-            ) : (
-              <section className="p-2 place-center text-md flex flex-col w-[80%] h-[65%] place-center justify-between">
+            <section className="flex flex-col w-[80%] h-[65%] place-center justify-start">
+              <div className="flex flex-row items-center justify-between w-full pr-2 text-md">
                 <div className="flex flex-row items-center w-fit mb-2 gap-2">
-                  <Crown fill="var(--color-night)" className="w-4 h-4" />
+                  <img
+                    src={`/hearts/heart_${heartColor}_icon.png`}
+                    alt="heart"
+                    className="w-8 h-8 object-contain"
+                  />
                   <span>Date</span>
                   <span className="text-background underline underline-offset-4 decoration-1">
                     {displayDate.toLocaleDateString().replace(/\//g, ". ")}
                   </span>
                 </div>
-                <p className="whitespace-pre-line w-full h-full overflow-y-auto  decoration-gray-400 text-lg">
+                <div className=" text-sm">
+                  <span
+                    className={`${content.length >= MAX_CONTENT_LENGTH ? "text-background" : ""}`}
+                  >
+                    {content.length}
+                  </span>{" "}
+                  / {MAX_CONTENT_LENGTH}
+                </div>
+              </div>
+              {mode === "edit" ? (
+                <form id="postcard-content" className="w-full h-full text-lg">
+                  <textarea
+                    {...register("content")}
+                    className="w-full h-full bg-transparent resize-none outline-background border-night/20 border rounded"
+                    placeholder="Write your story here..."
+                    value={content}
+                    maxLength={MAX_CONTENT_LENGTH}
+                    onChange={(e) => {
+                      setContent(e.target.value);
+                      setValue("content", e.target.value);
+                    }}
+                  />
+                </form>
+              ) : (
+                <p className="whitespace-pre-line w-full h-full overflow-y-auto decoration-gray-400 text-lg">
                   {content}
                 </p>
-              </section>
-            )}
-            <div
-              className={twMerge(
-                "heart-sticker absolute z-50 p-8 touch-none select-none",
-                mode === "stamp"
-                  ? "pointer-events-auto cursor-move"
-                  : "pointer-events-none rotate-z-10",
               )}
-              onPointerDown={(event) => handleStampPointerDown(event, "large")}
-              onPointerMove={handleStampPointerMove}
-              onPointerUp={handleStampPointerUp}
-              onPointerCancel={handleStampPointerUp}
-              style={{
-                left: `${stampPlacements.large.x}%`,
-                top: `${stampPlacements.large.y}%`,
-                transform:
-                  mode === "stamp"
-                    ? "translate(0, 0) rotate(10deg)"
-                    : undefined,
-              }}
-            >
-              <img
-                src={`/hearts/heart_${heartColor}_icon.png`}
-                alt="heart"
-                className="w-60 h-60 object-contain"
-                draggable={false}
-              />
-            </div>
-            <div
-              className={twMerge(
-                "heart-sticker absolute z-50 p-8 touch-none select-none",
-                mode === "stamp"
-                  ? "pointer-events-auto cursor-move"
-                  : "pointer-events-none -rotate-z-15",
-              )}
-              onPointerDown={(event) => handleStampPointerDown(event, "small")}
-              onPointerMove={handleStampPointerMove}
-              onPointerUp={handleStampPointerUp}
-              onPointerCancel={handleStampPointerUp}
-              style={{
-                left: `${stampPlacements.small.x}%`,
-                top: `${stampPlacements.small.y}%`,
-                transform:
-                  mode === "stamp"
-                    ? "translate(0, 0) rotate(-15deg)"
-                    : undefined,
-              }}
-            >
-              <img
-                src={`/hearts/heart_${heartColor}_icon.png`}
-                alt="heart"
-                className="w-20 h-20 object-contain"
-                draggable={false}
-              />
-            </div>
+            </section>
           </div>
         </div>
       </article>
