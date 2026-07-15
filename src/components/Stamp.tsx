@@ -2,31 +2,31 @@ import { twMerge } from "tailwind-merge";
 import type { MouseEvent } from "react";
 import { X } from "lucide-react";
 
-export type StickerSize = "small" | "medium" | "large";
+export type StampSize = "small" | "medium" | "large";
 
-type StickerProps = {
+type StampProps = {
   heartColor: string;
-  size: StickerSize;
+  size: StampSize;
   x: number;
   y: number;
   isEditable: boolean;
   onRemove: () => void;
 };
 
-const stickerSizeClass: Record<StickerSize, string> = {
+const stampSizeClass: Record<StampSize, string> = {
   small: "w-16",
   medium: "w-28",
   large: "w-44",
 };
 
-export default function Sticker({
+export default function Stamp({
   heartColor,
   size,
   x,
   y,
   isEditable,
   onRemove,
-}: StickerProps) {
+}: StampProps) {
   const handleRemoveClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onRemove();
@@ -46,7 +46,7 @@ export default function Sticker({
       {isEditable && (
         <button
           type="button"
-          aria-label="Remove Sticker"
+          aria-label="Remove Stamp"
           onClick={handleRemoveClick}
           className="relative top-4 left-full z-50 black-button"
         >
@@ -55,12 +55,12 @@ export default function Sticker({
       )}
       <img
         src={`/hearts/heart_${heartColor}_icon.png`}
-        alt="Heart Sticker"
+        alt="Heart Stamp"
         aria-hidden="true"
         draggable={false}
         className={twMerge(
           "pointer-events-none object-cover h-auto aspect-square",
-          stickerSizeClass[size],
+          stampSizeClass[size],
         )}
       />
     </div>

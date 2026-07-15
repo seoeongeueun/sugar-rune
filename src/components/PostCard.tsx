@@ -18,27 +18,27 @@ import {
   Save,
   LoaderCircle,
   X,
-  Stamp,
+  Stamp as StampIcon,
   Check,
   HeartOff,
 } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
 import { DeleteModal } from "@/components/modals";
 import { ModalSimple } from "@/ui";
-import Sticker, { type StickerSize } from "./Sticker";
+import Stamp, { type StampSize } from "./Stamp";
 
 type POSTCARD_MODE = "view" | "edit" | "stamp";
 
-type PlacedSticker = {
+type PlacedStamp = {
   id: number;
   heartColor: string;
-  size: StickerSize;
+  size: StampSize;
   x: number;
   y: number;
 };
 
-const STICKER_SIZE_ORDER: StickerSize[] = ["small", "medium", "large"];
-const MAX_STICKERS = 5;
+const STAMP_SIZE_ORDER: StampSize[] = ["small", "medium", "large"];
+const MAX_STAMPS = 5;
 
 interface FormData {
   content: string;
@@ -88,9 +88,9 @@ export default function PostCard() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const postcardFrontRef = useRef<HTMLDivElement>(null);
-  const stickerIdRef = useRef(0);
-  const [stickers, setStickers] = useState<PlacedSticker[]>([]);
-  const [nextStickerIndex, setNextStickerIndex] = useState(0);
+  const stampIdRef = useRef(0);
+  const [stamps, setStamps] = useState<PlacedStamp[]>([]);
+  const [nextStampIndex, setNextStampIndex] = useState(0);
 
   const MAX_CONTENT_LENGTH = 350; // Maximum number of characters allowed in the content
 
@@ -272,17 +272,17 @@ export default function PostCard() {
 
   const handlePostcardClick = (event: MouseEvent<HTMLDivElement>) => {
     if (mode !== "stamp") return;
-    if (stickers.length >= MAX_STICKERS) return;
+    if (stamps.length >= MAX_STAMPS) return;
 
     const frontRect = event.currentTarget.getBoundingClientRect();
-    const size = STICKER_SIZE_ORDER[nextStickerIndex];
+    const size = STAMP_SIZE_ORDER[nextStampIndex];
     const x = ((event.clientX - frontRect.left) / frontRect.width) * 100;
     const y = ((event.clientY - frontRect.top) / frontRect.height) * 100;
 
-    setStickers((currentStickers) => [
-      ...currentStickers,
+    setStamps((currentStamps) => [
+      ...currentStamps,
       {
-        id: stickerIdRef.current++,
+        id: stampIdRef.current++,
         heartColor,
         size,
         x: Math.min(Math.max(x, 0), 100),
@@ -291,9 +291,9 @@ export default function PostCard() {
     ]);
   };
 
-  const handleRemoveSticker = (id: number) => {
-    setStickers((currentStickers) =>
-      currentStickers.filter((sticker) => sticker.id !== id),
+  const handleRemoveStamp = (id: number) => {
+    setStamps((currentStamps) =>
+      currentStamps.filter((stamp) => stamp.id !== id),
     );
   };
 
@@ -345,7 +345,7 @@ export default function PostCard() {
                 className="white-button px-2"
                 onClick={handleStampClick}
               >
-                <Stamp size={16} color="white" />
+                <StampIcon size={16} color="white" />
               </button>
             )}
             {showViewActions && (
@@ -392,17 +392,17 @@ export default function PostCard() {
                   aria-label="Stamp size change"
                   className="white-button text-md h-12 font-sonmat"
                   onClick={() =>
-                    setNextStickerIndex(
-                      (prev) => (prev + 1) % STICKER_SIZE_ORDER.length,
+                    setNextStampIndex(
+                      (prev) => (prev + 1) % STAMP_SIZE_ORDER.length,
                     )
                   }
                 >
-                  {`${STICKER_SIZE_ORDER[nextStickerIndex].charAt(0).toUpperCase()}`}
+                  {`${STAMP_SIZE_ORDER[nextStampIndex].charAt(0).toUpperCase()}`}
                 </button>
                 <button
                   type="button"
-                  aria-label="Clear all stickers"
-                  onClick={() => setStickers([])}
+                  aria-label="Clear all stamps"
+                  onClick={() => setStamps([])}
                   className="white-button h-12 w-12"
                 >
                   <HeartOff size={16} color="white" />
@@ -426,9 +426,9 @@ export default function PostCard() {
         )}
         {mode === "stamp" && (
           <div className="absolute left-1/2 -translate-x-1/2 -bottom-16 text-white text-md">
-            {stickers.length <= 0
-              ? "Click on the postcard to add stickers"
-              : `${stickers.length} / ${MAX_STICKERS}`}
+            {stamps.length <= 0
+              ? "Click on the postcard to add stamps"
+              : `${stamps.length} / ${MAX_STAMPS}`}
           </div>
         )}
         <div
@@ -501,15 +501,15 @@ export default function PostCard() {
               )}
             </section>
 
-            {stickers.map((sticker) => (
-              <Sticker
-                key={sticker.id}
-                heartColor={sticker.heartColor}
-                size={sticker.size}
-                x={sticker.x}
-                y={sticker.y}
+            {stamps.map((stamp) => (
+              <Stamp
+                key={stamp.id}
+                heartColor={stamp.heartColor}
+                size={stamp.size}
+                x={stamp.x}
+                y={stamp.y}
                 isEditable={mode === "stamp"}
-                onRemove={() => handleRemoveSticker(sticker.id)}
+                onRemove={() => handleRemoveStamp(stamp.id)}
               />
             ))}
           </div>
