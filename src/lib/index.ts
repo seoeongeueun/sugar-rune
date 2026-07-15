@@ -16,3 +16,4 @@ export {
 } from "./gestureDetection";
 export type { GestureDetectorStatus } from "./gestureDetection";
 export type { Note, ModalProps } from "./types";
+export { shouldReclassify } from "./analyze";

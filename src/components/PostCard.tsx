@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
-import { formatDateForDb, parseNoteDate } from "@/lib";
+import { formatDateForDb, parseNoteDate, shouldReclassify } from "@/lib";
 import { HEART_LIST } from "@/shared";
 import {
   analyzeNoteHeartColor,
@@ -67,6 +67,9 @@ interface FormData {
 
 export default function PostCard() {
   const note = useNote((state) => state.note);
+  const closeNote = useNote((state) => state.closeNote);
+  const updateContent = useNote((state) => state.updateContent);
+
   const initialDate = parseNoteDate(note?.date);
   const initialDateKey = note?.date ?? formatDateForDb(initialDate);
   const [mode, setMode] = useState<POSTCARD_MODE>(
@@ -87,8 +90,6 @@ export default function PostCard() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [content, setContent] = useState<string>(note?.content || "");
 
-  const closeNote = useNote((state) => state.closeNote);
-  const updateContent = useNote((state) => state.updateContent);
   const user = useAuth((state) => state.user);
   const queryClient = useQueryClient();
 
@@ -222,14 +223,21 @@ export default function PostCard() {
       return;
     }
 
+    const reclassify = shouldReclassify(note?.content ?? "", nextContent);
+
     setIsSaving(true);
-    setSaveError(null);
+    setSaveError(
+      reclassify ? "Changes detected! Reanalyzing heart color..." : null,
+    );
 
     try {
       const nextDateKey = noteDateKey;
-      const nextHeartColor = note?.id
-        ? heartColor
-        : await analyzeNoteHeartColor(nextContent);
+
+      //reanalyze the heart color if the content has changed enough
+      const nextHeartColor = reclassify
+        ? await analyzeNoteHeartColor(nextContent)
+        : heartColor;
+
       const savedNote = note?.id
         ? await updateNote({
             id: note.id,
@@ -458,7 +466,7 @@ export default function PostCard() {
           </button>
         </div>
         {saveError && (
-          <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-max max-w-80 -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
+          <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-[80%] text-center -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
             {saveError}
           </p>
         )}
