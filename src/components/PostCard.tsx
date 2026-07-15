@@ -87,7 +87,7 @@ export default function PostCard() {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [content, setContent] = useState<string>(note?.content || "");
 
   const user = useAuth((state) => state.user);
@@ -149,13 +149,13 @@ export default function PostCard() {
 
   //refresh error state after 5 seconds
   useEffect(() => {
-    if (saveError) {
+    if (saveMessage) {
       const timer = setTimeout(() => {
-        setSaveError(null);
+        setSaveMessage(null);
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [saveError]);
+  }, [saveMessage]);
 
   useEffect(() => {
     const overlay = overlayRef.current;
@@ -205,14 +205,14 @@ export default function PostCard() {
 
   const onSubmit = async (data: FormData) => {
     if (!user) {
-      setSaveError("Sign in before saving a note.");
+      setSaveMessage("Sign in before saving a note.");
       return;
     }
 
     const nextContent = data.content.trim();
 
     if (!nextContent || nextContent.length === 0) {
-      setSaveError("Content is empty.");
+      setSaveMessage("Content is empty.");
       return;
     }
 
@@ -226,7 +226,7 @@ export default function PostCard() {
     const reclassify = shouldReclassify(note?.content ?? "", nextContent);
 
     setIsSaving(true);
-    setSaveError(
+    setSaveMessage(
       reclassify ? "Changes detected! Reanalyzing heart color..." : null,
     );
 
@@ -264,7 +264,7 @@ export default function PostCard() {
       });
       setMode("view");
     } catch (error) {
-      setSaveError(
+      setSaveMessage(
         error instanceof Error ? error.message : "Failed to save note.",
       );
     } finally {
@@ -273,17 +273,17 @@ export default function PostCard() {
   };
 
   const handleEditClick = () => {
-    setSaveError(null);
+    setSaveMessage(null);
     setMode("edit");
   };
 
   const handleStampClick = () => {
-    setSaveError(null);
+    setSaveMessage(null);
     setMode("stamp");
   };
 
   const handleStampSaveClick = () => {
-    setSaveError(null);
+    setSaveMessage(null);
     setMode("view");
   };
 
@@ -465,9 +465,9 @@ export default function PostCard() {
             <X size={16} />
           </button>
         </div>
-        {saveError && (
+        {saveMessage && (
           <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-[80%] text-center -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
-            {saveError}
+            {saveMessage}
           </p>
         )}
         <div
