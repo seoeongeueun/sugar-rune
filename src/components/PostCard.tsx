@@ -117,7 +117,7 @@ export default function PostCard() {
     small: { x: 8, y: 4 },
   });
 
-  const MAX_CONTENT_LENGTH = 300; // Maximum number of characters allowed in the content
+  const MAX_CONTENT_LENGTH = 350; // Maximum number of characters allowed in the content
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
