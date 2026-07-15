@@ -3,7 +3,14 @@ import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
-import { formatDateForDb, parseNoteDate, shouldReclassify } from "@/lib";
+import {
+  formatDateForDb,
+  parseNoteDate,
+  shouldReclassify,
+  MAX_CONTENT_LENGTH,
+  STAMP_SIZE_ORDER,
+  MAX_STAMPS,
+} from "@/lib";
 import { HEART_LIST } from "@/shared";
 import {
   analyzeNoteHeartColor,
@@ -25,7 +32,7 @@ import {
 import { useAuth, useNote } from "@/stores";
 import { DeleteModal } from "@/components/modals";
 import { ModalSimple } from "@/ui";
-import Stamp, { type StampSize } from "./Stamp";
+import type { StampSize } from "@/lib";
 
 type POSTCARD_MODE = "view" | "edit" | "stamp";
 
@@ -36,9 +43,6 @@ type PlacedStamp = {
   x: number;
   y: number;
 };
-
-const STAMP_SIZE_ORDER: StampSize[] = ["small", "medium", "large"];
-const MAX_STAMPS = 5;
 
 interface FormData {
   content: string;
@@ -91,8 +95,6 @@ export default function PostCard() {
   const stampIdRef = useRef(0);
   const [stamps, setStamps] = useState<PlacedStamp[]>([]);
   const [nextStampIndex, setNextStampIndex] = useState(0);
-
-  const MAX_CONTENT_LENGTH = 350; // Maximum number of characters allowed in the content
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {

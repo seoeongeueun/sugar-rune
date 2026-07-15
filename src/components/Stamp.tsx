@@ -1,8 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import type { MouseEvent } from "react";
 import { X } from "lucide-react";
-
-export type StampSize = "small" | "medium" | "large";
+import type { StampSize } from "@/lib/constants";
 
 type StampProps = {
   heartColor: string;
