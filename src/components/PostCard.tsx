@@ -3,12 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { gsap } from "gsap";
-import {
-  CALENDAR_START_YEAR,
-  getSubmittedDate,
-  parseNoteDate,
-  getDateFormValues,
-} from "@/lib";
+import { formatDateForDb, parseNoteDate } from "@/lib";
 import { HEART_LIST } from "@/shared";
 import {
   analyzeNoteHeartColor,
@@ -68,23 +63,18 @@ function clampStampPlacement(
 }
 
 interface FormData {
-  month: string;
-  day: string;
-  year: string;
   content: string;
 }
 
 export default function PostCard() {
   const note = useNote((state) => state.note);
-  const currentYear = new Date().getFullYear();
   const initialDate = parseNoteDate(note?.date);
-  const initialDateValues = getDateFormValues(initialDate);
-  const initialDateKey = `${initialDateValues.year}-${initialDateValues.month}-${initialDateValues.day}`;
+  const initialDateKey = note?.date ?? formatDateForDb(initialDate);
   const [mode, setMode] = useState<POSTCARD_MODE>(
     note?.content ? "view" : "edit",
   );
-  const [date, setDate] = useState<Date>(initialDate);
-  const [dateValues, setDateValues] = useState(initialDateValues);
+  const [displayDate, setDisplayDate] = useState<Date>(initialDate);
+  const [noteDateKey, setNoteDateKey] = useState(initialDateKey);
   const [savedSnapshot, setSavedSnapshot] = useState({
     content: note?.content || "",
     date: initialDateKey,
@@ -96,9 +86,6 @@ export default function PostCard() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // const [content, setContent] = useState<string>(
-  //   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 𖤐 ",
-  // );
   const [content, setContent] = useState<string>(note?.content || "");
   const closeNote = useNote((state) => state.closeNote);
   const updateContent = useNote((state) => state.updateContent);
@@ -111,13 +98,11 @@ export default function PostCard() {
   const showViewActions = mode === "view" && hasSavedNote;
   const showEditSaveAction = mode === "edit";
   const showStampSaveAction = mode === "stamp";
-  const currentDateKey = `${dateValues.year}-${dateValues.month}-${dateValues.day}`;
   const hasUnsavedChanges = useMemo(
     () =>
       content !== savedSnapshot.content ||
-      currentDateKey !== savedSnapshot.date ||
       heartColor !== savedSnapshot.heartColor,
-    [content, currentDateKey, heartColor, savedSnapshot],
+    [content, heartColor, savedSnapshot],
   );
 
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -135,24 +120,8 @@ export default function PostCard() {
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
     defaultValues: {
-      ...initialDateValues,
       content: content,
     },
-  });
-  const monthField = register("month", {
-    min: 1,
-    max: 12,
-    valueAsNumber: false,
-  });
-  const dayField = register("day", {
-    min: 1,
-    max: 31,
-    valueAsNumber: false,
-  });
-  const yearField = register("year", {
-    min: CALENDAR_START_YEAR,
-    max: currentYear,
-    valueAsNumber: false,
   });
 
   //sync content state with react form
@@ -163,19 +132,16 @@ export default function PostCard() {
   useEffect(() => {
     const nextContent = note?.content || "";
     const nextDate = parseNoteDate(note?.date);
-    const nextDateValues = getDateFormValues(nextDate);
+    const nextDateKey = note?.date ?? formatDateForDb(nextDate);
 
-    setDate(nextDate);
-    setDateValues(nextDateValues);
+    setDisplayDate(nextDate);
+    setNoteDateKey(nextDateKey);
     setContent(nextContent);
     setSavedSnapshot({
       content: nextContent,
-      date: `${nextDateValues.year}-${nextDateValues.month}-${nextDateValues.day}`,
+      date: nextDateKey,
       heartColor,
     });
-    setValue("month", nextDateValues.month);
-    setValue("day", nextDateValues.day);
-    setValue("year", nextDateValues.year);
     setValue("content", nextContent);
     setMode(nextContent ? "view" : "edit");
   }, [heartColor, note?.content, note?.date, setValue]);
@@ -242,17 +208,7 @@ export default function PostCard() {
       return;
     }
 
-    const nextDate = getSubmittedDate(data, date);
     const nextContent = data.content.trim();
-    const minDate = new Date(CALENDAR_START_YEAR, 0, 1);
-    const maxDate = new Date(currentYear, 11, 31, 23, 59, 59, 999);
-
-    if (nextDate < minDate || nextDate > maxDate) {
-      setSaveError(
-        `Date must be between ${CALENDAR_START_YEAR} and ${currentYear}.`,
-      );
-      return;
-    }
 
     if (!nextContent || nextContent.length === 0) {
       setSaveError("Content is empty.");
@@ -263,8 +219,7 @@ export default function PostCard() {
     setSaveError(null);
 
     try {
-      const nextDateValues = getDateFormValues(nextDate);
-      const nextDateKey = `${nextDateValues.year}-${nextDateValues.month}-${nextDateValues.day}`;
+      const nextDateKey = noteDateKey;
       const nextHeartColor = note?.id
         ? heartColor
         : await analyzeNoteHeartColor(nextContent);
@@ -282,12 +237,7 @@ export default function PostCard() {
             heartColor: nextHeartColor,
           });
 
-      setDate(nextDate);
-      setValue("month", nextDateValues.month);
-      setValue("day", nextDateValues.day);
-      setValue("year", nextDateValues.year);
       setContent(nextContent);
-      setDateValues(nextDateValues);
       setSavedSnapshot({
         content: nextContent,
         date: nextDateKey,
@@ -537,56 +487,9 @@ export default function PostCard() {
                   <div className="flex flex-row items-center w-fit mb-2 gap-2">
                     <Crown fill="var(--color-night)" className="w-4 h-4" />
                     <span>Date</span>
-                    <input
-                      {...monthField}
-                      type="number"
-                      className="w-16 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
-                      placeholder={getDateFormValues(date).month}
-                      min="1"
-                      max="12"
-                      maxLength={2}
-                      onChange={(event) => {
-                        void monthField.onChange(event);
-                        setDateValues((value) => ({
-                          ...value,
-                          month: event.target.value.padStart(2, "0"),
-                        }));
-                      }}
-                    />
-                    <span>.</span>
-                    <input
-                      {...dayField}
-                      type="number"
-                      className="w-16 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
-                      placeholder={getDateFormValues(date).day}
-                      min="1"
-                      max="31"
-                      maxLength={2}
-                      onChange={(event) => {
-                        void dayField.onChange(event);
-                        setDateValues((value) => ({
-                          ...value,
-                          day: event.target.value.padStart(2, "0"),
-                        }));
-                      }}
-                    />
-                    <span>.</span>
-                    <input
-                      {...yearField}
-                      type="number"
-                      className="w-24 px-1 bg-transparent border-b border-gray-300 focus:border-background outline-none text-center"
-                      placeholder={getDateFormValues(date).year}
-                      min={CALENDAR_START_YEAR}
-                      max={currentYear}
-                      maxLength={4}
-                      onChange={(event) => {
-                        void yearField.onChange(event);
-                        setDateValues((value) => ({
-                          ...value,
-                          year: event.target.value,
-                        }));
-                      }}
-                    />
+                    <span className="text-background underline underline-offset-4 decoration-1">
+                      {displayDate.toLocaleDateString().replace(/\//g, ". ")}
+                    </span>
                   </div>
                   <div className=" text-sm">
                     <span
@@ -615,7 +518,7 @@ export default function PostCard() {
                   <Crown fill="var(--color-night)" className="w-4 h-4" />
                   <span>Date</span>
                   <span className="text-background underline underline-offset-4 decoration-1">
-                    {date.toLocaleDateString().replace(/\//g, ". ")}
+                    {displayDate.toLocaleDateString().replace(/\//g, ". ")}
                   </span>
                 </div>
                 <p className="whitespace-pre-line w-full h-full overflow-y-auto  decoration-gray-400 text-lg">
