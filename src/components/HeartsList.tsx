@@ -37,7 +37,7 @@ export default function HeartsList() {
           className="relative group flex flex-col items-center w-min"
           key={heart.color}
         >
-          <span className="absolute bottom-18 whitespace-nowrap text-white group-hover:opacity-100 opacity-0 transition-opacity duration-200 bg-white/20 rounded-sm px-4 py-1">
+          <span className="absolute bottom-16 whitespace-nowrap text-white group-hover:opacity-100 opacity-0 transition-opacity duration-200 bg-white/20 rounded-sm px-4 py-1">
             {heart.label}
           </span>
           <HeartButton
@@ -52,6 +52,7 @@ export default function HeartsList() {
               }
             }}
             label={heartCounts[heart.color] ?? 0}
+            disabled={!(heart.color in latestNoteDateByHeartColor)}
           />
         </div>
       ))}

@@ -68,19 +68,19 @@ export function AuthModal() {
       footer={
         <>
           <button
-            type="button"
-            onClick={() => reset()}
-            className="whitespace-nowrap text-shadow bg-[url('/hearts/heart_white_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
-          >
-            <span className="z-10">Clear</span>
-          </button>
-          <button
             form="auth-form"
             type="submit"
             disabled={isSubmitting}
             className="whitespace-nowrap text-shadow bg-[url('/hearts/heart_purple_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
           >
             <span className="z-10">Confirm</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => reset()}
+            className="whitespace-nowrap text-shadow bg-[url('/hearts/heart_white_icon.png')] bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
+          >
+            <span className="z-10">Clear</span>
           </button>
         </>
       }
