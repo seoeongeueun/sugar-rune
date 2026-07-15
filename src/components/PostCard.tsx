@@ -25,6 +25,7 @@ import {
   LoaderCircle,
   X,
   Stamp,
+  Check,
 } from "lucide-react";
 import { useAuth, useNote } from "@/stores";
 import { DeleteModal } from "@/components/modals";
@@ -51,7 +52,10 @@ function clampStampPlacement(
   targetRect: DOMRect,
   containerRect: DOMRect,
 ): StampHeartPlacement {
-  const maxX = Math.max(0, 100 - (targetRect.width / containerRect.width) * 100);
+  const maxX = Math.max(
+    0,
+    100 - (targetRect.width / containerRect.width) * 100,
+  );
   const maxY = Math.max(
     0,
     100 - (targetRect.height / containerRect.height) * 100,
@@ -103,7 +107,10 @@ export default function PostCard() {
 
   const heartColor =
     note?.heart_content || HEART_LIST[HEART_LIST.length - 1].color;
-  const canDeleteNote = Boolean(note?.id);
+  const hasSavedNote = Boolean(note?.id);
+  const showViewActions = mode === "view" && hasSavedNote;
+  const showEditSaveAction = mode === "edit";
+  const showStampSaveAction = mode === "stamp";
   const currentDateKey = `${dateValues.year}-${dateValues.month}-${dateValues.day}`;
   const hasUnsavedChanges = useMemo(
     () =>
@@ -300,20 +307,27 @@ export default function PostCard() {
     }
   };
 
-  const handleButtonClick = () => {
+  const handleEditClick = () => {
+    setSaveError(null);
+    setMode("edit");
+  };
+
+  const handleStampClick = () => {
+    setSaveError(null);
+    setMode("stamp");
+  };
+
+  const handleStampSaveClick = () => {
+    setSaveError(null);
+    setMode("view");
+  };
+
+  const handleEditSaveClick = () => {
     if (isSaving) {
       return;
     }
 
-    if (mode === "view") {
-      setSaveError(null);
-      setMode("edit");
-    } else if (mode === "stamp") {
-      setSaveError(null);
-      setMode("view");
-    } else {
-      void handleSubmit(onSubmit)();
-    }
+    void handleSubmit(onSubmit)();
   };
 
   const handleStampPointerDown = (
@@ -417,63 +431,74 @@ export default function PostCard() {
       >
         <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none py-4 px-1 z-60">
           <div className="flex flex-row gap-2">
-            <button
-              type="button"
-              onClick={handleButtonClick}
-              disabled={isSaving}
-              className="white-button px-2"
-            >
-              {isSaving ? (
-                <LoaderCircle
-                  size={16}
-                  color="white"
-                  className="animate-spin"
-                />
-              ) : mode === "view" ? (
-                <SquarePen size={16} color="white" />
-              ) : (
-                <Save size={16} color="white" />
-              )}
-            </button>
-            {mode === "view" && (
+            {showViewActions && (
               <button
                 type="button"
-                aria-label="Heart Stamp"
+                aria-label="Edit note"
+                onClick={handleEditClick}
                 className="white-button px-2"
-                onClick={() => setMode("stamp")}
+              >
+                <SquarePen size={16} color="white" />
+              </button>
+            )}
+            {showViewActions && (
+              <button
+                type="button"
+                aria-label="Edit heart stamp"
+                className="white-button px-2"
+                onClick={handleStampClick}
               >
                 <Stamp size={16} color="white" />
               </button>
             )}
-          </div>
-          {canDeleteNote ? (
-            <div className="flex flex-row gap-2">
+            {showViewActions && (
               <button
                 type="button"
+                aria-label="Delete note"
                 onClick={() => setIsDeleteModalOpen(true)}
                 className="white-button px-2"
               >
                 <Trash2 size={16} color="white" />
               </button>
+            )}
+            {showEditSaveAction && (
               <button
                 type="button"
-                aria-label="Close Postcard"
-                onClick={handleCloseClick}
+                aria-label="Save note"
+                onClick={handleEditSaveClick}
+                disabled={isSaving}
                 className="white-button px-2"
               >
-                <X size={16} />
+                {isSaving ? (
+                  <LoaderCircle
+                    size={16}
+                    color="white"
+                    className="animate-spin"
+                  />
+                ) : (
+                  <Save size={16} color="white" />
+                )}
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              aria-label="Close Postcard"
-              onClick={handleCloseClick}
-              className="white-button px-2"
-            >
-              <X size={16} />
-            </button>
-          )}
+            )}
+            {showStampSaveAction && (
+              <button
+                type="button"
+                aria-label="Save heart stamp positions"
+                onClick={handleStampSaveClick}
+                className="white-button px-2"
+              >
+                <Check size={16} color="white" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            aria-label="Close Postcard"
+            onClick={handleCloseClick}
+            className="white-button px-2"
+          >
+            <X size={16} />
+          </button>
         </div>
         {saveError && (
           <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-max max-w-80 -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
@@ -483,7 +508,7 @@ export default function PostCard() {
         <div
           id="postcard-container"
           className={twMerge(
-            "w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
+            "font-sonmat w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
             (mode === "edit" ||
               mode === "stamp" ||
               isDeleteModalOpen ||
@@ -574,7 +599,7 @@ export default function PostCard() {
                 </div>
                 <textarea
                   {...register("content")}
-                  className="tracking-tighter px-4 w-full h-full text-lg bg-transparent resize-none outline-background"
+                  className="px-4 w-full h-full text-lg bg-transparent resize-none outline-background"
                   placeholder="Write your story here..."
                   value={content}
                   maxLength={MAX_CONTENT_LENGTH}
@@ -593,7 +618,7 @@ export default function PostCard() {
                     {date.toLocaleDateString().replace(/\//g, ". ")}
                   </span>
                 </div>
-                <p className="whitespace-pre-line tracking-tighter w-full h-full overflow-y-auto  decoration-gray-400 text-lg">
+                <p className="whitespace-pre-line w-full h-full overflow-y-auto  decoration-gray-400 text-lg">
                   {content}
                 </p>
               </section>
@@ -613,7 +638,9 @@ export default function PostCard() {
                 left: `${stampPlacements.large.x}%`,
                 top: `${stampPlacements.large.y}%`,
                 transform:
-                  mode === "stamp" ? "translate(0, 0) rotate(10deg)" : undefined,
+                  mode === "stamp"
+                    ? "translate(0, 0) rotate(10deg)"
+                    : undefined,
               }}
             >
               <img
@@ -653,7 +680,7 @@ export default function PostCard() {
           </div>
         </div>
       </article>
-      {isDeleteModalOpen && canDeleteNote && (
+      {isDeleteModalOpen && showViewActions && (
         <DeleteModal
           onCancel={() => setIsDeleteModalOpen(false)}
           onConfirm={handleRemoveCard}
