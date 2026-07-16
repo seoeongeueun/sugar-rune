@@ -31,7 +31,7 @@ export default function HeartsList() {
   );
 
   return (
-    <section className="pointer-events-none w-fit text-md fixed flex flex-row items-center justify-start bottom-0 p-4 gap-4">
+    <section className="pointer-events-none w-fit text-md fixed flex flex-row items-center justify-start bottom-0 p-4 gap-4 z-[100]">
       {HEART_LIST.map((heart) => (
         <div
           className="relative group flex flex-col items-center w-min"

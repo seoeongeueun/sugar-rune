@@ -427,7 +427,7 @@ export default function PostCard() {
     }
 
     if (areStampsEqual(stamps, savedSnapshot.stamps)) {
-      setMode("view");
+      closeNote();
       return;
     }
 
@@ -528,11 +528,6 @@ export default function PostCard() {
   const handleCloseClick = () => {
     if (hasUnsavedChanges) {
       setIsCloseModalOpen(true);
-      return;
-    }
-
-    if (mode !== "view") {
-      setMode("view");
       return;
     }
 
@@ -653,7 +648,7 @@ export default function PostCard() {
           </button>
         </div>
         {saveMessage && (
-          <p className="text-shadow pointer-events-none absolute left-1/2 -bottom-16 z-70 w-[80%] text-center -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
+          <p className="pointer-events-none absolute left-1/2 -bottom-16 z-70 w-[80%] text-center -translate-x-1/2 rounded-sm px-3 py-2 text-md text-white">
             {saveMessage}
           </p>
         )}

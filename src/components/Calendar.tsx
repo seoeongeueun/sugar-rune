@@ -187,16 +187,12 @@ export default function Calendar() {
   const canShowNextMonth = visibleMonthIndex < maxMonthIndex;
 
   useEffect(() => {
-    if (!calendarTargetDate) return;
-
-    showDate(parseNoteDate(calendarTargetDate));
-  }, [calendarTargetDate, showDate]);
-
-  useEffect(() => {
-    if (!isOpen || !noteDate) return;
-
-    showDate(parseNoteDate(noteDate));
-  }, [isOpen, noteDate, showDate]);
+    if (calendarTargetDate) {
+      showDate(parseNoteDate(calendarTargetDate));
+    } else if (isOpen && noteDate) {
+      showDate(parseNoteDate(noteDate));
+    }
+  }, [calendarTargetDate, isOpen, noteDate, showDate]);
 
   useEffect(() => {
     const refreshToday = () => {
@@ -255,7 +251,7 @@ export default function Calendar() {
   return (
     <div
       ref={overlayRef}
-      className={`${isOpen ? "!opacity-0" : "!opacity-100"} pointer-events-none duration-50 transition-opacity z-99 fixed w-full h-full inset-0 bg-black/30`}
+      className={`${isOpen ? "!opacity-0" : "!opacity-100"} duration-50 transition-opacity z-99 fixed w-full h-full inset-0 bg-black/30`}
     >
       <div
         ref={calendarRef}
