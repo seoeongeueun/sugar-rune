@@ -56,7 +56,7 @@ export default function Stamp({
           type="button"
           aria-label="Remove Stamp"
           onClick={handleRemoveClick}
-          className="relative top-4 left-full z-50 black-button"
+          className="absolute top-4 left-full z-50 black-button"
         >
           <X className="w-4 h-4 text-night" />
         </button>
