@@ -53,6 +53,7 @@ const POSTCARD_TEXT_FONT =
 const POSTCARD_TEXT_LINE_HEIGHT = 30;
 const POSTCARD_TEXT_LETTER_SPACING = 0;
 const POSTCARD_TEXT_BOTTOM_PADDING = 8;
+const MIN_TEXT_SLOT_WIDTH = 20;
 
 export const POSTCARD_STAMP_TEXT_GAP = 3;
 export const POSTCARD_STAMP_TEXT_X_BIAS = 6;
@@ -90,7 +91,7 @@ function carveTextLineSlots(
     slots = nextSlots;
   }
 
-  return slots.filter((slot) => slot.right - slot.left >= 0);
+  return slots.filter((slot) => slot.right - slot.left >= MIN_TEXT_SLOT_WIDTH);
 }
 
 function circleIntervalForBand(
