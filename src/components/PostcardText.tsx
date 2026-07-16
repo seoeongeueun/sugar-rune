@@ -1,5 +1,9 @@
-import { useEffect, useMemo, type MouseEvent } from "react";
-import { layoutNextLine, prepareWithSegments } from "@chenglou/pretext";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import {
+  clearCache,
+  layoutNextLine,
+  prepareWithSegments,
+} from "@chenglou/pretext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export type CircleObstacle = {
@@ -17,7 +21,6 @@ type LayoutCursor = {
 type TextSlot = {
   left: number;
   right: number;
-  align: "left" | "right";
 };
 
 type TextInterval = {
@@ -31,7 +34,6 @@ type PositionedTextLine = {
   y: number;
   width: number;
   slotWidth: number;
-  textAlign: "left" | "right";
   text: string;
 };
 
@@ -46,7 +48,8 @@ type PostcardTextProps = {
   onPageIndexChange: (pageIndex: number) => void;
 };
 
-const POSTCARD_TEXT_FONT = '20px "sonmat"';
+const POSTCARD_TEXT_FONT =
+  '20px "SpecialSymbols", "sonmat", system-ui, Avenir, Helvetica, Arial, sans-serif';
 const POSTCARD_TEXT_LINE_HEIGHT = 30;
 const POSTCARD_TEXT_LETTER_SPACING = 0;
 const MIN_TEXT_SLOT_WIDTH = 20;
@@ -74,7 +77,6 @@ function carveTextLineSlots(
         nextSlots.push({
           left: slot.left,
           right: blocked.left,
-          align: "right",
         });
       }
 
@@ -82,7 +84,6 @@ function carveTextLineSlots(
         nextSlots.push({
           left: blocked.right,
           right: slot.right,
-          align: "left",
         });
       }
     }
@@ -167,10 +168,9 @@ function buildPostcardTextPages({
         .filter((interval): interval is TextInterval => interval !== null);
 
       const slots = carveTextLineSlots(
-        { left: 0, right: width, align: "left" },
+        { left: 0, right: width },
         blockedIntervals,
       ).sort((a, b) => a.left - b.left);
-      const hasMultipleSlots = slots.length > 1;
 
       for (const slot of slots) {
         const line = layoutNextLine(prepared, cursor, slot.right - slot.left);
@@ -186,7 +186,6 @@ function buildPostcardTextPages({
           y: lineTop,
           width: line.width,
           slotWidth: slot.right - slot.left,
-          textAlign: hasMultipleSlots ? slot.align : "left",
           text: line.text.replace(/\s+$/, ""),
         });
 
@@ -225,13 +224,35 @@ export default function PostcardText({
   pageIndex,
   onPageIndexChange,
 }: PostcardTextProps) {
+  const [fontRevision, setFontRevision] = useState(0);
+
+  useEffect(() => {
+    if (!("fonts" in document)) {
+      return;
+    }
+
+    let isMounted = true;
+
+    document.fonts.ready.then(() => {
+      if (isMounted) {
+        clearCache();
+        setFontRevision((revision) => revision + 1);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const prepared = useMemo(
     () =>
       prepareWithSegments(content, POSTCARD_TEXT_FONT, {
         whiteSpace: "pre-wrap",
+        wordBreak: "normal",
         letterSpacing: POSTCARD_TEXT_LETTER_SPACING,
       }),
-    [content],
+    [content, fontRevision],
   );
 
   const pages = useMemo(
@@ -287,7 +308,6 @@ export default function PostcardText({
             font: POSTCARD_TEXT_FONT,
             lineHeight: `${POSTCARD_TEXT_LINE_HEIGHT}px`,
             letterSpacing: `${POSTCARD_TEXT_LETTER_SPACING}px`,
-            textAlign: line.textAlign,
           }}
         >
           {line.text}
