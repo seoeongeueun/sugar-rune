@@ -67,6 +67,25 @@ interface FormData {
   content: string;
 }
 
+function areStampsEqual(left: PlacedStamp[], right: PlacedStamp[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((stamp, index) => {
+    const otherStamp = right[index];
+
+    return (
+      otherStamp !== undefined &&
+      stamp.id === otherStamp.id &&
+      stamp.pageIndex === otherStamp.pageIndex &&
+      stamp.size === otherStamp.size &&
+      stamp.x === otherStamp.x &&
+      stamp.y === otherStamp.y
+    );
+  });
+}
+
 export default function PostCard() {
   const note = useNote((state) => state.note);
   const closeNote = useNote((state) => state.closeNote);
@@ -84,6 +103,7 @@ export default function PostCard() {
     content: note?.content || "",
     date: initialDateKey,
     heartColor: note?.heart_content || HEART_LIST[HEART_LIST.length - 1].color,
+    stamps: note?.stamps ?? [],
   });
   const [deleteTrigger, setDeleteTrigger] = useState<number>(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -102,12 +122,6 @@ export default function PostCard() {
   const showViewActions = mode === "view" && hasSavedNote;
   const showEditSaveAction = mode === "edit";
   const showStampSaveAction = mode === "stamp";
-  const hasUnsavedChanges = useMemo(
-    () =>
-      content !== savedSnapshot.content ||
-      heartColor !== savedSnapshot.heartColor,
-    [content, heartColor, savedSnapshot],
-  );
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -117,6 +131,13 @@ export default function PostCard() {
   const [stamps, setStamps] = useState<PlacedStamp[]>([]);
   const [nextStampIndex, setNextStampIndex] = useState(0);
   const [textPageIndex, setTextPageIndex] = useState(0);
+  const hasUnsavedChanges = useMemo(
+    () =>
+      content !== savedSnapshot.content ||
+      heartColor !== savedSnapshot.heartColor ||
+      !areStampsEqual(stamps, savedSnapshot.stamps),
+    [content, heartColor, savedSnapshot, stamps],
+  );
   const [paragraphMetrics, setParagraphMetrics] = useState<ParagraphMetrics>({
     width: 0,
     height: 0,
@@ -179,6 +200,7 @@ export default function PostCard() {
       content: nextContent,
       date: nextDateKey,
       heartColor,
+      stamps: note?.stamps ?? [],
     });
     setValue("content", nextContent);
     setMode(nextContent ? "view" : "edit");
@@ -337,6 +359,7 @@ export default function PostCard() {
         content: nextContent,
         date: nextDateKey,
         heartColor: nextHeartColor,
+        stamps,
       });
       updateContent(
         nextContent,
@@ -385,6 +408,11 @@ export default function PostCard() {
       return;
     }
 
+    if (areStampsEqual(stamps, savedSnapshot.stamps)) {
+      setMode("view");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -396,6 +424,10 @@ export default function PostCard() {
         stamps,
       });
       updateStamps(stamps);
+      setSavedSnapshot((currentSnapshot) => ({
+        ...currentSnapshot,
+        stamps,
+      }));
       await queryClient.invalidateQueries({
         queryKey: notesQueryKeys.byUserId(user.id),
       });
@@ -458,6 +490,11 @@ export default function PostCard() {
   const handleCloseClick = () => {
     if (hasUnsavedChanges) {
       setIsCloseModalOpen(true);
+      return;
+    }
+
+    if (mode !== "view") {
+      setMode("view");
       return;
     }
 
@@ -539,8 +576,10 @@ export default function PostCard() {
                       color="white"
                       className="animate-spin"
                     />
-                  ) : (
+                  ) : areStampsEqual(stamps, savedSnapshot.stamps) ? (
                     <Check size={16} color="white" />
+                  ) : (
+                    <Save size={16} color="white" />
                   )}
                 </button>
                 <button
@@ -671,18 +710,19 @@ export default function PostCard() {
               )}
             </section>
 
-            {stamps.map((stamp) => (
-              <Stamp
-                key={stamp.id}
-                isVisible={stamp.pageIndex === textPageIndex}
-                heartColor={heartColor}
-                size={stamp.size}
-                x={stamp.x}
-                y={stamp.y}
-                isEditable={mode === "stamp"}
-                onRemove={() => handleRemoveStamp(stamp.id)}
-              />
-            ))}
+            {mode !== "edit" &&
+              stamps.map((stamp) => (
+                <Stamp
+                  key={stamp.id}
+                  isVisible={stamp.pageIndex === textPageIndex}
+                  heartColor={heartColor}
+                  size={stamp.size}
+                  x={stamp.x}
+                  y={stamp.y}
+                  isEditable={mode === "stamp"}
+                  onRemove={() => handleRemoveStamp(stamp.id)}
+                />
+              ))}
           </div>
         </div>
       </article>
