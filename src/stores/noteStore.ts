@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Note } from "@/lib";
+import type { Note, StampData } from "@/lib";
 
 interface NoteState {
   note: Note | null;
@@ -12,7 +12,9 @@ interface NoteState {
     heartContent: string,
     date?: string,
     id?: string,
+    stamps?: StampData[],
   ) => void;
+  updateStamps: (stamps: StampData[]) => void;
   clearContent: () => void;
   resetNote: () => void;
 }
@@ -38,7 +40,7 @@ export const useNote = create<NoteState>((set) => ({
             heart_content: heartColor,
           },
     })),
-  updateContent: (content, heartContent, date, id) =>
+  updateContent: (content, heartContent, date, id, stamps) =>
     set((state) => ({
       note: {
         ...state.note,
@@ -46,7 +48,17 @@ export const useNote = create<NoteState>((set) => ({
         date: date ?? state.note?.date,
         heart_content: heartContent,
         id: id ?? state.note?.id,
+        stamps: stamps ?? state.note?.stamps,
       },
+    })),
+  updateStamps: (stamps) =>
+    set((state) => ({
+      note: state.note
+        ? {
+            ...state.note,
+            stamps,
+          }
+        : state.note,
     })),
   clearContent: () =>
     set((state) => ({

@@ -127,11 +127,13 @@ export default function Calendar() {
               content: note.content,
               date: note.date,
               heart_content: note.heart_color,
+              stamps: note.stamps ?? [],
             }
           : {
               content: "",
               date: dateKey,
               heart_content: HEART_LIST[HEART_LIST.length - 1].color,
+              stamps: [],
             },
       );
     },

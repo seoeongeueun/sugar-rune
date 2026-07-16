@@ -23,6 +23,6 @@ export {
   hasVictoryGesture,
 } from "./gestureDetection";
 export type { GestureDetectorStatus } from "./gestureDetection";
-export type { Note, ModalProps } from "./types";
+export type { Note, ModalProps, StampData } from "./types";
 export { shouldReclassify } from "./analyze";
 export type { StampSize } from "./constants";

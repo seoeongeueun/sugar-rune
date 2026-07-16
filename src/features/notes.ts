@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from "@/lib";
+import type { StampData } from "@/lib";
 import { useQuery, type QueryClient } from "@tanstack/react-query";
 
 export type CreateNoteInput = {
@@ -6,6 +7,7 @@ export type CreateNoteInput = {
   date: string;
   userId: string;
   heartColor: string;
+  stamps?: StampData[];
 };
 
 export type UpdateNoteInput = {
@@ -13,6 +15,7 @@ export type UpdateNoteInput = {
   content: string;
   date: string;
   heartColor: string;
+  stamps?: StampData[];
 };
 
 export type NotesYearInput = {
@@ -30,6 +33,7 @@ export type UserNote = {
   date: string;
   user_id: string;
   heart_color: string;
+  stamps: StampData[] | null;
 };
 
 export const notesQueryKeys = {
@@ -60,7 +64,7 @@ export async function fetchNotesByUserYear({
 
   const { data, error } = await supabase
     .from("notes")
-    .select("id, content, date, user_id, heart_color")
+    .select("id, content, date, user_id, heart_color, stamps")
     .eq("user_id", userId)
     .gte("date", yearStart)
     .lt("date", nextYearStart)
@@ -80,7 +84,7 @@ export async function fetchNotesByUser({ userId }: NotesUserInput) {
 
   const { data, error } = await supabase
     .from("notes")
-    .select("id, content, date, user_id, heart_color")
+    .select("id, content, date, user_id, heart_color, stamps")
     .eq("user_id", userId)
     .order("date", { ascending: false });
 
@@ -130,6 +134,7 @@ export async function createNote({
   date,
   userId,
   heartColor,
+  stamps = [],
 }: CreateNoteInput) {
   if (!isSupabaseConfigured) {
     throw new Error("Supabase is not configured.");
@@ -142,6 +147,7 @@ export async function createNote({
       date,
       user_id: userId,
       heart_color: heartColor,
+      stamps,
     })
     .select("id")
     .single();
@@ -158,6 +164,7 @@ export async function updateNote({
   content,
   date,
   heartColor,
+  stamps,
 }: UpdateNoteInput) {
   if (!isSupabaseConfigured) {
     throw new Error("Supabase is not configured.");
@@ -169,6 +176,7 @@ export async function updateNote({
       content,
       date,
       heart_color: heartColor,
+      ...(stamps ? { stamps } : {}),
     })
     .eq("id", id)
     .select("id")

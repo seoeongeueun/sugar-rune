@@ -20,11 +20,13 @@ export default function FooterButtons() {
             content: todayNote.content,
             date: todayNote.date,
             heart_content: todayNote.heart_color,
+            stamps: todayNote.stamps ?? [],
           }
         : {
             content: "",
             date: todayKey,
             heart_content: "white",
+            stamps: [],
           },
     );
   };

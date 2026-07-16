@@ -41,7 +41,7 @@ import {
 import { useAuth, useNote } from "@/stores";
 import { DeleteModal } from "@/components/modals";
 import { ModalSimple } from "@/ui";
-import type { StampSize } from "@/lib";
+import type { StampData } from "@/lib";
 import Stamp from "./Stamp";
 import PostcardText, {
   POSTCARD_STAMP_TEXT_GAP,
@@ -51,13 +51,7 @@ import PostcardText, {
 
 type POSTCARD_MODE = "view" | "edit" | "stamp";
 
-type PlacedStamp = {
-  id: number;
-  pageIndex: number;
-  size: StampSize;
-  x: number;
-  y: number;
-};
+type PlacedStamp = StampData;
 
 type ParagraphMetrics = {
   width: number;
@@ -77,6 +71,7 @@ export default function PostCard() {
   const note = useNote((state) => state.note);
   const closeNote = useNote((state) => state.closeNote);
   const updateContent = useNote((state) => state.updateContent);
+  const updateStamps = useNote((state) => state.updateStamps);
 
   const initialDate = parseNoteDate(note?.date);
   const initialDateKey = note?.date ?? formatDateForDb(initialDate);
@@ -174,6 +169,12 @@ export default function PostCard() {
     setDisplayDate(nextDate);
     setNoteDateKey(nextDateKey);
     setContent(nextContent);
+    setStamps(note?.stamps ?? []);
+    stampIdRef.current =
+      (note?.stamps ?? []).reduce(
+        (nextId, stamp) => Math.max(nextId, stamp.id + 1),
+        0,
+      ) ?? 0;
     setSavedSnapshot({
       content: nextContent,
       date: nextDateKey,
@@ -181,7 +182,7 @@ export default function PostCard() {
     });
     setValue("content", nextContent);
     setMode(nextContent ? "view" : "edit");
-  }, [heartColor, note?.content, note?.date, setValue]);
+  }, [heartColor, note?.content, note?.date, note?.stamps, setValue]);
 
   //refresh error state after 5 seconds
   useEffect(() => {
@@ -321,12 +322,14 @@ export default function PostCard() {
             content: nextContent,
             date: nextDateKey,
             heartColor: nextHeartColor,
+            stamps,
           })
         : await createNote({
             content: nextContent,
             date: nextDateKey,
             userId: user.id,
             heartColor: nextHeartColor,
+            stamps,
           });
 
       setContent(nextContent);
@@ -335,7 +338,13 @@ export default function PostCard() {
         date: nextDateKey,
         heartColor: nextHeartColor,
       });
-      updateContent(nextContent, nextHeartColor, nextDateKey, savedNote.id);
+      updateContent(
+        nextContent,
+        nextHeartColor,
+        nextDateKey,
+        savedNote.id,
+        stamps,
+      );
       await queryClient.invalidateQueries({
         queryKey: notesQueryKeys.byUserId(user.id),
       });
@@ -359,9 +368,45 @@ export default function PostCard() {
     setMode("stamp");
   };
 
-  const handleStampSaveClick = () => {
+  const handleStampSaveClick = async () => {
     setSaveMessage(null);
-    setMode("view");
+
+    if (isSaving) {
+      return;
+    }
+
+    if (!user) {
+      setSaveMessage("Sign in before saving stamps.");
+      return;
+    }
+
+    if (!note?.id) {
+      setSaveMessage("Save the note before saving stamps.");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      await updateNote({
+        id: note.id,
+        content,
+        date: noteDateKey,
+        heartColor,
+        stamps,
+      });
+      updateStamps(stamps);
+      await queryClient.invalidateQueries({
+        queryKey: notesQueryKeys.byUserId(user.id),
+      });
+      setMode("view");
+    } catch (error) {
+      setSaveMessage(
+        error instanceof Error ? error.message : "Failed to save stamps.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleEditSaveClick = () => {
@@ -485,9 +530,18 @@ export default function PostCard() {
                   type="button"
                   aria-label="Save heart stamp positions"
                   onClick={handleStampSaveClick}
+                  disabled={isSaving}
                   className="white-button px-2 aspect-square w-auto"
                 >
-                  <Check size={16} color="white" />
+                  {isSaving ? (
+                    <LoaderCircle
+                      size={16}
+                      color="white"
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <Check size={16} color="white" />
+                  )}
                 </button>
                 <button
                   type="button"
