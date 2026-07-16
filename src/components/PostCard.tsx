@@ -26,6 +26,7 @@ import {
   createNote,
   notesQueryKeys,
   updateNote,
+  useDeleteNote,
 } from "@/features";
 import PostCardCut from "./PostCardCut";
 import {
@@ -132,6 +133,7 @@ export default function PostCard() {
 
   const user = useAuth((state) => state.user);
   const queryClient = useQueryClient();
+  const deleteNoteMutation = useDeleteNote(user?.id);
 
   const heartColor =
     note?.heart_content || HEART_LIST[HEART_LIST.length - 1].color;
@@ -493,10 +495,29 @@ export default function PostCard() {
     );
   };
 
-  const handleRemoveCard = () => {
+  const handleRemoveCard = async () => {
+    if (!note?.id || !user) {
+      setIsDeleteModalOpen(false);
+      return;
+    }
+
     setIsDeleting(true);
     setIsDeleteModalOpen(false);
-    setDeleteTrigger((prev) => prev + 1);
+
+    deleteNoteMutation.mutate(
+      { id: note.id },
+      {
+        onSuccess: () => {
+          setDeleteTrigger((prev) => prev + 1);
+        },
+        onError: (error) => {
+          setIsDeleting(false);
+          setSaveMessage(
+            error instanceof Error ? error.message : "Failed to delete note.",
+          );
+        },
+      },
+    );
   };
 
   const handleConfirmClose = () => {

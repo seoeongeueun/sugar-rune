@@ -1,6 +1,11 @@
 import { isSupabaseConfigured, supabase } from "@/lib";
 import type { StampData } from "@/lib";
-import { useQuery, type QueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 
 export type CreateNoteInput = {
   content: string;
@@ -16,6 +21,10 @@ export type UpdateNoteInput = {
   date: string;
   heartColor: string;
   stamps?: StampData[];
+};
+
+export type DeleteNoteInput = {
+  id: string;
 };
 
 export type NotesYearInput = {
@@ -187,4 +196,35 @@ export async function updateNote({
   }
 
   return data;
+}
+
+export async function deleteNote({ id }: DeleteNoteInput) {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { error } = await supabase.from("notes").delete().eq("id", id);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export function useDeleteNote(userId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteNote,
+    onSuccess: (_data, variables) => {
+      if (!userId) {
+        return;
+      }
+
+      queryClient.setQueriesData<UserNote[]>(
+        { queryKey: notesQueryKeys.byUserId(userId) },
+        (notes) =>
+          notes?.filter((cachedNote) => cachedNote.id !== variables.id),
+      );
+    },
+  });
 }
