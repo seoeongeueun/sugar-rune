@@ -193,10 +193,10 @@ export default function Calendar() {
   }, [calendarTargetDate, showDate]);
 
   useEffect(() => {
-    if (!noteDate) return;
+    if (!isOpen || !noteDate) return;
 
     showDate(parseNoteDate(noteDate));
-  }, [noteDate, showDate]);
+  }, [isOpen, noteDate, showDate]);
 
   useEffect(() => {
     const refreshToday = () => {
