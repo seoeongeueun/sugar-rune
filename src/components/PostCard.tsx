@@ -86,6 +86,23 @@ function areStampsEqual(left: PlacedStamp[], right: PlacedStamp[]) {
   });
 }
 
+function getLayoutOffsetWithin(
+  element: HTMLElement,
+  ancestor: HTMLElement,
+): { left: number; top: number } {
+  let left = 0;
+  let top = 0;
+  let currentElement: HTMLElement | null = element;
+
+  while (currentElement && currentElement !== ancestor) {
+    left += currentElement.offsetLeft;
+    top += currentElement.offsetTop;
+    currentElement = currentElement.offsetParent as HTMLElement | null;
+  }
+
+  return { left, top };
+}
+
 export default function PostCard() {
   const note = useNote((state) => state.note);
   const closeNote = useNote((state) => state.closeNote);
@@ -269,8 +286,7 @@ export default function PostCard() {
     if (!paragraph || !front) return;
 
     const updateTextLayoutMetrics = () => {
-      const paragraphRect = paragraph.getBoundingClientRect();
-      const frontRect = front.getBoundingClientRect();
+      const paragraphOffset = getLayoutOffsetWithin(paragraph, front);
       const remPx = Number.parseFloat(
         window.getComputedStyle(document.documentElement).fontSize,
       );
@@ -278,8 +294,8 @@ export default function PostCard() {
       setParagraphMetrics({
         width: paragraph.clientWidth,
         height: paragraph.clientHeight,
-        offsetLeft: paragraphRect.left - frontRect.left,
-        offsetTop: paragraphRect.top - frontRect.top,
+        offsetLeft: paragraphOffset.left,
+        offsetTop: paragraphOffset.top,
         frontWidth: front.clientWidth,
         frontHeight: front.clientHeight,
         remPx: Number.isFinite(remPx) ? remPx : 16,
@@ -453,10 +469,11 @@ export default function PostCard() {
     if (mode !== "stamp") return;
     if (stamps.length >= MAX_STAMPS) return;
 
-    const frontRect = event.currentTarget.getBoundingClientRect();
     const size = STAMP_SIZE_ORDER[nextStampIndex];
-    const x = ((event.clientX - frontRect.left) / frontRect.width) * 100;
-    const y = ((event.clientY - frontRect.top) / frontRect.height) * 100;
+    const x =
+      (event.nativeEvent.offsetX / event.currentTarget.clientWidth) * 100;
+    const y =
+      (event.nativeEvent.offsetY / event.currentTarget.clientHeight) * 100;
 
     setStamps((currentStamps) => [
       ...currentStamps,
@@ -647,13 +664,12 @@ export default function PostCard() {
           </div>
           <div
             ref={postcardFrontRef}
-            onClick={handlePostcardClick}
             className={twMerge(
               "front absolute inset-0 w-full h-full backface-hidden overflow-hidden border-4 border-black outline-4 outline-postcard-background shadow-[0px_0px_0px_5px_var(--night)]",
               mode === "stamp" && "cursor-copy",
             )}
           >
-            <section className="flex flex-col w-[80%] h-full py-20 min-h-0 place-center justify-start">
+            <section className="absolute left-[10%] top-0 flex h-full w-[80%] min-h-0 flex-col justify-start py-20">
               <div className="flex flex-row items-center mt-6 mb-2 h-min justify-between w-full pr-2 text-md">
                 <div className="flex flex-row items-center w-fit gap-2">
                   <img
@@ -709,6 +725,14 @@ export default function PostCard() {
                 </div>
               )}
             </section>
+
+            {mode === "stamp" && (
+              <div
+                aria-label="Add stamp"
+                className="absolute inset-0 z-40 cursor-copy"
+                onClick={handlePostcardClick}
+              />
+            )}
 
             {mode !== "edit" &&
               stamps.map((stamp) => (

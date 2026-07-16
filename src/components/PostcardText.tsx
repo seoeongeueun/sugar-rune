@@ -318,7 +318,7 @@ export default function PostcardText({
           type="button"
           aria-label="Previous text page"
           onClick={handlePreviousPage}
-          className="fixed -left-2 top-1/2 z-60 flex -translate-y-1/2 black-button"
+          className="fixed left-0 top-1/2 z-60 flex -translate-y-1/2 black-button"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
@@ -328,7 +328,7 @@ export default function PostcardText({
           type="button"
           aria-label="Next text page"
           onClick={handleNextPage}
-          className="fixed -right-2 top-1/2 z-60 -translate-y-1/2 black-button"
+          className="fixed right-0 top-1/2 z-60 -translate-y-1/2 black-button"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
