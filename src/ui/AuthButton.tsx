@@ -4,10 +4,12 @@ import { CircleQuestionMark, LoaderCircle } from "lucide-react";
 import { maskEmail } from "@/lib";
 import { HeartButton } from "./HeartButton";
 import { Modal } from "@/ui";
+import HelpModal from "@/components/modals/HelpModal";
 
 // Displays Sign In by default and Sign Out when the user is authenticated.
 export function AuthButton() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenHelp, setIsOpenHelp] = useState(false);
 
   const user = useAuth((state) => state.user);
   const username = useAuth((state) => state.username);
@@ -39,7 +41,7 @@ export function AuthButton() {
     <div className="flex flex-row gap-4 items-center justify-end text-white">
       <button
         type="button"
-        disabled={isDisabled}
+        onClick={() => setIsOpenHelp(true)}
         className="black-button p-2 pointer-events-auto !text-white h-full aspect-square"
       >
         <CircleQuestionMark className="w-10 h-8" />
@@ -110,6 +112,7 @@ export function AuthButton() {
           </dl>
         </Modal>
       )}
+      {isOpenHelp && <HelpModal />}
     </div>
   );
 }

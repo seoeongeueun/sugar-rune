@@ -31,7 +31,7 @@ export default function HeartsList() {
   );
 
   return (
-    <section className="pointer-events-none w-fit text-md fixed flex flex-row items-center justify-start bottom-0 p-4 gap-4 z-[100]">
+    <section className="rounded border border-white outline outline-night bg-white/30 !aspect-auto m-8 pointer-events-none w-fit text-md fixed flex flex-row items-center justify-start bottom-0 py-2 px-4 gap-4 z-[100]">
       {HEART_LIST.map((heart) => (
         <div
           className="relative group flex flex-col items-center w-min"

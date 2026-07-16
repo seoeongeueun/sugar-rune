@@ -7,6 +7,8 @@ export {
   parseNoteDate,
   getDateFormValues,
 } from "./tools";
+export { helpPages } from "./help";
+export type { HelpPage } from "./help";
 export { supabase, isSupabaseConfigured } from "./supabase";
 export {
   CALENDAR_START_YEAR,
