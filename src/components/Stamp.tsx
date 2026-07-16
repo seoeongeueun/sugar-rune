@@ -4,6 +4,9 @@ import { X } from "lucide-react";
 import type { StampSize } from "@/lib/constants";
 
 type StampProps = {
+  id: number;
+  pageIndex: number;
+  isVisible: boolean;
   heartColor: string;
   size: StampSize;
   x: number;
@@ -19,6 +22,9 @@ const stampSizeClass: Record<StampSize, string> = {
 };
 
 export default function Stamp({
+  id,
+  pageIndex,
+  isVisible,
   heartColor,
   size,
   x,
@@ -33,13 +39,16 @@ export default function Stamp({
 
   return (
     <div
+      data-stamp-id={id}
+      data-stamp-page={pageIndex}
       style={{
         left: `${x}%`,
         top: `${y}%`,
       }}
       className={twMerge(
-        "aspect-square hover:border rounded-full absolute z-50 -translate-x-1/2 -translate-y-1/2 select-none",
-        isEditable && "hover:border-background/20",
+        "aspect-square rounded-full absolute z-50 -translate-x-1/2 -translate-y-1/2 select-none",
+        !isVisible && "invisible pointer-events-none",
+        isEditable && "hover:bg-background/20",
       )}
     >
       {isEditable && (
