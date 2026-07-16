@@ -1,13 +1,17 @@
 import { helpPages } from "@/lib";
 import { HEART_LIST } from "@/shared";
-import type { HelpPage } from "@/lib";
 import { ModalSimple } from "@/ui";
 import { useState } from "react";
 
-export default function HelpModal() {
+type HelpModalProps = {
+  onClose: () => void;
+};
+
+export default function HelpModal({ onClose }: HelpModalProps) {
   const [pageIndex, setPageIndex] = useState(0);
 
   const heartColor = HEART_LIST[pageIndex % HEART_LIST.length].color;
+  const isLastPage = pageIndex === helpPages.length - 1;
 
   return (
     <ModalSimple
@@ -30,20 +34,24 @@ export default function HelpModal() {
           </button>
           <button
             type="button"
-            disabled={pageIndex === helpPages.length - 1}
-            onClick={() =>
-              setPageIndex((prev) => Math.min(helpPages.length - 1, prev + 1))
-            }
+            onClick={() => {
+              if (isLastPage) {
+                onClose();
+                return;
+              }
+
+              setPageIndex((prev) => Math.min(helpPages.length - 1, prev + 1));
+            }}
             className="bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
             style={{
               backgroundImage: `url('/hearts/heart_${heartColor}_icon.png')`,
             }}
           >
-            <span className="z-10">Next</span>
+            <span className="z-10">{isLastPage ? "Close" : "Next"}</span>
           </button>
         </>
       }
-      onClose={() => {}}
+      onClose={onClose}
     >
       <div className="flex flex-col gap-4 text-lg font-sonmat leading-8 px-2 text-center">
         {helpPages[pageIndex].image && (

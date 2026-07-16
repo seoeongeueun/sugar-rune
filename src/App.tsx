@@ -14,11 +14,16 @@ import HeartsList from "./components/HeartsList";
 import PostCard from "./components/PostCard";
 import FooterButtons from "./components/FooterButtons";
 import Calendar from "./components/Calendar";
+import HelpModal from "./components/modals/HelpModal";
+
+const HELP_SEEN_KEY = "is_seen";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const isLoading = useAuth((state) => state.isLoading);
   const user = useAuth((state) => state.user);
+  const isAdmin = useAuth((state) => state.isAdmin);
   const setIsLoading = useAuth((state) => state.setIsLoading);
   const setSession = useAuth((state) => state.setSession);
   const isOpen = useNote((state) => state.isOpen);
@@ -79,6 +84,29 @@ export default function App() {
     };
   }, [queryClient, setIsLoading, setSession]);
 
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    if (isAdmin) {
+      setIsHelpOpen(true);
+      return;
+    }
+
+    if (localStorage.getItem(HELP_SEEN_KEY) !== "true") {
+      setIsHelpOpen(true);
+    }
+  }, [isAdmin, isLoading]);
+
+  const handleHelpClose = useCallback(() => {
+    if (!isAdmin) {
+      localStorage.setItem(HELP_SEEN_KEY, "true");
+    }
+
+    setIsHelpOpen(false);
+  }, [isAdmin]);
+
   return (
     <>
       <header className="z-99 pointer-events-none w-full fixed inset-0 h-fit flex flex-row justify-between items-center px-8">
@@ -107,11 +135,12 @@ export default function App() {
 
       {isCalendarOpen && <Calendar />}
       {isOpen && <PostCard />}
+      {isHelpOpen && <HelpModal onClose={handleHelpClose} />}
       {/* <DeleteModal
         onCancel={() => console.log("Cancel")}
         onConfirm={() => console.log("Confirm")}
       /> */}
-      {!isLoading && !user && <AuthModal />}
+      {!isLoading && !user && !isHelpOpen && <AuthModal />}
     </>
   );
 }

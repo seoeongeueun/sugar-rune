@@ -8,6 +8,7 @@ interface AuthState {
   user: User | null;
   username: string | null;
   totalNotes: number;
+  isAdmin: boolean;
   setSession: (session: Session | null) => void;
   setIsLoading: (isLoading: boolean) => void;
   signOut: () => Promise<void>;
@@ -31,6 +32,7 @@ export const useAuth = create<AuthState>((set) => ({
   user: null,
   username: null,
   totalNotes: 0,
+  isAdmin: false,
   setSession: (session) => {
     const user = session?.user ?? null;
 
@@ -39,6 +41,9 @@ export const useAuth = create<AuthState>((set) => ({
       user,
       username: getUsername(user),
       totalNotes: 0,
+      isAdmin:
+        user?.user_metadata?.is_admin === true ||
+        user?.app_metadata?.is_admin === true,
     });
 
     if (!isSupabaseConfigured || !user) {
@@ -47,7 +52,7 @@ export const useAuth = create<AuthState>((set) => ({
 
     void supabase
       .from("users")
-      .select("total_notes")
+      .select("total_notes, is_admin")
       .eq("id", user.id)
       .single()
       .then(({ data, error }) => {
@@ -56,11 +61,17 @@ export const useAuth = create<AuthState>((set) => ({
           return;
         }
 
-        set({ totalNotes: data?.total_notes ?? 0 });
+        set({
+          totalNotes: data?.total_notes ?? 0,
+          isAdmin: data?.is_admin === true,
+        });
       });
   },
   setIsLoading: (isLoading) => set({ isLoading }),
   signOut: async () => {
+    localStorage.removeItem("is_seen");
+    sessionStorage.removeItem("is_seen");
+
     if (!isSupabaseConfigured) {
       return;
     }

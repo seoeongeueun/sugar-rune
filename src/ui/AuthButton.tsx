@@ -112,7 +112,7 @@ export function AuthButton() {
           </dl>
         </Modal>
       )}
-      {isOpenHelp && <HelpModal />}
+      {isOpenHelp && <HelpModal onClose={() => setIsOpenHelp(false)} />}
     </div>
   );
 }
