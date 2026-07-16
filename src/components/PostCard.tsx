@@ -45,6 +45,7 @@ import type { StampSize } from "@/lib";
 import Stamp from "./Stamp";
 import PostcardText, {
   POSTCARD_STAMP_TEXT_GAP,
+  POSTCARD_STAMP_TEXT_X_BIAS,
   type CircleObstacle,
 } from "./PostcardText";
 
@@ -143,7 +144,8 @@ export default function PostCard() {
           pageIndex: stamp.pageIndex,
           cx:
             (stamp.x / 100) * paragraphMetrics.frontWidth -
-            paragraphMetrics.offsetLeft,
+            paragraphMetrics.offsetLeft +
+            POSTCARD_STAMP_TEXT_X_BIAS,
           cy:
             (stamp.y / 100) * paragraphMetrics.frontHeight -
             paragraphMetrics.offsetTop,

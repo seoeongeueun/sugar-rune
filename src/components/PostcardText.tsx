@@ -17,6 +17,12 @@ type LayoutCursor = {
 type TextSlot = {
   left: number;
   right: number;
+  align: "left" | "right";
+};
+
+type TextInterval = {
+  left: number;
+  right: number;
 };
 
 type PositionedTextLine = {
@@ -24,6 +30,8 @@ type PositionedTextLine = {
   x: number;
   y: number;
   width: number;
+  slotWidth: number;
+  textAlign: "left" | "right";
   text: string;
 };
 
@@ -44,11 +52,12 @@ const POSTCARD_TEXT_LETTER_SPACING = 0;
 const MIN_TEXT_SLOT_WIDTH = 20;
 const POSTCARD_TEXT_BOTTOM_PADDING = 8;
 
-export const POSTCARD_STAMP_TEXT_GAP = 2;
+export const POSTCARD_STAMP_TEXT_GAP = 3;
+export const POSTCARD_STAMP_TEXT_X_BIAS = 6;
 
 function carveTextLineSlots(
   base: TextSlot,
-  blockedIntervals: TextSlot[],
+  blockedIntervals: TextInterval[],
 ): TextSlot[] {
   let slots = [base];
 
@@ -62,11 +71,19 @@ function carveTextLineSlots(
       }
 
       if (blocked.left > slot.left) {
-        nextSlots.push({ left: slot.left, right: blocked.left });
+        nextSlots.push({
+          left: slot.left,
+          right: blocked.left,
+          align: "right",
+        });
       }
 
       if (blocked.right < slot.right) {
-        nextSlots.push({ left: blocked.right, right: slot.right });
+        nextSlots.push({
+          left: blocked.right,
+          right: slot.right,
+          align: "left",
+        });
       }
     }
 
@@ -80,7 +97,7 @@ function circleIntervalForBand(
   obstacle: CircleObstacle,
   bandTop: number,
   bandBottom: number,
-): TextSlot | null {
+): TextInterval | null {
   const { cx, cy, radius } = obstacle;
 
   if (bandTop >= cy + radius || bandBottom <= cy - radius) {
@@ -147,12 +164,13 @@ function buildPostcardTextPages({
             lineTop + POSTCARD_TEXT_LINE_HEIGHT,
           ),
         )
-        .filter((interval): interval is TextSlot => interval !== null);
+        .filter((interval): interval is TextInterval => interval !== null);
 
       const slots = carveTextLineSlots(
-        { left: 0, right: width },
+        { left: 0, right: width, align: "left" },
         blockedIntervals,
       ).sort((a, b) => a.left - b.left);
+      const hasMultipleSlots = slots.length > 1;
 
       for (const slot of slots) {
         const line = layoutNextLine(prepared, cursor, slot.right - slot.left);
@@ -167,7 +185,9 @@ function buildPostcardTextPages({
           x: slot.left,
           y: lineTop,
           width: line.width,
-          text: line.text,
+          slotWidth: slot.right - slot.left,
+          textAlign: hasMultipleSlots ? slot.align : "left",
+          text: line.text.replace(/\s+$/, ""),
         });
 
         cursor = line.end;
@@ -262,11 +282,12 @@ export default function PostcardText({
           style={{
             left: `${line.x}px`,
             top: `${line.y}px`,
-            width: `${line.width}px`,
+            width: `${line.slotWidth}px`,
             height: `${POSTCARD_TEXT_LINE_HEIGHT}px`,
             font: POSTCARD_TEXT_FONT,
             lineHeight: `${POSTCARD_TEXT_LINE_HEIGHT}px`,
             letterSpacing: `${POSTCARD_TEXT_LETTER_SPACING}px`,
+            textAlign: line.textAlign,
           }}
         >
           {line.text}
