@@ -1,11 +1,9 @@
 import { twMerge } from "tailwind-merge";
 import type { MouseEvent } from "react";
 import { X } from "lucide-react";
-import type { StampSize } from "@/lib/constants";
+import { STAMP_SIZE_REM, type StampSize } from "@/lib/constants";
 
 type StampProps = {
-  id: number;
-  pageIndex: number;
   isVisible: boolean;
   heartColor: string;
   size: StampSize;
@@ -15,15 +13,7 @@ type StampProps = {
   onRemove: () => void;
 };
 
-const stampSizeClass: Record<StampSize, string> = {
-  small: "w-16",
-  medium: "w-28",
-  large: "w-44",
-};
-
 export default function Stamp({
-  id,
-  pageIndex,
   isVisible,
   heartColor,
   size,
@@ -39,8 +29,6 @@ export default function Stamp({
 
   return (
     <div
-      data-stamp-id={id}
-      data-stamp-page={pageIndex}
       style={{
         left: `${x}%`,
         top: `${y}%`,
@@ -66,10 +54,8 @@ export default function Stamp({
         alt="Heart Stamp"
         aria-hidden="true"
         draggable={false}
-        className={twMerge(
-          "pointer-events-none object-cover h-auto aspect-square",
-          stampSizeClass[size],
-        )}
+        style={{ width: `${STAMP_SIZE_REM[size]}rem` }}
+        className="pointer-events-none object-cover h-auto aspect-square"
       />
     </div>
   );

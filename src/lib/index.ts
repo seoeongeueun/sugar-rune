@@ -14,6 +14,7 @@ export {
   OPEN_SPEED,
   MAX_CONTENT_LENGTH,
   STAMP_SIZE_ORDER,
+  STAMP_SIZE_REM,
   MAX_STAMPS,
 } from "./constants";
 export {

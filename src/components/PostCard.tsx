@@ -17,6 +17,7 @@ import {
   shouldReclassify,
   MAX_CONTENT_LENGTH,
   STAMP_SIZE_ORDER,
+  STAMP_SIZE_REM,
   MAX_STAMPS,
 } from "@/lib";
 import { HEART_LIST } from "@/shared";
@@ -52,15 +53,19 @@ type POSTCARD_MODE = "view" | "edit" | "stamp";
 type PlacedStamp = {
   id: number;
   pageIndex: number;
-  heartColor: string;
   size: StampSize;
   x: number;
   y: number;
 };
 
-type ParagraphSize = {
+type ParagraphMetrics = {
   width: number;
   height: number;
+  offsetLeft: number;
+  offsetTop: number;
+  frontWidth: number;
+  frontHeight: number;
+  remPx: number;
 };
 
 interface FormData {
@@ -116,14 +121,36 @@ export default function PostCard() {
   const [stamps, setStamps] = useState<PlacedStamp[]>([]);
   const [nextStampIndex, setNextStampIndex] = useState(0);
   const [textPageIndex, setTextPageIndex] = useState(0);
-  const [paragraphSize, setParagraphSize] = useState<ParagraphSize>({
+  const [paragraphMetrics, setParagraphMetrics] = useState<ParagraphMetrics>({
     width: 0,
     height: 0,
+    offsetLeft: 0,
+    offsetTop: 0,
+    frontWidth: 0,
+    frontHeight: 0,
+    remPx: 16,
   });
-  const [textObstacles, setTextObstacles] = useState<CircleObstacle[]>([]);
   const visibleStamps = useMemo(
     () => stamps.filter((stamp) => stamp.pageIndex === textPageIndex),
     [stamps, textPageIndex],
+  );
+  const textObstacles = useMemo<CircleObstacle[]>(
+    () =>
+      stamps.map((stamp) => {
+        const diameter = STAMP_SIZE_REM[stamp.size] * paragraphMetrics.remPx;
+
+        return {
+          pageIndex: stamp.pageIndex,
+          cx:
+            (stamp.x / 100) * paragraphMetrics.frontWidth -
+            paragraphMetrics.offsetLeft,
+          cy:
+            (stamp.y / 100) * paragraphMetrics.frontHeight -
+            paragraphMetrics.offsetTop,
+          radius: diameter / 2 + POSTCARD_STAMP_TEXT_GAP,
+        };
+      }),
+    [paragraphMetrics, stamps],
   );
 
   const { register, handleSubmit, setValue } = useForm<FormData>({
@@ -218,27 +245,20 @@ export default function PostCard() {
 
     const updateTextLayoutMetrics = () => {
       const paragraphRect = paragraph.getBoundingClientRect();
-      const stampElements =
-        front.querySelectorAll<HTMLElement>("[data-stamp-id]");
+      const frontRect = front.getBoundingClientRect();
+      const remPx = Number.parseFloat(
+        window.getComputedStyle(document.documentElement).fontSize,
+      );
 
-      setParagraphSize({
+      setParagraphMetrics({
         width: paragraph.clientWidth,
         height: paragraph.clientHeight,
+        offsetLeft: paragraphRect.left - frontRect.left,
+        offsetTop: paragraphRect.top - frontRect.top,
+        frontWidth: front.clientWidth,
+        frontHeight: front.clientHeight,
+        remPx: Number.isFinite(remPx) ? remPx : 16,
       });
-
-      setTextObstacles(
-        Array.from(stampElements).map((stampElement) => {
-          const stampRect = stampElement.getBoundingClientRect();
-          const diameter = Math.min(stampRect.width, stampRect.height);
-
-          return {
-            pageIndex: Number(stampElement.dataset.stampPage ?? 0),
-            cx: stampRect.left + stampRect.width / 2 - paragraphRect.left,
-            cy: stampRect.top + stampRect.height / 2 - paragraphRect.top,
-            radius: diameter / 2 + POSTCARD_STAMP_TEXT_GAP,
-          };
-        }),
-      );
     };
 
     updateTextLayoutMetrics();
@@ -246,12 +266,13 @@ export default function PostCard() {
     const resizeObserver = new ResizeObserver(updateTextLayoutMetrics);
     resizeObserver.observe(paragraph);
     resizeObserver.observe(front);
-    front
-      .querySelectorAll<HTMLElement>("[data-stamp-id]")
-      .forEach((stampElement) => resizeObserver.observe(stampElement));
+    window.addEventListener("resize", updateTextLayoutMetrics);
 
-    return () => resizeObserver.disconnect();
-  }, [mode, stamps]);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateTextLayoutMetrics);
+    };
+  }, [mode]);
 
   const handleTextPageIndexChange = useCallback((nextPageIndex: number) => {
     setTextPageIndex(nextPageIndex);
@@ -362,7 +383,6 @@ export default function PostCard() {
       ...currentStamps,
       {
         id: stampIdRef.current++,
-        heartColor,
         size,
         pageIndex: textPageIndex,
         x: Math.min(Math.max(x, 0), 100),
@@ -585,8 +605,8 @@ export default function PostCard() {
                 >
                   <PostcardText
                     content={content}
-                    width={paragraphSize.width}
-                    height={paragraphSize.height}
+                    width={paragraphMetrics.width}
+                    height={paragraphMetrics.height}
                     obstacles={textObstacles}
                     pageIndex={textPageIndex}
                     onPageIndexChange={handleTextPageIndexChange}
@@ -598,10 +618,8 @@ export default function PostCard() {
             {stamps.map((stamp) => (
               <Stamp
                 key={stamp.id}
-                id={stamp.id}
-                pageIndex={stamp.pageIndex}
                 isVisible={stamp.pageIndex === textPageIndex}
-                heartColor={stamp.heartColor}
+                heartColor={heartColor}
                 size={stamp.size}
                 x={stamp.x}
                 y={stamp.y}
