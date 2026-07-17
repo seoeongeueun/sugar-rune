@@ -16,10 +16,10 @@ export const MAX_STAMPS = 5;
 
 export const WITCH_RANKS = [
   { rank: "Witchling", minEcru: 0 },
-  { rank: "Apprentice Witch", minEcru: 2_500 },
-  { rank: "Heart Collector", minEcru: 10_000 },
-  { rank: "Heart Hunter", minEcru: 30_000 },
-  { rank: "Royal Witch", minEcru: 80_000 },
-  { rank: "Queen Candidate", minEcru: 150_000 },
-  { rank: "Queen", minEcru: 500_000 },
+  { rank: "Apprentice Witch", minEcru: 15_000 },
+  { rank: "Heart Collector", minEcru: 50_000 },
+  { rank: "Heart Hunter", minEcru: 120_000 },
+  { rank: "Royal Witch", minEcru: 300_000 },
+  { rank: "Queen Candidate", minEcru: 750_000 },
+  { rank: "Queen", minEcru: 2_000_000 },
 ] as const;

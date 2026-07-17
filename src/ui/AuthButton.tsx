@@ -138,7 +138,7 @@ export function AuthButton() {
               {witchRankProgress.rank.rank}
             </p>
             <div className="flex flex-col gap-1 pt-1 mb-4">
-              <div className="h-2 overflow-hidden rounded bg-white/20">
+              <div className="h-2 overflow-hidden rounded bg-white/20 border border-white/50">
                 <div
                   className="h-full rounded bg-background"
                   style={{
