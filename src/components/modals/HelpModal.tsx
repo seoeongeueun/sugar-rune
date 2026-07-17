@@ -8,15 +8,19 @@ import { ModalSimple } from "@/ui";
 import { useState } from "react";
 
 type HelpModalProps = {
+  isAbout?: boolean;
   onClose: () => void;
   onCameraAccessGranted?: () => void;
 };
 
 export default function HelpModal({
+  isAbout = false,
   onClose,
   onCameraAccessGranted,
 }: HelpModalProps) {
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(
+    isAbout ? helpPages.length - 1 : 0,
+  );
   const [cameraAccessStatus, setCameraAccessStatus] = useState<
     "idle" | "requesting" | "granted" | "denied"
   >("idle");
@@ -46,20 +50,22 @@ export default function HelpModal({
       key={helpPages[pageIndex].page}
       title={helpPages[pageIndex].title}
       heartColor={heartColor}
-      description={helpPages[pageIndex].description ?? ""}
+      description={(isAbout ? "" : helpPages[pageIndex].description) ?? ""}
       footer={
         <>
-          <button
-            type="button"
-            disabled={pageIndex === 0}
-            onClick={() => setPageIndex((prev) => Math.max(0, prev - 1))}
-            className="disabled:opacity-30 disabled:!cursor-default bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:not-disabled:brightness-75"
-            style={{
-              backgroundImage: `url('/hearts/heart_${HEART_LIST[(pageIndex - 1 + HEART_LIST.length) % HEART_LIST.length].color}_icon.png')`,
-            }}
-          >
-            <span className="z-10">Back</span>
-          </button>
+          {!isAbout && (
+            <button
+              type="button"
+              disabled={pageIndex === 0}
+              onClick={() => setPageIndex((prev) => Math.max(0, prev - 1))}
+              className="disabled:opacity-30 disabled:!cursor-default bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:not-disabled:brightness-75"
+              style={{
+                backgroundImage: `url('/hearts/heart_${HEART_LIST[(pageIndex - 1 + HEART_LIST.length) % HEART_LIST.length].color}_icon.png')`,
+              }}
+            >
+              <span className="z-10">Back</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -70,7 +76,7 @@ export default function HelpModal({
 
               setPageIndex((prev) => Math.min(helpPages.length - 1, prev + 1));
             }}
-            className="bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
+            className="ml-auto bg-no-repeat bg-contain bg-center w-16 h-16 tablet:w-24 tablet:h-24 hover:brightness-75"
             style={{
               backgroundImage: `url('/hearts/heart_${heartColor}_icon.png')`,
             }}

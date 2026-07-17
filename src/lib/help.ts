@@ -45,6 +45,6 @@ export const helpPages: HelpPage[] = [
     description: "Before you go",
     image: "/images/bye.gif",
     content:
-      "This is a non-commercial personal project inspired by Sugar Sugar Rune. It is an unofficial fan-made project and is not affiliated with or endorsed by the original creators or rights holders.\n\nSource: Sugar Sugar Rune (Anime)\nAll rights to Sugar Sugar Rune and any original images or related materials belong to their respective copyright owners.",
+      "Sugar Heart is a non-commercial personal project inspired by Sugar Sugar Rune. It is an unofficial fan-made project and is not affiliated with or endorsed by the original creators or rights holders.\n\nSource: Sugar Sugar Rune (Anime)\nAll rights to Sugar Sugar Rune and any original images or related materials belong to their respective copyright owners.",
   },
 ];
