@@ -20,6 +20,7 @@ export {
   STAMP_SIZE_ORDER,
   STAMP_SIZE_REM,
   MAX_STAMPS,
+  WITCH_RANKS,
 } from "./constants";
 export {
   createHandLandmarker,

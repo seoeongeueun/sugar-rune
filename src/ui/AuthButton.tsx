@@ -1,10 +1,38 @@
 import { useState } from "react";
 import { useAuth } from "@/stores";
-import { CircleQuestionMark, LoaderCircle } from "lucide-react";
-import { maskEmail } from "@/lib";
+import { CircleQuestionMark, Crown, LoaderCircle } from "lucide-react";
+import { maskEmail, WITCH_RANKS } from "@/lib";
 import { HeartButton } from "./HeartButton";
 import { Modal } from "@/ui";
 import HelpModal from "@/components/modals/HelpModal";
+
+function getWitchRankProgress(ecru: number) {
+  const rankIndex = WITCH_RANKS.reduce(
+    (currentIndex, rank, index) =>
+      ecru >= rank.minEcru ? index : currentIndex,
+    0,
+  );
+  const rank = WITCH_RANKS[rankIndex];
+  const nextRank = WITCH_RANKS[rankIndex + 1] ?? null;
+  const progressPercent =
+    nextRank === null
+      ? 100
+      : Math.min(
+          100,
+          Math.max(
+            0,
+            ((ecru - rank.minEcru) / (nextRank.minEcru - rank.minEcru)) * 100,
+          ),
+        );
+
+  return {
+    rank,
+    rankIndex,
+    nextRank,
+    progressPercent,
+    remainingEcru: nextRank === null ? 0 : Math.max(0, nextRank.minEcru - ecru),
+  };
+}
 
 // Displays Sign In by default and Sign Out when the user is authenticated.
 export function AuthButton() {
@@ -14,6 +42,7 @@ export function AuthButton() {
   const user = useAuth((state) => state.user);
   const username = useAuth((state) => state.username);
   const totalNotes = useAuth((state) => state.totalNotes);
+  const ecru = useAuth((state) => state.ecru);
 
   const isLoading = useAuth((state) => state.isLoading);
   const signOut = useAuth((state) => state.signOut);
@@ -21,6 +50,7 @@ export function AuthButton() {
 
   const isAuthenticated = Boolean(user);
   const isDisabled = isLoading || isSigningOut;
+  const witchRankProgress = getWitchRankProgress(ecru);
 
   const handleAuthButtonClick = async () => {
     if (isAuthenticated) {
@@ -101,6 +131,24 @@ export function AuthButton() {
             id="no-text-shadow"
             className="text-md font-medium space-y-1 text-white"
           >
+            <p className="text-lg text-center -mt-4">
+              <Crown className="w-6 h-6 inline-block mr-2" />
+              {witchRankProgress.rank.rank}
+            </p>
+            <div className="flex flex-col gap-1 pt-1 mb-4">
+              <div className="h-2 overflow-hidden rounded bg-white/20">
+                <div
+                  className="h-full rounded bg-background"
+                  style={{
+                    width: `${witchRankProgress.progressPercent}%`,
+                  }}
+                />
+              </div>
+              <div className="flex flex-row items-center justify-between text-sm text-white">
+                <p>{witchRankProgress.rank.minEcru.toLocaleString()}</p>
+                <p>{witchRankProgress.nextRank.minEcru.toLocaleString()}</p>
+              </div>
+            </div>
             <div className="flex flex-row gap-2 justify-start items-center">
               <dt>Email:</dt>
               <dd className="ml-auto">{maskEmail(user?.email || "")}</dd>
