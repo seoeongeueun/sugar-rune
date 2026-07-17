@@ -6,6 +6,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
+import { userProfileQueryKeys } from "./userProfile";
 
 export type CreateNoteInput = {
   content: string;
@@ -225,6 +226,9 @@ export function useDeleteNote(userId: string | undefined) {
         (notes) =>
           notes?.filter((cachedNote) => cachedNote.id !== variables.id),
       );
+      void queryClient.invalidateQueries({
+        queryKey: userProfileQueryKeys.byUserId(userId),
+      });
     },
   });
 }

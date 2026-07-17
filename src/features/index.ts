@@ -1,6 +1,12 @@
 export { signInWithEmail, signUpWithEmail } from "./auth";
 export { analyzeNoteHeartColor } from "./analyzeNote";
 export {
+  clearUserProfileQueryCache,
+  fetchUserProfile,
+  userProfileQueryKeys,
+  useUserProfile,
+} from "./userProfile";
+export {
   clearNotesQueryCache,
   createNote,
   deleteNote,
@@ -20,3 +26,4 @@ export type {
   UpdateNoteInput,
   UserNote,
 } from "./notes";
+export type { UserProfile, UserProfileInput } from "./userProfile";

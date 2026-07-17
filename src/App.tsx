@@ -7,7 +7,11 @@ import GemModel from "./components/GemModel";
 import GestureDetector from "./components/GestureDetector";
 import { supabase, isSupabaseConfigured } from "@/lib";
 import { useAuth, useCalendar, useNote } from "@/stores";
-import { clearNotesQueryCache, useUserNotes } from "@/features";
+import {
+  clearNotesQueryCache,
+  clearUserProfileQueryCache,
+  useUserNotes,
+} from "@/features";
 import { AuthModal } from "@/components/modals";
 import { AuthButton } from "@/ui";
 import HeartsList from "./components/HeartsList";
@@ -75,6 +79,7 @@ export default function App() {
       setSession(nextSession);
       if (!nextSession) {
         clearNotesQueryCache(queryClient);
+        clearUserProfileQueryCache(queryClient);
       }
       setIsLoading(false);
     });

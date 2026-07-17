@@ -7,8 +7,6 @@ interface AuthState {
   session: Session | null;
   user: User | null;
   username: string | null;
-  totalNotes: number;
-  ecru: number;
   isAdmin: boolean;
   setSession: (session: Session | null) => void;
   setIsLoading: (isLoading: boolean) => void;
@@ -32,8 +30,6 @@ export const useAuth = create<AuthState>((set) => ({
   session: null,
   user: null,
   username: null,
-  totalNotes: 0,
-  ecru: 0,
   isAdmin: false,
   setSession: (session) => {
     const user = session?.user ?? null;
@@ -42,8 +38,6 @@ export const useAuth = create<AuthState>((set) => ({
       session,
       user,
       username: getUsername(user),
-      totalNotes: 0,
-      ecru: 0,
       isAdmin:
         user?.user_metadata?.is_admin === true ||
         user?.app_metadata?.is_admin === true,
@@ -55,7 +49,7 @@ export const useAuth = create<AuthState>((set) => ({
 
     void supabase
       .from("users")
-      .select("total_notes, ecru, is_admin")
+      .select("is_admin")
       .eq("id", user.id)
       .single()
       .then(({ data, error }) => {
@@ -65,8 +59,6 @@ export const useAuth = create<AuthState>((set) => ({
         }
 
         set({
-          totalNotes: data?.total_notes ?? 0,
-          ecru: data?.ecru ?? 0,
           isAdmin: data?.is_admin === true,
         });
       });

@@ -26,6 +26,7 @@ import {
   createNote,
   notesQueryKeys,
   updateNote,
+  userProfileQueryKeys,
   useDeleteNote,
 } from "@/features";
 import PostCardCut from "./PostCardCut";
@@ -388,6 +389,9 @@ export default function PostCard() {
       );
       await queryClient.invalidateQueries({
         queryKey: notesQueryKeys.byUserId(user.id),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: userProfileQueryKeys.byUserId(user.id),
       });
       setMode("view");
     } catch (error) {

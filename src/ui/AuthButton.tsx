@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/stores";
+import { useUserProfile } from "@/features";
 import { CircleQuestionMark, Crown, LoaderCircle } from "lucide-react";
 import { maskEmail, WITCH_RANKS } from "@/lib";
 import { HeartButton } from "./HeartButton";
@@ -41,8 +42,9 @@ export function AuthButton() {
 
   const user = useAuth((state) => state.user);
   const username = useAuth((state) => state.username);
-  const totalNotes = useAuth((state) => state.totalNotes);
-  const ecru = useAuth((state) => state.ecru);
+  const { data: userProfile } = useUserProfile(user?.id);
+  const totalNotes = userProfile?.totalNotes ?? 0;
+  const ecru = userProfile?.ecru ?? 0;
 
   const isLoading = useAuth((state) => state.isLoading);
   const signOut = useAuth((state) => state.signOut);
