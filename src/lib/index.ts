@@ -6,6 +6,8 @@ export {
   formatDateForDb,
   parseNoteDate,
   getDateFormValues,
+  requestCameraAccess,
+  getCameraAccessErrorMessage,
 } from "./tools";
 export { helpPages } from "./help";
 export type { HelpPage } from "./help";

@@ -83,3 +83,49 @@ export function getDateFormValues(date: Date) {
     year: date.getFullYear().toString(),
   };
 }
+
+export async function requestCameraAccess() {
+  if (!window.isSecureContext) {
+    throw new Error("Camera access requires HTTPS or localhost.");
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Camera access is not available in this browser.");
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "user" },
+    audio: false,
+  });
+
+  stream.getTracks().forEach((track) => track.stop());
+}
+
+export function getCameraAccessErrorMessage(error: unknown) {
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError" || error.name === "SecurityError") {
+      return "Camera access is blocked.";
+    }
+
+    if (
+      error.name === "NotFoundError" ||
+      error.name === "DevicesNotFoundError"
+    ) {
+      return "No camera was found.";
+    }
+
+    if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+      return "The camera is already in use by another app.";
+    }
+
+    if (error.name === "OverconstrainedError") {
+      return "The selected camera is not supported.";
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Camera access failed.";
+}

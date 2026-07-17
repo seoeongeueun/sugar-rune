@@ -17,7 +17,7 @@ export function ModalSimple({
       }}
       className="pointer-events-auto fixed inset-0 w-full h-full bg-black/40 flex items-center justify-center z-[200]"
     >
-      <div className="text-white text-lg w-postcard-height h-fit px-6 py-20 rounded-lg flex flex-col items-center justify-center gap-1 tablet:gap-8 border-2 border-white outline-2 outline-night bg-white/30 backdrop-blur-md drop-shadow-2xl">
+      <div className="glow text-white text-lg w-postcard-height h-fit px-6 py-20 rounded-lg flex flex-col items-center justify-center gap-1 tablet:gap-8 border-2 border-white outline-2 outline-night bg-white/30 backdrop-blur-md drop-shadow-2xl">
         <img
           src={`/hearts/heart_${String(heartColor ?? "white")}_icon.png`}
           alt="Heart Icon"

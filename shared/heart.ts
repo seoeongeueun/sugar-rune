@@ -23,6 +23,9 @@ export type HeartCategory = {
 
   // Nova가 의미를 이해하기 위한 예시
   examples: string[];
+
+  // heart value
+  value: number;
 };
 
 export const HEART_LIST: HeartCategory[] = [
@@ -47,6 +50,7 @@ export const HEART_LIST: HeartCategory[] = [
       "Even after all this time, I still deeply love them.",
       "오랜 연인과 함께하며 다시 한 번 사랑을 느꼈다.",
     ],
+    value: 5000,
   },
   {
     color: "pink",
@@ -69,6 +73,7 @@ export const HEART_LIST: HeartCategory[] = [
       "My heart raced every time I saw them.",
       "좋아하는 사람이 웃어줘서 하루 종일 설렜다.",
     ],
+    value: 1000,
   },
 
   {
@@ -85,6 +90,7 @@ export const HEART_LIST: HeartCategory[] = [
       "I couldn't believe what happened today.",
       "갑자기 선물을 받아서 정말 놀랐다.",
     ],
+    value: 5,
   },
 
   {
@@ -101,6 +107,7 @@ export const HEART_LIST: HeartCategory[] = [
       "My teammate really helped me today.",
       "친구와 즐거운 시간을 보냈다.",
     ],
+    value: 350,
   },
   {
     color: "cyan",
@@ -124,6 +131,7 @@ export const HEART_LIST: HeartCategory[] = [
       "I felt thankful for my family's support.",
       "부모님과 함께 저녁을 먹으며 따뜻함을 느꼈다.",
     ],
+    value: 350,
   },
 
   {
@@ -140,6 +148,7 @@ export const HEART_LIST: HeartCategory[] = [
       "I felt strongly attracted to someone.",
       "목표를 반드시 이루고 싶다는 열망이 생겼다.",
     ],
+    value: 2500,
   },
 
   {
@@ -156,6 +165,7 @@ export const HEART_LIST: HeartCategory[] = [
       "I felt angry because everything went wrong.",
       "오늘 너무 화가 났고 모든 것이 두려웠다.",
     ],
+    value: 3000,
   },
 
   {
@@ -179,5 +189,6 @@ export const HEART_LIST: HeartCategory[] = [
       "Meditation made me feel peaceful.",
       "오늘은 아무 걱정 없이 평온한 하루였다.",
     ],
+    value: 3000,
   },
 ];

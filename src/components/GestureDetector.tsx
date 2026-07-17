@@ -11,6 +11,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 type Props = {
   onVictoryChange: (isVictory: boolean) => void;
+  cameraAccessRequestCount: number;
 };
 
 type DetectorPosition = {
@@ -75,7 +76,10 @@ function clampDetectorPosition(
   };
 }
 
-export default function GestureDetector({ onVictoryChange }: Props) {
+export default function GestureDetector({
+  onVictoryChange,
+  cameraAccessRequestCount,
+}: Props) {
   const detectorRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -88,10 +92,16 @@ export default function GestureDetector({ onVictoryChange }: Props) {
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
   const [isVictory, setIsVictory] = useState(false);
   const [showVictoryMessage, setShowVictoryMessage] = useState(false);
-  const [isDetectionEnabled, setIsDetectionEnabled] = useState(true);
+  const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
   const [position, setPosition] = useState<DetectorPosition | null>(() =>
     getSavedDetectorPosition(),
   );
+
+  useEffect(() => {
+    if (cameraAccessRequestCount > 0) {
+      setIsDetectionEnabled(true);
+    }
+  }, [cameraAccessRequestCount]);
 
   useEffect(() => {
     let isCancelled = false;

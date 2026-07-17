@@ -11,17 +11,17 @@ export const helpPages: HelpPage[] = [
     page: 0,
     title: "What is Sugar Heart",
     image: "/images/magic.gif",
-    description: "A magical diary inspired by Sugar Sugar Rune",
+    description: "A Sugar Sugar Rune fan project",
     content:
-      "Every diary entry reveals the color of your heart. Collect colorful Hearts, grow your magic, and one day you might become the next Queen of the Witch World!",
+      "Write in your diary to reveal the color of your heart.\nCollect hearts and grow your magic to become the next Queen of Le Royaume!",
   },
   {
     page: 1,
     title: "The Pendant",
-    description: "Show your peace sign to the camera",
+    description: "Your Peek-a-Boo Glasses",
     image: "/images/peace.jpg",
     content:
-      "You can open the pendant with your Peek-a-Boo Glasses. Once you allow camera access, the AI will recognize your hand gesture. Hold a ✌ near your eye to unlock it. You can also click the pendant instead, but every real witch knows how to use Peek-a-Boo Glasses!",
+      "Open the pendant by holding the peace sign near your eye to the camera to unlock it. You can also click the pendant instead, but every real witch knows how to use Peek-a-Boo Glasses!",
   },
   {
     page: 2,

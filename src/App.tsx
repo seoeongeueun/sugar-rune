@@ -21,6 +21,7 @@ const HELP_SEEN_KEY = "is_seen";
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [cameraAccessRequestCount, setCameraAccessRequestCount] = useState(0);
   const isLoading = useAuth((state) => state.isLoading);
   const user = useAuth((state) => state.user);
   const isAdmin = useAuth((state) => state.isAdmin);
@@ -130,16 +131,22 @@ export default function App() {
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
       <HeartsList />
-      <GestureDetector onVictoryChange={handleVictoryChange} />
+      <GestureDetector
+        onVictoryChange={handleVictoryChange}
+        cameraAccessRequestCount={cameraAccessRequestCount}
+      />
       {heartOpen && <FooterButtons />}
 
       {isCalendarOpen && <Calendar />}
       {isOpen && <PostCard />}
-      {isHelpOpen && <HelpModal onClose={handleHelpClose} />}
-      {/* <DeleteModal
-        onCancel={() => console.log("Cancel")}
-        onConfirm={() => console.log("Confirm")}
-      /> */}
+      {isHelpOpen && (
+        <HelpModal
+          onClose={handleHelpClose}
+          onCameraAccessGranted={() =>
+            setCameraAccessRequestCount((count) => count + 1)
+          }
+        />
+      )}
       {!isLoading && !user && !isHelpOpen && <AuthModal />}
     </>
   );
