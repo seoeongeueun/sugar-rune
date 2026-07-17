@@ -28,6 +28,7 @@ export type HeartCategory = {
   value: number;
 };
 
+//!important: on values change, change the sql trigger in the db as well
 export const HEART_LIST: HeartCategory[] = [
   {
     color: "red",
