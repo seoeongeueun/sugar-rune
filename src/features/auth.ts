@@ -48,3 +48,19 @@ export async function signInWithEmail(payload: EmailAuthPayload) {
 
   return data;
 }
+
+export async function verifyUserPassword(payload: {
+  email: string;
+  password: string;
+}) {
+  assertSupabaseConfig();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: payload.email,
+    password: payload.password,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
