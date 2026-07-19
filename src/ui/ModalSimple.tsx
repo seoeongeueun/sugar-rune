@@ -25,7 +25,9 @@ export function ModalSimple({
           className="w-8 tablet:w-10 h-auto animate-bounce [animation-duration:1.8s]"
         />
         <header className="text-center flex flex-col items-center justify-center w-full mb-2 tablet:mb-0">
-          <h1 className="leading-12 tablet:leading-20 font-bold!">{title}</h1>
+          <h1 className="break-all leading-12 tablet:leading-20 font-bold!">
+            {title}
+          </h1>
           {description && <p className="text-center mt-2">{description}</p>}
         </header>
         {children}

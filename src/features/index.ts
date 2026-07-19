@@ -1,8 +1,10 @@
-export { signInWithEmail, signUpWithEmail } from "./auth";
+export { signInWithEmail, signUpWithEmail, verifyUserPassword } from "./auth";
 export { analyzeNoteHeartColor } from "./analyzeNote";
 export {
   clearUserProfileQueryCache,
   fetchUserProfile,
+  updateUserLockMode,
+  useUpdateUserLockMode,
   userProfileQueryKeys,
   useUserProfile,
 } from "./userProfile";

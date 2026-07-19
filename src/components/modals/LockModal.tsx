@@ -7,8 +7,9 @@ import { Check, Mic, RotateCcw, Sparkles, X } from "lucide-react";
 type LockModalProps = {
   isLockMode: boolean;
   isSaving: boolean;
+  currentSpell: string;
   onClose: () => void;
-  onConfirm: (isLockMode: boolean) => void;
+  onConfirm: (isLockMode: boolean, spell: string) => void;
 };
 
 type RecorderStep =
@@ -31,11 +32,12 @@ function normalizeSpell(spell: string) {
 export default function LockModal({
   isLockMode,
   isSaving,
+  currentSpell,
   onClose,
   onConfirm,
 }: LockModalProps) {
   const [nextIsLockMode, setNextIsLockMode] = useState<boolean>(isLockMode);
-  const [spell, setSpell] = useState<string>("");
+  const [spell, setSpell] = useState<string>(currentSpell);
   const [step, setStep] = useState<RecorderStep>("ready");
   const [recordedSpell, setRecordedSpell] = useState<string>("");
   const [spokenSpell, setSpokenSpell] = useState<string>("");
@@ -64,6 +66,16 @@ export default function LockModal({
       recognitionSessionRef.current?.abort();
     };
   }, []);
+
+  // Reset spell and step when lock mode is disabled
+  useEffect(() => {
+    if (!nextIsLockMode) {
+      setSpell("");
+      setRecordedSpell("");
+      setSpokenSpell("");
+      setStep("ready");
+    }
+  }, [nextIsLockMode]);
 
   const resetRecording = () => {
     recognitionSessionRef.current?.abort();
@@ -165,7 +177,9 @@ export default function LockModal({
             disabled={isSaving || needsCompletedSpell}
             ariaLabel="Confirm"
             label={isSaving ? "Saving" : "Confirm"}
-            onClick={() => onConfirm(nextIsLockMode)}
+            onClick={() =>
+              onConfirm(nextIsLockMode, nextIsLockMode ? spell : "")
+            }
           />
           <HeartButton
             heartColor="white"
@@ -311,7 +325,9 @@ export default function LockModal({
               <p>Your Spell</p>
               <Sparkles className="inline w-5 h-5 text-yellow-400" />
             </div>
-            <p className="bg-night/50 px-2 rounded text-md">{spell}</p>
+            <p className="bg-night/50 px-2 rounded text-md border border-white">
+              {spell}
+            </p>
           </div>
         )}
       </div>

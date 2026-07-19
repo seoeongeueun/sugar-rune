@@ -1,11 +1,22 @@
 import { useState } from "react";
 import { useAuth } from "@/stores";
-import { useUserProfile } from "@/features";
-import { CircleQuestionMark, Crown, LoaderCircle } from "lucide-react";
+import {
+  useUpdateUserLockMode,
+  useUserProfile,
+  verifyUserPassword,
+} from "@/features";
+import {
+  Check,
+  CircleQuestionMark,
+  Crown,
+  KeyRound,
+  LoaderCircle,
+} from "lucide-react";
 import { maskEmail, WITCH_RANKS } from "@/lib";
 import { HeartButton } from "./HeartButton";
 import { Modal } from "@/ui";
 import HelpModal from "@/components/modals/HelpModal";
+import LockModal from "@/components/modals/LockModal";
 
 function getWitchRankProgress(ecru: number) {
   const rankIndex = WITCH_RANKS.reduce(
@@ -39,12 +50,22 @@ function getWitchRankProgress(ecru: number) {
 export function AuthButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenHelp, setIsOpenHelp] = useState(false);
+  const [isOpenPassword, setIsOpenPassword] = useState(false);
+  const [isOpenLock, setIsOpenLock] = useState(false);
+  const [lockPassword, setLockPassword] = useState("");
+  const [lockPasswordMessage, setLockPasswordMessage] = useState<string | null>(
+    null,
+  );
+  const [isVerifyingLockPassword, setIsVerifyingLockPassword] = useState(false);
 
   const user = useAuth((state) => state.user);
   const username = useAuth((state) => state.username);
   const { data: userProfile } = useUserProfile(user?.id);
+
   const totalNotes = userProfile?.totalNotes ?? 0;
   const ecru = userProfile?.ecru ?? 0;
+  const isLockMode = userProfile?.isLockMode ?? false;
+  const updateUserLockModeMutation = useUpdateUserLockMode(user?.id);
 
   const isLoading = useAuth((state) => state.isLoading);
   const signOut = useAuth((state) => state.signOut);
@@ -69,6 +90,46 @@ export function AuthButton() {
     setIsOpen(false);
   };
 
+  const handleVerifyLockPassword = async () => {
+    const email = user?.email;
+    const password = lockPassword.trim();
+
+    if (!email) {
+      setLockPasswordMessage("Sign in before changing lock mode.");
+      return;
+    }
+
+    if (!password) {
+      setLockPasswordMessage("Enter your password.");
+      return;
+    }
+
+    setIsVerifyingLockPassword(true);
+    setLockPasswordMessage(null);
+
+    try {
+      await verifyUserPassword({ email, password });
+      setLockPassword("");
+      setIsOpenPassword(false);
+      setIsOpenLock(true);
+    } catch (error) {
+      setLockPasswordMessage(
+        error instanceof Error ? error.message : "Password is incorrect.",
+      );
+    } finally {
+      setIsVerifyingLockPassword(false);
+    }
+  };
+
+  const handleLockModeConfirm = (nextIsLockMode: boolean, spell: string) => {
+    updateUserLockModeMutation.mutate(
+      { isLockMode: nextIsLockMode, spell },
+      {
+        onSuccess: () => setIsOpenLock(false),
+      },
+    );
+  };
+
   return (
     <div className="flex flex-row gap-4 items-center justify-end text-white">
       <button
@@ -90,7 +151,7 @@ export function AuthButton() {
           className="w-10 h-10"
         />
       </button>
-      {isOpen && (
+      {isOpen && !isOpenLock && (
         <Modal
           isSimple={true}
           title={username ?? "Account"}
@@ -131,7 +192,7 @@ export function AuthButton() {
         >
           <dl
             id="no-text-shadow"
-            className="text-md font-medium space-y-1 text-white"
+            className="text-md font-medium space-y-1 text-white w-[75%]"
           >
             <p className="text-lg text-center -mt-4">
               <Crown className="w-6 h-6 inline-block mr-2" />
@@ -159,11 +220,82 @@ export function AuthButton() {
               <dt>Hearts:</dt>
               <dd className="ml-auto">{totalNotes}</dd>
             </div>
+            <div className="flex flex-row items-center justify-between mt-8">
+              <label className="text-white/50 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="lock-mode"
+                  disabled={true}
+                  className="rounded"
+                  checked={isLockMode}
+                />
+                Lock Pendant
+              </label>
+              <button
+                onClick={() => {
+                  setIsOpenPassword((prev) => !prev);
+                  setLockPasswordMessage(null);
+                }}
+                type="button"
+                className="black-button px-1 aspect-square"
+              >
+                <KeyRound className="w-5 h-5" />
+              </button>
+            </div>
+            {!isOpenPassword ? (
+              <p className="text-sm whitespace-pre-line text-white">
+                Requires a secret phrase to open locked pendant
+              </p>
+            ) : (
+              <div className="flex flex-row gap-2">
+                <input
+                  type="password"
+                  placeholder="Enter password to change lock mode"
+                  className="white-button text-sm px-2 !aspect-auto w-full"
+                  value={lockPassword}
+                  disabled={isVerifyingLockPassword}
+                  onChange={(event) => {
+                    setLockPassword(event.target.value);
+                    setLockPasswordMessage(null);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void handleVerifyLockPassword();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="white-button px-2"
+                  disabled={isVerifyingLockPassword}
+                  onClick={() => void handleVerifyLockPassword()}
+                >
+                  {isVerifyingLockPassword ? (
+                    <LoaderCircle className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Check className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            )}
+            {lockPasswordMessage && (
+              <p className="text-sm text-night">{lockPasswordMessage}</p>
+            )}
           </dl>
         </Modal>
       )}
       {isOpenHelp && (
         <HelpModal isAbout={true} onClose={() => setIsOpenHelp(false)} />
+      )}
+      {isOpenLock && (
+        <LockModal
+          isLockMode={isLockMode}
+          currentSpell={userProfile?.spell ?? ""}
+          isSaving={updateUserLockModeMutation.isPending}
+          onClose={() => setIsOpenLock(false)}
+          onConfirm={handleLockModeConfirm}
+        />
       )}
     </div>
   );
