@@ -20,12 +20,14 @@ import PostCard from "./components/PostCard";
 import FooterButtons from "./components/FooterButtons";
 import Calendar from "./components/Calendar";
 import HelpModal from "./components/modals/HelpModal";
+import { LockKeyhole } from "lucide-react";
 
 const HELP_SEEN_KEY = "is_seen";
 
 export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isLockMessageOpen, setIsLockMessageOpen] = useState(false);
   const [cameraAccessRequestCount, setCameraAccessRequestCount] = useState(0);
   const isLoading = useAuth((state) => state.isLoading);
   const user = useAuth((state) => state.user);
@@ -108,6 +110,24 @@ export default function App() {
     setIsHelpOpen(false);
   }, []);
 
+  const handleBlockedHeartClick = useCallback(() => {
+    setIsLockMessageOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isLockMessageOpen) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsLockMessageOpen(false);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isLockMessageOpen]);
+
   return (
     <>
       <header className="z-99 pointer-events-none w-full fixed inset-0 h-fit flex flex-row justify-between items-center px-8">
@@ -123,6 +143,7 @@ export default function App() {
           <HeartModel
             open={heartOpen}
             canOpenOnClick={!isLockMode}
+            onBlockedOpenClick={handleBlockedHeartClick}
             onToggle={() => setHeartOpen((value) => !value)}
           ></HeartModel>
           <GemModel open={heartOpen} />
@@ -150,6 +171,12 @@ export default function App() {
       )}
       {!isLoading && !user && !isHelpOpen && (
         <AuthModal onCreateAccount={() => setIsHelpOpen(true)} />
+      )}
+      {isLockMessageOpen && (
+        <div className="px-4 rounded fixed bottom-30 left-1/2 -translate-x-1/2 flex flex-row items-center text-white text-lg">
+          <LockKeyhole size={18} />
+          <p className="ml-4">Your pendant is locked</p>
+        </div>
       )}
     </>
   );

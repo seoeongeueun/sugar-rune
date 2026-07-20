@@ -10,6 +10,7 @@ import { useNote } from "@/stores";
 type HeartModelProps = {
   open: boolean;
   canOpenOnClick?: boolean;
+  onBlockedOpenClick?: () => void;
   onToggle: () => void;
   children?: ReactNode;
 };
@@ -172,6 +173,7 @@ function FloatingHeartMesh({
 export default function HeartModel({
   open,
   canOpenOnClick = true,
+  onBlockedOpenClick,
   onToggle,
   children,
 }: HeartModelProps) {
@@ -326,6 +328,7 @@ export default function HeartModel({
       onPointerDown={(e) => {
         e.stopPropagation();
         if (!open && !canOpenOnClick) {
+          onBlockedOpenClick?.();
           return;
         }
 
