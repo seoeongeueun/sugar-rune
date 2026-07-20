@@ -10,6 +10,7 @@ import { useAuth, useCalendar, useNote } from "@/stores";
 import {
   clearNotesQueryCache,
   clearUserProfileQueryCache,
+  useUserProfile,
   useUserNotes,
 } from "@/features";
 import { AuthModal } from "@/components/modals";
@@ -36,6 +37,8 @@ export default function App() {
   const queryClient = useQueryClient();
 
   useUserNotes(user?.id, new Date().getFullYear());
+  const { data: userProfile } = useUserProfile(user?.id);
+  const isLockMode = userProfile?.isLockMode ?? false;
 
   // open the heart when gesture is detected, but do not close it even when gesture is no longer detected
   // so that it can be closed by the user manually
@@ -119,6 +122,7 @@ export default function App() {
         <Suspense fallback={null}>
           <HeartModel
             open={heartOpen}
+            canOpenOnClick={!isLockMode}
             onToggle={() => setHeartOpen((value) => !value)}
           ></HeartModel>
           <GemModel open={heartOpen} />
