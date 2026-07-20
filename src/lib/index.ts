@@ -8,6 +8,7 @@ export {
   getDateFormValues,
   requestCameraAccess,
   getCameraAccessErrorMessage,
+  normalizeString,
 } from "./tools";
 export { helpPages } from "./help";
 export type { HelpPage } from "./help";

@@ -170,10 +170,11 @@ export default function LockModal({
     <ModalSimple
       title="Lock Mode"
       onClose={onClose}
+      heartColor="purple"
       footer={
         <>
           <HeartButton
-            heartColor="black"
+            heartColor="purple"
             disabled={isSaving || needsCompletedSpell}
             ariaLabel="Confirm"
             label={isSaving ? "Saving" : "Confirm"}
@@ -325,7 +326,7 @@ export default function LockModal({
               <p>Your Spell</p>
               <Sparkles className="inline w-5 h-5 text-yellow-400" />
             </div>
-            <p className="bg-night/50 px-2 rounded text-md border border-white">
+            <p className="bg-night/70 tracking-widest uppercase px-2 rounded text-md p-1">
               {spell}
             </p>
           </div>

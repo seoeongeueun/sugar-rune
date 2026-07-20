@@ -129,3 +129,8 @@ export function getCameraAccessErrorMessage(error: unknown) {
 
   return "Camera access failed.";
 }
+
+//normalize any string to compare
+export function normalizeString(str: string) {
+  return str.trim().toLowerCase().replace(/\s+/g, " ");
+}

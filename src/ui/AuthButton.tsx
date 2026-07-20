@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/stores";
 import {
   useUpdateUserLockMode,
@@ -12,7 +12,12 @@ import {
   KeyRound,
   LoaderCircle,
 } from "lucide-react";
-import { maskEmail, WITCH_RANKS } from "@/lib";
+import {
+  getErrorMessage,
+  maskEmail,
+  WITCH_RANKS,
+  normalizeString,
+} from "@/lib";
 import { HeartButton } from "./HeartButton";
 import { Modal } from "@/ui";
 import HelpModal from "@/components/modals/HelpModal";
@@ -56,6 +61,7 @@ export function AuthButton() {
   const [lockPasswordMessage, setLockPasswordMessage] = useState<string | null>(
     null,
   );
+  const [isLockMessageError, setIsLockMessageError] = useState(false);
   const [isVerifyingLockPassword, setIsVerifyingLockPassword] = useState(false);
 
   const user = useAuth((state) => state.user);
@@ -74,6 +80,17 @@ export function AuthButton() {
   const isAuthenticated = Boolean(user);
   const isDisabled = isLoading || isSigningOut;
   const witchRankProgress = getWitchRankProgress(ecru);
+
+  useEffect(() => {
+    if (lockPasswordMessage && !isLockMessageError) {
+      const timer = setTimeout(() => {
+        setLockPasswordMessage(null);
+      }, 5000);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [isLockMessageError, lockPasswordMessage]);
 
   const handleAuthButtonClick = async () => {
     if (isAuthenticated) {
@@ -95,37 +112,65 @@ export function AuthButton() {
     const password = lockPassword.trim();
 
     if (!email) {
-      setLockPasswordMessage("Sign in before changing lock mode.");
+      setLockPasswordMessage("Sign in before changing lock mode");
+      setIsLockMessageError(true);
       return;
     }
 
     if (!password) {
-      setLockPasswordMessage("Enter your password.");
+      setLockPasswordMessage("Enter your password");
+      setIsLockMessageError(true);
       return;
     }
 
     setIsVerifyingLockPassword(true);
     setLockPasswordMessage(null);
+    setIsLockMessageError(false);
 
     try {
       await verifyUserPassword({ email, password });
       setLockPassword("");
       setIsOpenPassword(false);
+      setLockPasswordMessage(null);
+      setIsLockMessageError(false);
       setIsOpenLock(true);
     } catch (error) {
       setLockPasswordMessage(
-        error instanceof Error ? error.message : "Password is incorrect.",
+        error instanceof Error ? error.message : "Password is incorrect",
       );
+      setIsLockMessageError(true);
     } finally {
       setIsVerifyingLockPassword(false);
     }
   };
 
   const handleLockModeConfirm = (nextIsLockMode: boolean, spell: string) => {
+    const currentIsLockMode = userProfile?.isLockMode ?? false;
+    const currentSpell = userProfile?.spell ?? "";
+
+    if (
+      nextIsLockMode === currentIsLockMode &&
+      normalizeString(spell) === normalizeString(currentSpell)
+    ) {
+      setIsOpenLock(false);
+      setLockPasswordMessage(null);
+      setIsLockMessageError(false);
+      return;
+    }
+
     updateUserLockModeMutation.mutate(
       { isLockMode: nextIsLockMode, spell },
       {
-        onSuccess: () => setIsOpenLock(false),
+        onSuccess: () => {
+          setLockPasswordMessage("Lock mode saved");
+          setIsLockMessageError(false);
+          setIsOpenLock(false);
+        },
+        onError: (error) => {
+          setLockPasswordMessage(getErrorMessage(error));
+          setIsLockMessageError(true);
+          setIsOpenLock(false);
+        },
       },
     );
   };
@@ -251,12 +296,13 @@ export function AuthButton() {
                 <input
                   type="password"
                   placeholder="Enter password to change lock mode"
-                  className="white-button text-sm px-2 !aspect-auto w-full"
+                  className="white-button text-sm px-2 !aspect-auto w-full font-medium"
                   value={lockPassword}
                   disabled={isVerifyingLockPassword}
                   onChange={(event) => {
                     setLockPassword(event.target.value);
                     setLockPasswordMessage(null);
+                    setIsLockMessageError(false);
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
@@ -279,10 +325,15 @@ export function AuthButton() {
                 </button>
               </div>
             )}
-            {lockPasswordMessage && (
-              <p className="text-sm text-night">{lockPasswordMessage}</p>
-            )}
           </dl>
+          {lockPasswordMessage && (
+            <p
+              role={isLockMessageError ? "alert" : "status"}
+              className="text-center text-shadow text-md"
+            >
+              {lockPasswordMessage}
+            </p>
+          )}
         </Modal>
       )}
       {isOpenHelp && (
