@@ -11,7 +11,11 @@ interface LoginFormValues {
   password: string;
 }
 
-export function AuthModal() {
+type AuthModalProps = {
+  onCreateAccount?: () => void;
+};
+
+export function AuthModal({ onCreateAccount }: AuthModalProps) {
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
 
   const signUpMutation = useMutation({ mutationFn: signUpWithEmail });
@@ -37,6 +41,7 @@ export function AuthModal() {
         email: values.email,
         password: values.password,
       });
+      onCreateAccount?.();
       return;
     }
     await signInMutation.mutateAsync({

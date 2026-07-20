@@ -95,23 +95,15 @@ export default function App() {
       return;
     }
 
-    if (isAdmin) {
-      setIsHelpOpen(true);
-      return;
-    }
-
-    if (localStorage.getItem(HELP_SEEN_KEY) !== "true") {
+    if (isAdmin && localStorage.getItem(HELP_SEEN_KEY) !== "true") {
+      localStorage.setItem(HELP_SEEN_KEY, "true");
       setIsHelpOpen(true);
     }
   }, [isAdmin, isLoading]);
 
   const handleHelpClose = useCallback(() => {
-    if (!isAdmin) {
-      localStorage.setItem(HELP_SEEN_KEY, "true");
-    }
-
     setIsHelpOpen(false);
-  }, [isAdmin]);
+  }, []);
 
   return (
     <>
@@ -152,7 +144,9 @@ export default function App() {
           }
         />
       )}
-      {!isLoading && !user && !isHelpOpen && <AuthModal />}
+      {!isLoading && !user && !isHelpOpen && (
+        <AuthModal onCreateAccount={() => setIsHelpOpen(true)} />
+      )}
     </>
   );
 }
