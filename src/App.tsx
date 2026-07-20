@@ -156,6 +156,8 @@ export default function App() {
       <GestureDetector
         onVictoryChange={handleVictoryChange}
         cameraAccessRequestCount={cameraAccessRequestCount}
+        isLockMode={isLockMode}
+        spell={userProfile?.spell ?? ""}
       />
       {heartOpen && <FooterButtons />}
 

@@ -5,13 +5,18 @@ import {
   createHandLandmarker,
   drawHandFrame,
   hasVictoryGesture,
+  normalizeString,
+  startSpeechRecognition,
   type GestureDetectorStatus,
+  type SpeechRecognitionSession,
 } from "@/lib";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mic } from "lucide-react";
 
 type Props = {
   onVictoryChange: (isVictory: boolean) => void;
   cameraAccessRequestCount: number;
+  isLockMode: boolean;
+  spell: string;
 };
 
 type DetectorPosition = {
@@ -76,22 +81,33 @@ function clampDetectorPosition(
   };
 }
 
+const DEFAULT_GESTURE_MESSAGE = "Show your gesture and say your spell!";
+
 export default function GestureDetector({
   onVictoryChange,
   cameraAccessRequestCount,
+  isLockMode,
+  spell,
 }: Props) {
   const detectorRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const victoryMessageTimeoutRef = useRef<number | null>(null);
+  const unlockSessionRef = useRef<SpeechRecognitionSession | null>(null);
+  const isUnlockListeningRef = useRef(false);
+  const shouldWaitForGestureReleaseRef = useRef(false);
   const lastVictoryRef = useRef(false);
   const dragStateRef = useRef<DragState | null>(null);
   const didDragRef = useRef(false);
   const currentPositionRef = useRef<DetectorPosition | null>(null);
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
   const [isVictory, setIsVictory] = useState(false);
-  const [showVictoryMessage, setShowVictoryMessage] = useState(false);
+  const [gestureMessage, setGestureMessage] = useState<string>(
+    DEFAULT_GESTURE_MESSAGE,
+  );
+  const [isUnlockListening, setIsUnlockListening] = useState(false);
+  const [unlockTranscript, setUnlockTranscript] = useState("");
   const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
   const [position, setPosition] = useState<DetectorPosition | null>(() =>
     getSavedDetectorPosition(),
@@ -109,27 +125,122 @@ export default function GestureDetector({
     let landmarker: HandLandmarker | null = null;
     const videoElement = videoRef.current;
 
+    const showGestureMessage = (message: string, durationMs?: number) => {
+      setGestureMessage(message);
+
+      if (victoryMessageTimeoutRef.current !== null) {
+        window.clearTimeout(victoryMessageTimeoutRef.current);
+        victoryMessageTimeoutRef.current = null;
+      }
+
+      if (durationMs === undefined) {
+        return;
+      }
+
+      victoryMessageTimeoutRef.current = window.setTimeout(() => {
+        setGestureMessage(DEFAULT_GESTURE_MESSAGE);
+        victoryMessageTimeoutRef.current = null;
+      }, durationMs);
+    };
+
+    const clearVictory = () => {
+      lastVictoryRef.current = false;
+      setIsVictory(false);
+      onVictoryChange(false);
+    };
+
+    const startUnlockListening = () => {
+      if (isUnlockListeningRef.current) {
+        return;
+      }
+
+      const savedSpell = normalizeString(spell);
+
+      if (!savedSpell) {
+        showGestureMessage("No spell is saved.", 3000);
+        shouldWaitForGestureReleaseRef.current = true;
+        clearVictory();
+        return;
+      }
+
+      isUnlockListeningRef.current = true;
+      setIsUnlockListening(true);
+      setUnlockTranscript("");
+      setIsVictory(true);
+      showGestureMessage("Gesture detected!");
+
+      const result = startSpeechRecognition({
+        maxListeningTimeMs: 10_000,
+        onTranscript: (transcript) => {
+          setUnlockTranscript(transcript);
+        },
+        onComplete: (transcript) => {
+          unlockSessionRef.current = null;
+          isUnlockListeningRef.current = false;
+          setIsUnlockListening(false);
+          setUnlockTranscript(transcript);
+
+          if (!transcript) {
+            showGestureMessage("No spell heard.", 3000);
+            shouldWaitForGestureReleaseRef.current = true;
+            clearVictory();
+            return;
+          }
+
+          if (normalizeString(transcript) !== savedSpell) {
+            showGestureMessage("Your spell does not match.", 3000);
+            shouldWaitForGestureReleaseRef.current = true;
+            clearVictory();
+            return;
+          }
+
+          showGestureMessage("Unlocked.", 2000);
+          onVictoryChange(true);
+        },
+        onError: () => {
+          unlockSessionRef.current = null;
+          isUnlockListeningRef.current = false;
+          setIsUnlockListening(false);
+          showGestureMessage("Voice unlock failed.", 3000);
+          shouldWaitForGestureReleaseRef.current = true;
+          clearVictory();
+        },
+      });
+
+      if (!result.ok) {
+        unlockSessionRef.current = null;
+        isUnlockListeningRef.current = false;
+        setIsUnlockListening(false);
+        showGestureMessage("Voice unlock is not available.", 3000);
+        shouldWaitForGestureReleaseRef.current = true;
+        clearVictory();
+        return;
+      }
+
+      unlockSessionRef.current = result.session;
+    };
+
     const setVictory = (nextValue: boolean) => {
       if (lastVictoryRef.current === nextValue) {
         return;
       }
 
       lastVictoryRef.current = nextValue;
-      setIsVictory(nextValue);
-      onVictoryChange(nextValue);
 
       if (nextValue) {
-        setShowVictoryMessage(true);
-
-        if (victoryMessageTimeoutRef.current !== null) {
-          window.clearTimeout(victoryMessageTimeoutRef.current);
+        if (isLockMode) {
+          startUnlockListening();
+          return;
         }
 
-        victoryMessageTimeoutRef.current = window.setTimeout(() => {
-          setShowVictoryMessage(false);
-          victoryMessageTimeoutRef.current = null;
-        }, 2000);
+        setIsVictory(true);
+        onVictoryChange(true);
+        showGestureMessage("あなたのハート、ピックアップ！");
+        return;
       }
+
+      setIsVictory(false);
+      onVictoryChange(false);
     };
 
     const clearCanvas = () => {
@@ -156,7 +267,24 @@ export default function GestureDetector({
         if (canvas) {
           drawHandFrame(result, canvas, video);
         }
-        setVictory(hasVictoryGesture(result));
+
+        if (isUnlockListeningRef.current) {
+          animationFrameRef.current = requestAnimationFrame(detectFrame);
+          return;
+        }
+
+        const hasGesture = hasVictoryGesture(result);
+
+        if (!hasGesture) {
+          shouldWaitForGestureReleaseRef.current = false;
+        }
+
+        if (hasGesture && shouldWaitForGestureReleaseRef.current) {
+          animationFrameRef.current = requestAnimationFrame(detectFrame);
+          return;
+        }
+
+        setVictory(hasGesture);
       }
 
       animationFrameRef.current = requestAnimationFrame(detectFrame);
@@ -220,6 +348,12 @@ export default function GestureDetector({
         window.clearTimeout(victoryMessageTimeoutRef.current);
       }
 
+      unlockSessionRef.current?.abort();
+      unlockSessionRef.current = null;
+      isUnlockListeningRef.current = false;
+      setIsUnlockListening(false);
+      setUnlockTranscript("");
+      shouldWaitForGestureReleaseRef.current = false;
       landmarker?.close();
       stream?.getTracks().forEach((track) => track.stop());
       clearCanvas();
@@ -231,7 +365,7 @@ export default function GestureDetector({
 
       onVictoryChange(false);
     };
-  }, [isDetectionEnabled, onVictoryChange]);
+  }, [isDetectionEnabled, isLockMode, onVictoryChange, spell]);
 
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
     if (event.button !== 0 || !detectorRef.current) {
@@ -308,14 +442,6 @@ export default function GestureDetector({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      {showVictoryMessage && (
-        <span
-          id="modal"
-          className="absolute bottom-1/2 font-bold z-99 rotate-15 right-4 text-sm text-end"
-        >
-          あなたのハート、ピックアップ！
-        </span>
-      )}
       <div className="relative flex flex-col border-2 border-white outline outline-night bg-white/40 backdrop-blur-xl drop-shadow-2xl rounded-lg p-4 gap-4">
         <div
           onClick={(event) => {
@@ -351,24 +477,49 @@ export default function GestureDetector({
             </button>
           </div>
         </div>
-        <div
-          className={`${!isDetectionEnabled ? "hidden" : ""} relative aspect-square overflow-hidden rounded-md border border-white transition-[box-shadow,filter] duration-100 ${
-            isVictory ? "shadow-[0_0_5px_1px_var(--secondary)]" : ""
-          }`}
-        >
-          <video
-            ref={videoRef}
-            className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${isDetectionEnabled && status !== "ready" ? "animate-pulse" : ""}`}
-            muted
-            playsInline
-          />
-          <canvas
-            ref={canvasRef}
-            className="pointer-events-none absolute inset-0 h-full w-full"
-            aria-hidden="true"
-            style={{ background: "transparent" }}
-          />
-        </div>
+        {isDetectionEnabled && (
+          <div className="relative max-h-50 flex flex-row items-center justify-between gap-4">
+            <div
+              className={`${!isDetectionEnabled ? "hidden" : ""} max-h-50 relative aspect-square overflow-hidden h-full shrink-0 rounded-md border border-white transition-[box-shadow,filter] duration-100 ${
+                isVictory ? "shadow-[0_0_5px_1px_var(--secondary)]" : ""
+              }`}
+            >
+              <video
+                ref={videoRef}
+                className={`bg-secondary/70 h-full object-cover [transform:scaleX(-1)] scale-110 ${isDetectionEnabled && status !== "ready" ? "animate-pulse" : ""}`}
+                muted
+                playsInline
+              />
+              <canvas
+                ref={canvasRef}
+                className="pointer-events-none absolute inset-0 h-full w-full"
+                aria-hidden="true"
+                style={{ background: "transparent" }}
+              />
+            </div>
+            <div className="flex flex-col gap-2 w-full">
+              {isUnlockListening && (
+                <div
+                  className="flex items-center gap-2 text-white"
+                  aria-live="polite"
+                >
+                  <Mic className="h-5 w-5 animate-pulse" />
+                  <div className="flex items-center gap-1" aria-hidden="true">
+                    <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                    <span className="h-2 w-2 rounded-full bg-white animate-pulse [animation-delay:150ms]" />
+                    <span className="h-2 w-2 rounded-full bg-white animate-pulse [animation-delay:300ms]" />
+                  </div>
+                </div>
+              )}
+              <p className="text-md text-left">{gestureMessage}</p>
+            </div>
+          </div>
+        )}
+        {isUnlockListening && unlockTranscript?.length > 0 && (
+          <p className="absolute -bottom-8 min-h-6 rounded bg-night/50 px-2 py-1 text-sm tracking-widest uppercase">
+            {unlockTranscript}
+          </p>
+        )}
       </div>
     </aside>
   );
