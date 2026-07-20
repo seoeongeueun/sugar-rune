@@ -166,7 +166,7 @@ export const HEART_LIST: HeartCategory[] = [
       "I felt angry because everything went wrong.",
       "오늘 너무 화가 났고 모든 것이 두려웠다.",
     ],
-    value: 3000,
+    value: 1000,
   },
 
   {
@@ -190,6 +190,6 @@ export const HEART_LIST: HeartCategory[] = [
       "Meditation made me feel peaceful.",
       "오늘은 아무 걱정 없이 평온한 하루였다.",
     ],
-    value: 3000,
+    value: 1000,
   },
 ];
