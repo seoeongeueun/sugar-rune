@@ -152,7 +152,11 @@ export default function App() {
 
         <OrbitControls enableDamping dampingFactor={0.1} />
       </Canvas>
-      <HeartsList />
+      <HeartsList
+        isHeartOpen={heartOpen}
+        isLockMode={isLockMode}
+        onBlockedOpen={handleBlockedHeartClick}
+      />
       <GestureDetector
         onVictoryChange={handleVictoryChange}
         cameraAccessRequestCount={cameraAccessRequestCount}

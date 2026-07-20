@@ -4,7 +4,17 @@ import { useAuth, useCalendar } from "@/stores";
 import { useUserAllNotes } from "@/features";
 import { useMemo } from "react";
 
-export default function HeartsList() {
+type HeartsListProps = {
+  isHeartOpen: boolean;
+  isLockMode: boolean;
+  onBlockedOpen: () => void;
+};
+
+export default function HeartsList({
+  isHeartOpen,
+  isLockMode,
+  onBlockedOpen,
+}: HeartsListProps) {
   const openCalendar = useCalendar((state) => state.openCalendar);
   const user = useAuth((state) => state.user);
   const { data: notes = [] } = useUserAllNotes(user?.id);
@@ -45,6 +55,11 @@ export default function HeartsList() {
             heartColor={heart.color}
             size="small"
             onClick={() => {
+              if (isLockMode && !isHeartOpen) {
+                onBlockedOpen();
+                return;
+              }
+
               const latestDate = latestNoteDateByHeartColor[heart.color];
 
               if (latestDate) {
