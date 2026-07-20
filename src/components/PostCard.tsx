@@ -692,15 +692,15 @@ export default function PostCard() {
             <section className="absolute left-[10%] top-0 flex h-full w-[80%] min-h-0 flex-col justify-start py-20">
               <div className="flex flex-row items-center mt-6 mb-2 h-min justify-between w-full pr-2 text-md">
                 <div className="flex flex-row items-center w-fit gap-2">
-                  <img
-                    src={`/hearts/heart_${heartColor}_icon.png`}
-                    alt="heart"
-                    className="w-8 h-8 object-contain"
-                  />
                   <span>Date</span>
                   <span className="text-background underline underline-offset-4 decoration-1">
                     {displayDate.toLocaleDateString().replace(/\//g, ". ")}
                   </span>
+                  <img
+                    src={`/hearts/heart_${heartColor}_icon.png`}
+                    alt="heart"
+                    className="w-8 h-8 object-contain mb-1"
+                  />
                 </div>
                 <div className=" text-sm">
                   <span
