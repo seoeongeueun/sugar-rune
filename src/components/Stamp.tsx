@@ -9,6 +9,7 @@ type StampProps = {
   size: StampSize;
   x: number;
   y: number;
+  scale: number;
   isEditable: boolean;
   onRemove: () => void;
 };
@@ -19,6 +20,7 @@ export default function Stamp({
   size,
   x,
   y,
+  scale,
   isEditable,
   onRemove,
 }: StampProps) {
@@ -54,7 +56,7 @@ export default function Stamp({
         alt="Heart Stamp"
         aria-hidden="true"
         draggable={false}
-        style={{ width: `${STAMP_SIZE_REM[size]}rem` }}
+        style={{ width: `${STAMP_SIZE_REM[size] * scale}rem` }}
         className="pointer-events-none object-cover h-auto aspect-square"
       />
     </div>

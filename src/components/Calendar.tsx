@@ -255,7 +255,7 @@ export default function Calendar() {
     >
       <div
         ref={calendarRef}
-        className="pointer-events-auto w-full px-8 tablet:px-20 desktop:px-0 desktop:max-w-1/3 place-center flex flex-col gap-4 items-end"
+        className="pointer-events-auto w-full px-8 tablet:px-30 desktop:px-0 desktop:max-w-1/3 place-center flex flex-col gap-4 items-end"
       >
         <div className="flex flex-row justify-between w-full gap-2">
           <div className="gap-4 flex flex-row shrink-0 items-center">

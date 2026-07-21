@@ -55,6 +55,8 @@ type POSTCARD_MODE = "view" | "edit" | "stamp";
 
 type PlacedStamp = StampData;
 
+const DESIGN_POSTCARD_WIDTH_REM = 60;
+
 type ParagraphMetrics = {
   width: number;
   height: number;
@@ -63,6 +65,7 @@ type ParagraphMetrics = {
   frontWidth: number;
   frontHeight: number;
   remPx: number;
+  postcardScale: number;
 };
 
 interface FormData {
@@ -166,6 +169,7 @@ export default function PostCard() {
     frontWidth: 0,
     frontHeight: 0,
     remPx: 16,
+    postcardScale: 1,
   });
   const visibleStamps = useMemo(
     () => stamps.filter((stamp) => stamp.pageIndex === textPageIndex),
@@ -174,7 +178,10 @@ export default function PostCard() {
   const textObstacles = useMemo<CircleObstacle[]>(
     () =>
       stamps.map((stamp) => {
-        const diameter = STAMP_SIZE_REM[stamp.size] * paragraphMetrics.remPx;
+        const diameter =
+          STAMP_SIZE_REM[stamp.size] *
+          paragraphMetrics.remPx *
+          paragraphMetrics.postcardScale;
 
         return {
           pageIndex: stamp.pageIndex,
@@ -293,6 +300,10 @@ export default function PostCard() {
       const remPx = Number.parseFloat(
         window.getComputedStyle(document.documentElement).fontSize,
       );
+      const safeRemPx = Number.isFinite(remPx) ? remPx : 16;
+      const designPostcardWidth = DESIGN_POSTCARD_WIDTH_REM * safeRemPx;
+      const postcardScale =
+        designPostcardWidth > 0 ? front.clientWidth / designPostcardWidth : 1;
 
       setParagraphMetrics({
         width: paragraph.clientWidth,
@@ -301,7 +312,8 @@ export default function PostCard() {
         offsetTop: paragraphOffset.top,
         frontWidth: front.clientWidth,
         frontHeight: front.clientHeight,
-        remPx: Number.isFinite(remPx) ? remPx : 16,
+        remPx: safeRemPx,
+        postcardScale,
       });
     };
 
@@ -546,7 +558,7 @@ export default function PostCard() {
       <article
         ref={cardRef}
         tabIndex={-1}
-        onClick={(e) => cardRef.current?.focus()}
+        onClick={() => cardRef.current?.focus()}
         className="pointer-events-auto group perspective-distant relative box-content p-4 tablet:p-16 rounded-xs w-postcard-width aspect-[var(--postcard-ratio)] tablet:aspect-auto tablet:h-postcard-height outline-none"
       >
         <div className="group-hover:opacity-100 desktop:opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto desktop:pointer-events-none py-4 px-1 z-60">
@@ -763,6 +775,7 @@ export default function PostCard() {
                   size={stamp.size}
                   x={stamp.x}
                   y={stamp.y}
+                  scale={paragraphMetrics.postcardScale}
                   isEditable={mode === "stamp"}
                   onRemove={() => handleRemoveStamp(stamp.id)}
                 />

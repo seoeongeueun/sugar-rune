@@ -48,15 +48,40 @@ type PostcardTextProps = {
   onPageIndexChange: (pageIndex: number) => void;
 };
 
-const POSTCARD_TEXT_FONT =
-  '20px "SpecialSymbols", "sonmat", system-ui, Avenir, Helvetica, Arial, sans-serif';
-const POSTCARD_TEXT_LINE_HEIGHT = 30;
+const POSTCARD_TEXT_FONT_FAMILY =
+  '"SpecialSymbols", "sonmat", system-ui, Avenir, Helvetica, Arial, sans-serif';
+const DESKTOP_POSTCARD_TEXT_FONT_SIZE = 20;
+const MOBILE_POSTCARD_TEXT_FONT_SIZE = 15;
+const DESKTOP_POSTCARD_TEXT_LINE_HEIGHT = 30;
+const MOBILE_POSTCARD_TEXT_LINE_HEIGHT = 22.5;
+const MOBILE_POSTCARD_MEDIA_QUERY = "(max-width: 639px)";
 const POSTCARD_TEXT_LETTER_SPACING = 0;
 const POSTCARD_TEXT_BOTTOM_PADDING = 8;
 const MIN_TEXT_SLOT_WIDTH = 20;
 
 export const POSTCARD_STAMP_TEXT_GAP = 3;
 export const POSTCARD_STAMP_TEXT_X_BIAS = 6;
+
+type PostcardTextMetrics = {
+  font: string;
+  fontSize: number;
+  lineHeight: number;
+};
+
+function getPostcardTextMetrics(): PostcardTextMetrics {
+  const isMobile = window.matchMedia(MOBILE_POSTCARD_MEDIA_QUERY).matches;
+  const fontSize = isMobile
+    ? MOBILE_POSTCARD_TEXT_FONT_SIZE
+    : DESKTOP_POSTCARD_TEXT_FONT_SIZE;
+
+  return {
+    font: `${fontSize}px ${POSTCARD_TEXT_FONT_FAMILY}`,
+    fontSize,
+    lineHeight: isMobile
+      ? MOBILE_POSTCARD_TEXT_LINE_HEIGHT
+      : DESKTOP_POSTCARD_TEXT_LINE_HEIGHT,
+  };
+}
 
 function carveTextLineSlots(
   base: TextSlot,
@@ -129,11 +154,13 @@ function buildPostcardTextPages({
   width,
   height,
   obstacles,
+  lineHeight,
 }: {
   prepared: ReturnType<typeof prepareWithSegments>;
   width: number;
   height: number;
   obstacles: CircleObstacle[];
+  lineHeight: number;
 }): PositionedTextPage[] {
   if (width <= 0 || height <= 0) {
     return [];
@@ -156,13 +183,13 @@ function buildPostcardTextPages({
       (obstacle) => obstacle.pageIndex === pages.length,
     );
 
-    while (lineTop + POSTCARD_TEXT_LINE_HEIGHT <= layoutHeight) {
+    while (lineTop + lineHeight <= layoutHeight) {
       const blockedIntervals = pageObstacles
         .map((obstacle) =>
           circleIntervalForBand(
             obstacle,
             lineTop,
-            lineTop + POSTCARD_TEXT_LINE_HEIGHT,
+            lineTop + lineHeight,
           ),
         )
         .filter((interval): interval is TextInterval => interval !== null);
@@ -197,7 +224,7 @@ function buildPostcardTextPages({
         break;
       }
 
-      lineTop += POSTCARD_TEXT_LINE_HEIGHT;
+      lineTop += lineHeight;
     }
 
     if (pageLines.length > 0) {
@@ -225,6 +252,24 @@ export default function PostcardText({
   onPageIndexChange,
 }: PostcardTextProps) {
   const [fontRevision, setFontRevision] = useState(0);
+  const [textMetrics, setTextMetrics] = useState<PostcardTextMetrics>(() =>
+    getPostcardTextMetrics(),
+  );
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia(MOBILE_POSTCARD_MEDIA_QUERY);
+
+    const handleMediaQueryChange = () => {
+      clearCache();
+      setTextMetrics(getPostcardTextMetrics());
+    };
+
+    mobileQuery.addEventListener("change", handleMediaQueryChange);
+
+    return () => {
+      mobileQuery.removeEventListener("change", handleMediaQueryChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!("fonts" in document)) {
@@ -246,13 +291,16 @@ export default function PostcardText({
   }, []);
 
   const prepared = useMemo(
-    () =>
-      prepareWithSegments(content, POSTCARD_TEXT_FONT, {
+    () => {
+      void fontRevision;
+
+      return prepareWithSegments(content, textMetrics.font, {
         whiteSpace: "pre-wrap",
         wordBreak: "normal",
         letterSpacing: POSTCARD_TEXT_LETTER_SPACING,
-      }),
-    [content, fontRevision],
+      });
+    },
+    [content, fontRevision, textMetrics.font],
   );
 
   const pages = useMemo(
@@ -262,8 +310,9 @@ export default function PostcardText({
         width,
         height,
         obstacles,
+        lineHeight: textMetrics.lineHeight,
       }),
-    [prepared, width, height, obstacles],
+    [prepared, width, height, obstacles, textMetrics.lineHeight],
   );
   const pageCount = pages.length;
   const visiblePageIndex =
@@ -304,9 +353,10 @@ export default function PostcardText({
             left: `${line.x}px`,
             top: `${line.y}px`,
             width: `${line.slotWidth}px`,
-            height: `${POSTCARD_TEXT_LINE_HEIGHT}px`,
-            font: POSTCARD_TEXT_FONT,
-            lineHeight: `${POSTCARD_TEXT_LINE_HEIGHT}px`,
+            height: `${textMetrics.lineHeight}px`,
+            font: textMetrics.font,
+            fontSize: `${textMetrics.fontSize}px`,
+            lineHeight: `${textMetrics.lineHeight}px`,
             letterSpacing: `${POSTCARD_TEXT_LETTER_SPACING}px`,
           }}
         >
