@@ -545,28 +545,30 @@ export default function PostCard() {
     >
       <article
         ref={cardRef}
-        className="pointer-events-auto group perspective-distant relative box-content p-16 rounded-xs w-postcard-width h-postcard-height "
+        tabIndex={-1}
+        onClick={(e) => cardRef.current?.focus()}
+        className="pointer-events-auto group perspective-distant relative box-content p-4 tablet:p-16 rounded-xs w-postcard-width aspect-[var(--postcard-ratio)] tablet:aspect-auto tablet:h-postcard-height outline-none"
       >
-        <div className="group-hover:opacity-100 opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto pointer-events-none py-4 px-1 z-60">
+        <div className="group-hover:opacity-100 desktop:opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto desktop:pointer-events-none py-4 px-1 z-60">
           <div className="flex flex-row gap-2">
             {showViewActions && (
               <button
                 type="button"
                 aria-label="Edit note"
                 onClick={handleEditClick}
-                className="white-button px-2"
+                className="white-button px-1 tablet:px-2"
               >
-                <SquarePen size={16} color="white" />
+                <SquarePen color="white" className="w-6 h-6" />
               </button>
             )}
             {showViewActions && (
               <button
                 type="button"
                 aria-label="Edit heart stamp"
-                className="white-button px-2"
+                className="white-button px-1 tablet:px-2"
                 onClick={handleStampClick}
               >
-                <StampIcon size={16} color="white" />
+                <StampIcon color="white" className="w-6 h-6" />
               </button>
             )}
             {showViewActions && (
@@ -574,9 +576,9 @@ export default function PostCard() {
                 type="button"
                 aria-label="Delete note"
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="white-button px-2"
+                className="white-button px-1 tablet:px-2"
               >
-                <Trash2 size={16} color="white" />
+                <Trash2 color="white" className="w-6 h-6" />
               </button>
             )}
             {showEditSaveAction && (
@@ -585,16 +587,15 @@ export default function PostCard() {
                 aria-label="Save note"
                 onClick={handleEditSaveClick}
                 disabled={isSaving}
-                className="white-button px-2"
+                className="white-button px-1 tablet:px-2"
               >
                 {isSaving ? (
                   <LoaderCircle
-                    size={16}
                     color="white"
-                    className="animate-spin"
+                    className="w-4 h-4 animate-spin"
                   />
                 ) : (
-                  <Save size={16} color="white" />
+                  <Save color="white" className="w-6 h-6" />
                 )}
               </button>
             )}
@@ -605,18 +606,17 @@ export default function PostCard() {
                   aria-label="Save heart stamp positions"
                   onClick={handleStampSaveClick}
                   disabled={isSaving}
-                  className="white-button px-2 aspect-square w-auto"
+                  className="white-button px-1 tablet:px-2 aspect-square w-auto"
                 >
                   {isSaving ? (
                     <LoaderCircle
-                      size={16}
                       color="white"
-                      className="animate-spin"
+                      className="animate-spin w-6 h-6"
                     />
                   ) : areStampsEqual(stamps, savedSnapshot.stamps) ? (
-                    <Check size={16} color="white" />
+                    <Check color="white" className="w-6 h-6" />
                   ) : (
-                    <Save size={16} color="white" />
+                    <Save color="white" className="w-6 h-6" />
                   )}
                 </button>
                 <button
@@ -635,9 +635,9 @@ export default function PostCard() {
                   type="button"
                   aria-label="Clear all stamps"
                   onClick={() => setStamps([])}
-                  className="white-button h-12 w-12"
+                  className="white-button px-1 tablet:px-2"
                 >
-                  <HeartOff size={16} color="white" />
+                  <HeartOff color="white" className="w-6 h-6" />
                 </button>
               </>
             )}
@@ -646,9 +646,9 @@ export default function PostCard() {
             type="button"
             aria-label="Close Postcard"
             onClick={handleCloseClick}
-            className="white-button px-2"
+            className="white-button px-1 tablet:px-2"
           >
-            <X size={16} />
+            <X color="white" className="w-6 h-6" />
           </button>
         </div>
         {saveMessage && (
@@ -666,7 +666,7 @@ export default function PostCard() {
         <div
           id="postcard-container"
           className={twMerge(
-            "font-sonmat w-full h-full relative rotate-y-180 rotate-z-5 group-hover:rotate-y-0 group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md",
+            "font-sonmat w-full h-full relative rotate-y-180 rotate-z-5 desktop:group-hover:rotate-y-0 desktop:group-hover:rotate-z-0 transform-3d transition-transform duration-300 bg-postcard-background shadow-md [article:focus-within_&]:rotate-y-0 [article:focus-within_&]:rotate-z-0",
             (mode === "edit" ||
               mode === "stamp" ||
               isDeleteModalOpen ||
@@ -689,8 +689,8 @@ export default function PostCard() {
               mode === "stamp" && "cursor-copy",
             )}
           >
-            <section className="absolute left-[10%] top-0 flex h-full w-[80%] min-h-0 flex-col justify-start py-20">
-              <div className="flex flex-row items-center mt-6 mb-2 h-min justify-between w-full pr-2 text-md">
+            <section className="absolute left-[10%] top-0 flex h-full w-[80%] min-h-0 flex-col justify-start tablet:py-20">
+              <div className="flex flex-row items-center mt-10 ml-2 tablet:ml-0 tablet:mt-6 tablet:mb-2 h-min justify-between w-full pr-2 text-md">
                 <div className="flex flex-row items-center w-fit gap-2">
                   <span>Date</span>
                   <span className="text-background underline underline-offset-4 decoration-1">
@@ -702,7 +702,7 @@ export default function PostCard() {
                     className="w-8 h-8 object-contain mb-1"
                   />
                 </div>
-                <div className=" text-sm">
+                <div className="text-sm">
                   <span
                     className={`${content.length >= MAX_CONTENT_LENGTH ? "text-background" : ""}`}
                   >
@@ -718,7 +718,7 @@ export default function PostCard() {
                 >
                   <textarea
                     {...register("content")}
-                    className="w-full bg-transparent resize-none outline-background border-night/20 border rounded"
+                    className="w-full bg-transparent max-h-[90%] tablet:max-h-full resize-none outline-background border-night/20 border rounded"
                     placeholder="Write your story here..."
                     value={content}
                     rows={8}
@@ -732,7 +732,7 @@ export default function PostCard() {
               ) : (
                 <div
                   ref={paragraphRef}
-                  className="relative min-h-0 w-full flex-1 overflow-hidden"
+                  className="relative min-h-0 max-h-[90%] tablet:max-h-full w-full flex-1 overflow-hidden"
                 >
                   <PostcardText
                     content={content}

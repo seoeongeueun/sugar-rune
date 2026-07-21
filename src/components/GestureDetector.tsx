@@ -457,7 +457,7 @@ export default function GestureDetector({
     <aside
       ref={detectorRef}
       className={`fixed z-90 ${isLockMode ? "w-100" : "w-fit"} flex touch-none select-none hover:cursor-grab flex-col bg-black/40 text-white ${
-        position === null ? "bottom-8 right-8" : ""
+        position === null ? "bottom-8 left-8" : ""
       }`}
       style={positionStyle}
       onPointerDown={handlePointerDown}
