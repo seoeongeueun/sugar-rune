@@ -82,6 +82,7 @@
 
   --postcard-width: 60rem;
   --postcard-height: 41.5rem;
+  --postcard-ratio: 60 / 41.5;
   --postcard-width-half: 30rem;
   --postcard-height-half: 20.75rem;
 }
@@ -150,7 +151,7 @@ textarea::-webkit-scrollbar {
 
   background-size:
     auto,
-    contain;
+    cover;
 }
 
 #postcard-container > .back {
@@ -246,7 +247,7 @@ h3 {
   }
 
   h1 {
-    font-size: 4rem;
+    font-size: 3rem;
   }
 
   h3 {

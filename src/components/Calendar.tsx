@@ -255,14 +255,14 @@ export default function Calendar() {
     >
       <div
         ref={calendarRef}
-        className="pointer-events-auto w-full max-w-1/3 place-center flex flex-col gap-4 items-end"
+        className="pointer-events-auto w-full px-8 tablet:px-30 desktop:px-0 desktop:max-w-1/3 place-center flex flex-col gap-4 items-end"
       >
         <div className="flex flex-row justify-between w-full gap-2">
           <div className="gap-4 flex flex-row shrink-0 items-center">
             <button
               type="button"
               aria-label="Search Date"
-              className="white-button px-2"
+              className="white-button px-1 tablet:px-2"
               onClick={() => setIsMonthYearSelectorOpen((prev) => !prev)}
             >
               {isMonthYearSelectorOpen ? (
@@ -272,7 +272,7 @@ export default function Calendar() {
               )}
             </button>
             {isMonthYearSelectorOpen && (
-              <div className="text-sm flex gap-2 rounded border border-white bg-white/30 h-full px-1 py-1">
+              <div className="text-sm flex gap-2 rounded border border-white bg-white/30 h-full tablet:px-1 tablet:py-1">
                 <select
                   value={month}
                   onChange={handleMonthChange}
@@ -311,9 +311,9 @@ export default function Calendar() {
             aria-label="Close Calendar"
             type="button"
             onClick={closeCalendar}
-            className="white-button px-2"
+            className="white-button px-1 tablet:px-2"
           >
-            <X size={16} />
+            <X className="w-6 h-6 text-white" />
           </button>
         </div>
         <section
@@ -372,7 +372,7 @@ export default function Calendar() {
                     "relative hover:bg-background/30 !items-start !justify-start border-b border-white text-sm aspect-square min-h-10 py-2 px-4 [:nth-last-child(-n+7)]:border-b-0",
                     date.isCurrentMonth ? "text-white" : "opacity-20",
                     date.date.toDateString() === today.toDateString()
-                      ? "before:content-['今日'] before:absolute before:top-2 before:left-1/2 before:-translate-x-1/2 before:bg-background before:px-1 before:text-white before:font-medium border-background border-b-3"
+                      ? "before:content-['今日'] before:absolute before:whitespace-nowrap before:top-1/2 before:-translate-y-1/2 tablet:before:translate-y-0 tablet:before:top-2 before:left-1/2 before:-translate-x-1/2 before:bg-background/60 before:px-1 before:text-white before:font-medium border-background border-b-3"
                       : "",
                     date.date.toDateString() === selectedDate?.toDateString()
                       ? "border !border-night/70 outline-2 outline-background bg-background/20"
@@ -384,7 +384,7 @@ export default function Calendar() {
                     <img
                       src={`/hearts/heart_${heartColor}_icon.png`}
                       alt="Heart Icon"
-                      className="place-center w-1/3 min-w-4 tablet:min-w-10"
+                      className="place-center w-1/3 min-w-7 tablet:min-w-10"
                     />
                   )}
                 </button>

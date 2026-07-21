@@ -31,9 +31,40 @@ type DragState = {
 };
 
 const DETECTOR_POSITION_KEY = "gestureDetectorPosition";
+const DETECTOR_BREAKPOINT_KEY = "gestureDetectorBreakpoint";
+const MOBILE_BREAKPOINT = 0;
+const TABLET_BREAKPOINT = 640;
+const DESKTOP_BREAKPOINT = 1023;
+
+type DetectorBreakpoint =
+  | typeof MOBILE_BREAKPOINT
+  | typeof TABLET_BREAKPOINT
+  | typeof DESKTOP_BREAKPOINT;
+
+function getDetectorBreakpoint(): DetectorBreakpoint {
+  if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+    return DESKTOP_BREAKPOINT;
+  }
+
+  if (window.innerWidth >= TABLET_BREAKPOINT) {
+    return TABLET_BREAKPOINT;
+  }
+
+  return MOBILE_BREAKPOINT;
+}
 
 function getSavedDetectorPosition(): DetectorPosition | null {
   try {
+    const savedBreakpoint = window.sessionStorage.getItem(
+      DETECTOR_BREAKPOINT_KEY,
+    );
+
+    if (savedBreakpoint !== String(getDetectorBreakpoint())) {
+      window.sessionStorage.removeItem(DETECTOR_POSITION_KEY);
+      window.sessionStorage.removeItem(DETECTOR_BREAKPOINT_KEY);
+      return null;
+    }
+
     const savedPosition = window.sessionStorage.getItem(DETECTOR_POSITION_KEY);
 
     if (!savedPosition) {
@@ -65,6 +96,15 @@ function saveDetectorPosition(position: DetectorPosition) {
     DETECTOR_POSITION_KEY,
     JSON.stringify(position),
   );
+  window.sessionStorage.setItem(
+    DETECTOR_BREAKPOINT_KEY,
+    String(getDetectorBreakpoint()),
+  );
+}
+
+function clearSavedDetectorPosition() {
+  window.sessionStorage.removeItem(DETECTOR_POSITION_KEY);
+  window.sessionStorage.removeItem(DETECTOR_BREAKPOINT_KEY);
 }
 
 function clampDetectorPosition(
@@ -115,6 +155,40 @@ export default function GestureDetector({
   const [position, setPosition] = useState<DetectorPosition | null>(() =>
     getSavedDetectorPosition(),
   );
+
+  useEffect(() => {
+    let currentBreakpoint = getDetectorBreakpoint();
+
+    const handleBreakpointChange = () => {
+      const nextBreakpoint = getDetectorBreakpoint();
+
+      if (nextBreakpoint === currentBreakpoint) {
+        return;
+      }
+
+      currentBreakpoint = nextBreakpoint;
+      clearSavedDetectorPosition();
+      currentPositionRef.current = null;
+      dragStateRef.current = null;
+      didDragRef.current = false;
+      setPosition(null);
+    };
+
+    const tabletQuery = window.matchMedia(
+      `(min-width: ${TABLET_BREAKPOINT}px)`,
+    );
+    const desktopQuery = window.matchMedia(
+      `(min-width: ${DESKTOP_BREAKPOINT}px)`,
+    );
+
+    tabletQuery.addEventListener("change", handleBreakpointChange);
+    desktopQuery.addEventListener("change", handleBreakpointChange);
+
+    return () => {
+      tabletQuery.removeEventListener("change", handleBreakpointChange);
+      desktopQuery.removeEventListener("change", handleBreakpointChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (cameraAccessRequestCount > 0) {
@@ -456,8 +530,8 @@ export default function GestureDetector({
   return (
     <aside
       ref={detectorRef}
-      className={`fixed z-90 ${isLockMode ? "w-100" : "w-fit"} flex touch-none select-none hover:cursor-grab flex-col bg-black/40 text-white ${
-        position === null ? "bottom-8 right-8" : ""
+      className={`fixed z-10 ${isLockMode ? "w-100" : "w-fit"} flex touch-none select-none hover:cursor-grab flex-col bg-black/40 text-white ${
+        position === null ? "bottom-40 left-8" : ""
       }`}
       style={positionStyle}
       onPointerDown={handlePointerDown}

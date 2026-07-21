@@ -32,7 +32,7 @@ export default function FooterButtons() {
   };
 
   return (
-    <div className="pointer-events-none fixed bottom-10 justify-self-center text-white text-lg flex flex-row gap-40">
+    <div className="pointer-events-none fixed bottom-30 desktop:bottom-10 justify-self-center text-white text-lg flex flex-row gap-40 z-40">
       <button
         type="button"
         onClick={handleTodayClick}
