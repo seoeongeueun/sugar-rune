@@ -94,6 +94,7 @@ export default function GestureDetector({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const victoryMessageTimeoutRef = useRef<number | null>(null);
+  const nonLockGestureTextTimeoutRef = useRef<number | null>(null);
   const unlockSessionRef = useRef<SpeechRecognitionSession | null>(null);
   const isUnlockListeningRef = useRef(false);
   const shouldWaitForGestureReleaseRef = useRef(false);
@@ -104,11 +105,13 @@ export default function GestureDetector({
   const [status, setStatus] = useState<GestureDetectorStatus>("loading");
   const [isVictory, setIsVictory] = useState(false);
   const [gestureMessage, setGestureMessage] = useState<string>(
-    DEFAULT_GESTURE_MESSAGE,
+    isLockMode ? DEFAULT_GESTURE_MESSAGE : "",
   );
   const [isUnlockListening, setIsUnlockListening] = useState(false);
   const [unlockTranscript, setUnlockTranscript] = useState("");
   const [isDetectionEnabled, setIsDetectionEnabled] = useState(false);
+  const [shouldShowNonLockGestureText, setShouldShowNonLockGestureText] =
+    useState(false);
   const [position, setPosition] = useState<DetectorPosition | null>(() =>
     getSavedDetectorPosition(),
   );
@@ -147,6 +150,19 @@ export default function GestureDetector({
       lastVictoryRef.current = false;
       setIsVictory(false);
       onVictoryChange(false);
+    };
+
+    const showNonLockGestureText = () => {
+      setShouldShowNonLockGestureText(true);
+
+      if (nonLockGestureTextTimeoutRef.current !== null) {
+        window.clearTimeout(nonLockGestureTextTimeoutRef.current);
+      }
+
+      nonLockGestureTextTimeoutRef.current = window.setTimeout(() => {
+        setShouldShowNonLockGestureText(false);
+        nonLockGestureTextTimeoutRef.current = null;
+      }, 3000);
     };
 
     const startUnlockListening = () => {
@@ -235,7 +251,8 @@ export default function GestureDetector({
 
         setIsVictory(true);
         onVictoryChange(true);
-        showGestureMessage("あなたのハート、ピックアップ！");
+        showNonLockGestureText();
+        showGestureMessage("Sugar Sugar Rune, Choco Rune!", 2000);
         return;
       }
 
@@ -348,11 +365,17 @@ export default function GestureDetector({
         window.clearTimeout(victoryMessageTimeoutRef.current);
       }
 
+      if (nonLockGestureTextTimeoutRef.current !== null) {
+        window.clearTimeout(nonLockGestureTextTimeoutRef.current);
+        nonLockGestureTextTimeoutRef.current = null;
+      }
+
       unlockSessionRef.current?.abort();
       unlockSessionRef.current = null;
       isUnlockListeningRef.current = false;
       setIsUnlockListening(false);
       setUnlockTranscript("");
+      setShouldShowNonLockGestureText(false);
       shouldWaitForGestureReleaseRef.current = false;
       landmarker?.close();
       stream?.getTracks().forEach((track) => track.stop());
@@ -433,7 +456,7 @@ export default function GestureDetector({
   return (
     <aside
       ref={detectorRef}
-      className={`fixed z-90 w-100 flex touch-none select-none hover:cursor-grab flex-col bg-black/40 text-white ${
+      className={`fixed z-90 ${isLockMode ? "w-100" : "w-fit"} flex touch-none select-none hover:cursor-grab flex-col bg-black/40 text-white ${
         position === null ? "bottom-8 right-8" : ""
       }`}
       style={positionStyle}
@@ -452,7 +475,7 @@ export default function GestureDetector({
               return;
             }
           }}
-          className="flex flex-row items-center !justify-between h-4 leading-2 text-white text-md font-medium"
+          className="flex flex-row items-center !justify-between h-4 leading-2 text-white text-md font-medium gap-8"
         >
           <span>{status === "error" ? "Error" : "Camera"}</span>
           <div className="flex flex-row items-center">
@@ -497,22 +520,28 @@ export default function GestureDetector({
                 style={{ background: "transparent" }}
               />
             </div>
-            <div className="flex flex-col gap-2 w-full">
-              {isUnlockListening && (
-                <div
-                  className="flex items-center gap-2 text-white"
-                  aria-live="polite"
-                >
-                  <Mic className="h-5 w-5 animate-pulse" />
-                  <div className="flex items-center gap-1" aria-hidden="true">
-                    <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                    <span className="h-2 w-2 rounded-full bg-white animate-pulse [animation-delay:150ms]" />
-                    <span className="h-2 w-2 rounded-full bg-white animate-pulse [animation-delay:300ms]" />
+            {isLockMode ? (
+              <div className="flex flex-col gap-2 w-full">
+                {isUnlockListening && (
+                  <div
+                    className="flex items-center gap-2 text-white"
+                    aria-live="polite"
+                  >
+                    <Mic className="h-5 w-5 animate-pulse" />
+                    <div className="flex items-center gap-1" aria-hidden="true">
+                      <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                      <span className="h-2 w-2 rounded-full bg-white animate-pulse [animation-delay:150ms]" />
+                      <span className="h-2 w-2 rounded-full bg-white animate-pulse [animation-delay:300ms]" />
+                    </div>
                   </div>
-                </div>
-              )}
-              <p className="text-md text-left">{gestureMessage}</p>
-            </div>
+                )}
+                <p className="text-md text-left">{gestureMessage}</p>
+              </div>
+            ) : shouldShowNonLockGestureText ? (
+              <p className="absolute text-center text-md top-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-night/50 px-2 rounded rotate-z-5 will-change-transform">
+                Sugar Sugar Rune!
+              </p>
+            ) : null}
           </div>
         )}
         {isUnlockListening && unlockTranscript?.length > 0 && (
