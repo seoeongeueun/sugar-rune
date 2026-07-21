@@ -550,6 +550,19 @@ export default function PostCard() {
     closeNote();
   };
 
+  const handleCardClick = (event: MouseEvent<HTMLElement>) => {
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.closest(
+        "a, button, input, textarea, select, [contenteditable='true']",
+      )
+    ) {
+      return;
+    }
+
+    cardRef.current?.focus();
+  };
+
   return (
     <div
       ref={overlayRef}
@@ -558,7 +571,7 @@ export default function PostCard() {
       <article
         ref={cardRef}
         tabIndex={-1}
-        onClick={() => cardRef.current?.focus()}
+        onClick={handleCardClick}
         className="pointer-events-auto group perspective-distant relative box-content p-4 tablet:p-16 rounded-xs w-postcard-width aspect-[var(--postcard-ratio)] tablet:aspect-auto tablet:h-postcard-height outline-none"
       >
         <div className="group-hover:opacity-100 desktop:opacity-0 justify-self-start w-full flex flex-row items-center justify-between transition-opacity group-hover:pointer-events-auto desktop:pointer-events-none py-4 px-1 z-60">
@@ -618,7 +631,7 @@ export default function PostCard() {
                   aria-label="Save heart stamp positions"
                   onClick={handleStampSaveClick}
                   disabled={isSaving}
-                  className="white-button px-1 tablet:px-2 aspect-square w-auto"
+                  className="white-button flex-1 px-1 tablet:px-2 aspect-square w-auto"
                 >
                   {isSaving ? (
                     <LoaderCircle
@@ -634,7 +647,7 @@ export default function PostCard() {
                 <button
                   type="button"
                   aria-label="Stamp size change"
-                  className="white-button text-md h-12 font-sonmat"
+                  className="white-button w-[22px] tablet:w-[27px] text-md font-sonmat"
                   onClick={() =>
                     setNextStampIndex(
                       (prev) => (prev + 1) % STAMP_SIZE_ORDER.length,
@@ -647,7 +660,7 @@ export default function PostCard() {
                   type="button"
                   aria-label="Clear all stamps"
                   onClick={() => setStamps([])}
-                  className="white-button px-1 tablet:px-2"
+                  className="white-button flex-1 px-1 tablet:px-2"
                 >
                   <HeartOff color="white" className="w-6 h-6" />
                 </button>
@@ -669,7 +682,7 @@ export default function PostCard() {
           </p>
         )}
         {mode === "stamp" && (
-          <div className="absolute left-1/2 -translate-x-1/2 -bottom-16 text-white text-md">
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-8 tablet:-bottom-16 text-white text-md whitespace-nowrap">
             {stamps.length <= 0
               ? "Click on the postcard to add stamps"
               : `${visibleStamps.length} on this page · ${stamps.length} / ${MAX_STAMPS}`}
@@ -702,7 +715,7 @@ export default function PostCard() {
             )}
           >
             <section className="absolute left-[10%] top-0 flex h-full w-[80%] min-h-0 flex-col justify-start tablet:py-20">
-              <div className="flex flex-row items-center mt-10 ml-2 tablet:ml-0 tablet:mt-6 tablet:mb-2 h-min justify-between w-full pr-2 text-md">
+              <div className="flex flex-row items-center mt-14 tablet:mt-6 tablet:mb-2 h-min justify-between w-full pr-2 text-sm tablet:text-md">
                 <div className="flex flex-row items-center w-fit gap-2">
                   <span>Date</span>
                   <span className="text-background underline underline-offset-4 decoration-1">
@@ -711,7 +724,7 @@ export default function PostCard() {
                   <img
                     src={`/hearts/heart_${heartColor}_icon.png`}
                     alt="heart"
-                    className="w-8 h-8 object-contain mb-1"
+                    className="w-6 h-6 tablet:w-8 tablet:h-8 object-contain tablet:mb-1"
                   />
                 </div>
                 <div className="text-sm">

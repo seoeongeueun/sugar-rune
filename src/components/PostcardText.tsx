@@ -51,9 +51,8 @@ type PostcardTextProps = {
 const POSTCARD_TEXT_FONT_FAMILY =
   '"SpecialSymbols", "sonmat", system-ui, Avenir, Helvetica, Arial, sans-serif';
 const DESKTOP_POSTCARD_TEXT_FONT_SIZE = 20;
-const MOBILE_POSTCARD_TEXT_FONT_SIZE = 15;
-const DESKTOP_POSTCARD_TEXT_LINE_HEIGHT = 30;
-const MOBILE_POSTCARD_TEXT_LINE_HEIGHT = 22.5;
+const MOBILE_POSTCARD_TEXT_FONT_SIZE = 12;
+const POSTCARD_TEXT_LINE_HEIGHT_RATIO = 1.5;
 const MOBILE_POSTCARD_MEDIA_QUERY = "(max-width: 639px)";
 const POSTCARD_TEXT_LETTER_SPACING = 0;
 const POSTCARD_TEXT_BOTTOM_PADDING = 8;
@@ -77,9 +76,7 @@ function getPostcardTextMetrics(): PostcardTextMetrics {
   return {
     font: `${fontSize}px ${POSTCARD_TEXT_FONT_FAMILY}`,
     fontSize,
-    lineHeight: isMobile
-      ? MOBILE_POSTCARD_TEXT_LINE_HEIGHT
-      : DESKTOP_POSTCARD_TEXT_LINE_HEIGHT,
+    lineHeight: fontSize * POSTCARD_TEXT_LINE_HEIGHT_RATIO,
   };
 }
 
@@ -186,11 +183,7 @@ function buildPostcardTextPages({
     while (lineTop + lineHeight <= layoutHeight) {
       const blockedIntervals = pageObstacles
         .map((obstacle) =>
-          circleIntervalForBand(
-            obstacle,
-            lineTop,
-            lineTop + lineHeight,
-          ),
+          circleIntervalForBand(obstacle, lineTop, lineTop + lineHeight),
         )
         .filter((interval): interval is TextInterval => interval !== null);
 
@@ -290,18 +283,15 @@ export default function PostcardText({
     };
   }, []);
 
-  const prepared = useMemo(
-    () => {
-      void fontRevision;
+  const prepared = useMemo(() => {
+    void fontRevision;
 
-      return prepareWithSegments(content, textMetrics.font, {
-        whiteSpace: "pre-wrap",
-        wordBreak: "normal",
-        letterSpacing: POSTCARD_TEXT_LETTER_SPACING,
-      });
-    },
-    [content, fontRevision, textMetrics.font],
-  );
+    return prepareWithSegments(content, textMetrics.font, {
+      whiteSpace: "pre-wrap",
+      wordBreak: "normal",
+      letterSpacing: POSTCARD_TEXT_LETTER_SPACING,
+    });
+  }, [content, fontRevision, textMetrics.font]);
 
   const pages = useMemo(
     () =>
