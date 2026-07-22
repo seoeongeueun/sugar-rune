@@ -35,6 +35,7 @@ const DETECTOR_BREAKPOINT_KEY = "gestureDetectorBreakpoint";
 const MOBILE_BREAKPOINT = 0;
 const TABLET_BREAKPOINT = 640;
 const DESKTOP_BREAKPOINT = 1023;
+const GESTURE_DEBOUNCE_MS = 250;
 
 type DetectorBreakpoint =
   | typeof MOBILE_BREAKPOINT
@@ -121,7 +122,7 @@ function clampDetectorPosition(
   };
 }
 
-const DEFAULT_GESTURE_MESSAGE = "Show your gesture and say your spell!";
+const DEFAULT_GESTURE_MESSAGE = "Waiting for your hand guesture ✌️";
 
 export default function GestureDetector({
   onVictoryChange,
@@ -155,6 +156,13 @@ export default function GestureDetector({
   const [position, setPosition] = useState<DetectorPosition | null>(() =>
     getSavedDetectorPosition(),
   );
+
+  useEffect(() => {
+    if (isLockMode) {
+      setGestureMessage(DEFAULT_GESTURE_MESSAGE);
+      setIsDetectionEnabled(true); //open camera tab when lock mode gets activated
+    }
+  }, [isLockMode]);
 
   useEffect(() => {
     let currentBreakpoint = getDetectorBreakpoint();
@@ -200,6 +208,8 @@ export default function GestureDetector({
     let isCancelled = false;
     let stream: MediaStream | null = null;
     let landmarker: HandLandmarker | null = null;
+    let pendingGestureValue: boolean | null = null;
+    let pendingGestureStartedAt = 0;
     const videoElement = videoRef.current;
 
     const showGestureMessage = (message: string, durationMs?: number) => {
@@ -257,7 +267,7 @@ export default function GestureDetector({
       setIsUnlockListening(true);
       setUnlockTranscript("");
       setIsVictory(true);
-      showGestureMessage("Gesture detected!");
+      showGestureMessage("Gesture detected!\nWhat's your spell?");
 
       const result = startSpeechRecognition({
         maxListeningTimeMs: 10_000,
@@ -271,7 +281,7 @@ export default function GestureDetector({
           setUnlockTranscript(transcript);
 
           if (!transcript) {
-            showGestureMessage("No spell heard.", 3000);
+            showGestureMessage("No spell detected.", 3000);
             shouldWaitForGestureReleaseRef.current = true;
             clearVictory();
             return;
@@ -312,9 +322,11 @@ export default function GestureDetector({
 
     const setVictory = (nextValue: boolean) => {
       if (lastVictoryRef.current === nextValue) {
+        pendingGestureValue = null;
         return;
       }
 
+      pendingGestureValue = null;
       lastVictoryRef.current = nextValue;
 
       if (nextValue) {
@@ -332,6 +344,27 @@ export default function GestureDetector({
 
       setIsVictory(false);
       onVictoryChange(false);
+    };
+
+    const setVictoryDebounced = (nextValue: boolean) => {
+      if (lastVictoryRef.current === nextValue) {
+        pendingGestureValue = null;
+        return;
+      }
+
+      const now = performance.now();
+
+      if (pendingGestureValue !== nextValue) {
+        pendingGestureValue = nextValue;
+        pendingGestureStartedAt = now;
+        return;
+      }
+
+      if (now - pendingGestureStartedAt < GESTURE_DEBOUNCE_MS) {
+        return;
+      }
+
+      setVictory(nextValue);
     };
 
     const clearCanvas = () => {
@@ -375,7 +408,7 @@ export default function GestureDetector({
           return;
         }
 
-        setVictory(hasGesture);
+        setVictoryDebounced(hasGesture);
       }
 
       animationFrameRef.current = requestAnimationFrame(detectFrame);

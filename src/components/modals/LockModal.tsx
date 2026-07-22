@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ModalSimple, HeartButton } from "@/ui";
-import { startSpeechRecognition } from "@/lib";
+import { startSpeechRecognition, getSpeechRecognitionLanguage } from "@/lib";
 import type { SpeechRecognitionSession } from "@/lib";
 import { Check, Mic, RotateCcw, Sparkles, X } from "lucide-react";
 
@@ -212,6 +212,9 @@ export default function LockModal({
         </div>
 
         <div className="flex flex-col justify-center gap-4 items-center mt-2 bg-background/60 border border-white py-4 rounded">
+          <p className="text-sm text-center text-white">
+            Expected Language: {getSpeechRecognitionLanguage()}
+          </p>
           {(step === "ready" ||
             step === "recording" ||
             step === "confirmReady" ||

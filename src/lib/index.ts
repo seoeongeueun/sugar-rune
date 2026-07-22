@@ -31,7 +31,10 @@ export {
 export type { GestureDetectorStatus } from "./gestureDetection";
 export type { Note, ModalProps, StampData } from "./types";
 export { shouldReclassify } from "./analyze";
-export { startSpeechRecognition } from "./speechRecognition";
+export {
+  getSpeechRecognitionLanguage,
+  startSpeechRecognition,
+} from "./speechRecognition";
 export type {
   SpeechRecognitionSession,
   SpeechRecognitionStartResult,
