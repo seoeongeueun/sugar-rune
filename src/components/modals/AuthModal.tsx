@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { signInWithEmail, signUpWithEmail } from "@/features";
+import {
+  sendPasswordResetEmail,
+  signInWithEmail,
+  signUpWithEmail,
+  updateCurrentUserPassword,
+} from "@/features";
 import { Modal } from "@/ui";
 import { getErrorMessage } from "@/lib";
 
@@ -12,28 +17,57 @@ interface LoginFormValues {
 }
 
 type AuthModalProps = {
+  initialAuthMode?: AuthMode;
   onCreateAccount?: () => void;
+  onPasswordRecoveryComplete?: () => void;
 };
 
-export function AuthModal({ onCreateAccount }: AuthModalProps) {
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+type AuthMode = "login" | "signup" | "passwordRecovery";
+
+export function AuthModal({
+  initialAuthMode = "login",
+  onCreateAccount,
+  onPasswordRecoveryComplete,
+}: AuthModalProps) {
+  const [authMode, setAuthMode] = useState<AuthMode>(initialAuthMode);
 
   const signUpMutation = useMutation({ mutationFn: signUpWithEmail });
   const signInMutation = useMutation({ mutationFn: signInWithEmail });
+  const passwordResetMutation = useMutation({
+    mutationFn: sendPasswordResetEmail,
+  });
+  const passwordUpdateMutation = useMutation({
+    mutationFn: updateCurrentUserPassword,
+  });
 
   const isSignupMode = authMode === "signup";
-  const isSubmitting = signUpMutation.isPending || signInMutation.isPending;
+  const isPasswordRecoveryMode = authMode === "passwordRecovery";
+  const isSubmitting =
+    signUpMutation.isPending ||
+    signInMutation.isPending ||
+    passwordResetMutation.isPending ||
+    passwordUpdateMutation.isPending;
 
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
+    trigger,
     formState: { errors },
   } = useForm<LoginFormValues>({
     defaultValues: { username: "", email: "", password: "" },
   });
 
   const handlePrimaryAction = handleSubmit(async (values) => {
+    passwordResetMutation.reset();
+
+    if (isPasswordRecoveryMode) {
+      await passwordUpdateMutation.mutateAsync(values.password);
+      onPasswordRecoveryComplete?.();
+      return;
+    }
+
     if (isSignupMode) {
       // send API request to sign up the user
       await signUpMutation.mutateAsync({
@@ -50,18 +84,44 @@ export function AuthModal({ onCreateAccount }: AuthModalProps) {
     });
   });
 
+  const handlePasswordReset = async () => {
+    const isEmailValid = await trigger("email");
+
+    if (!isEmailValid) {
+      return;
+    }
+
+    passwordResetMutation.reset();
+    await passwordResetMutation.mutateAsync(getValues("email"));
+  };
+
   const activeMutation = isSignupMode ? signUpMutation : signInMutation;
-  const errorMessage = activeMutation.isError
-    ? getErrorMessage(activeMutation.error)
-    : null;
   const signedInUsername =
     signInMutation.data?.user?.user_metadata?.username?.toString().trim() ||
     null;
+  const errorMessage = passwordUpdateMutation.isError
+    ? getErrorMessage(passwordUpdateMutation.error)
+    : passwordResetMutation.isError
+      ? getErrorMessage(passwordResetMutation.error)
+      : activeMutation.isError
+        ? getErrorMessage(activeMutation.error)
+        : null;
+  const successMessage = passwordUpdateMutation.isSuccess
+    ? "Password updated."
+    : passwordResetMutation.isSuccess
+      ? "Check your email for a password reset link."
+      : activeMutation.isSuccess
+        ? isSignupMode
+          ? "Sign up complete. Check your email verification link."
+          : `Welcome back, ${signedInUsername}!`
+        : null;
 
-  const resetAuthState = (nextMode: "login" | "signup" = "signup") => {
+  const resetAuthState = (nextMode: AuthMode = "signup") => {
     setAuthMode(nextMode);
     signUpMutation.reset();
     signInMutation.reset();
+    passwordResetMutation.reset();
+    passwordUpdateMutation.reset();
     reset();
   };
 
@@ -95,30 +155,32 @@ export function AuthModal({ onCreateAccount }: AuthModalProps) {
         onSubmit={handlePrimaryAction}
         className="flex flex-col gap-2 w-full tablet:px-8 font-sonmat tracking-wide"
       >
-        <div className="w-full flex flex-col">
-          <input
-            type="email"
-            placeholder="Email"
-            aria-invalid={errors.email ? "true" : "false"}
-            {...register("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^\S+@\S+\.\S+$/,
-                message: "Use a valid email format",
-              },
-            })}
-            className="tablet:p-1 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
-          />
-          {errors.email && (
-            <p className="px-1 text-md text-background font-medium">
-              {errors.email.message}
-            </p>
-          )}
-        </div>
+        {!isPasswordRecoveryMode && (
+          <div className="w-full flex flex-col">
+            <input
+              type="email"
+              placeholder="Email"
+              aria-invalid={errors.email ? "true" : "false"}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^\S+@\S+\.\S+$/,
+                  message: "Use a valid email format",
+                },
+              })}
+              className="tablet:p-1 px-2 tablet:px-4 rounded bg-white/20 border border-white/30 text-lg text-white focus:outline-none focus:ring-1 focus:ring-background"
+            />
+            {errors.email && (
+              <p className="px-1 text-md text-background font-medium">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+        )}
         <div className="w-full flex flex-col">
           <input
             type="password"
-            placeholder="Password"
+            placeholder={isPasswordRecoveryMode ? "New password" : "Password"}
             aria-invalid={errors.password ? "true" : "false"}
             {...register("password", {
               required: "Password is required",
@@ -157,29 +219,44 @@ export function AuthModal({ onCreateAccount }: AuthModalProps) {
             )}
           </div>
         )}
+
         {errorMessage && (
           <p className="mt-2 px-1 text-md text-background font-medium">
             {errorMessage}
           </p>
         )}
-        {activeMutation.isSuccess && (
-          <p className="mt-2 px-1 text-lg text-white text-center">
-            {isSignupMode
-              ? "Sign up complete. Check your email verification link."
-              : `Welcome back, ${signedInUsername}!`}
+        {successMessage && (
+          <p className="mt-2 px-1 text-md text-background  text-center">
+            {successMessage}
           </p>
         )}
-        {!activeMutation.isSuccess && (
-          <button
-            type="button"
-            onClick={() => {
-              resetAuthState(isSignupMode ? "login" : "signup");
-            }}
-            className="text-lg font-sonmat underline underline-offset-3 mt-4 hover:text-background transition-colors duration-100 text-white w-fit px-8 self-center text-center"
-          >
-            {isSignupMode ? "I already have an account" : "Make a new account"}
-          </button>
-        )}
+        <div className="flex flex-col justify-center gap-1 items-center mt-4">
+          {!isSignupMode &&
+            !isPasswordRecoveryMode &&
+            !signInMutation.isSuccess && (
+              <button
+                type="button"
+                onClick={handlePasswordReset}
+                disabled={isSubmitting}
+                className="text-md font-sonmat underline underline-offset-3 hover:text-background transition-colors duration-100 text-white w-fit px-8 self-center text-center disabled:opacity-60"
+              >
+                I forgot my password
+              </button>
+            )}
+          {!isPasswordRecoveryMode && !activeMutation.isSuccess && (
+            <button
+              type="button"
+              onClick={() => {
+                resetAuthState(isSignupMode ? "login" : "signup");
+              }}
+              className="text-md font-sonmat underline underline-offset-3 hover:text-background transition-colors duration-100 text-white w-fit px-8 self-center text-center"
+            >
+              {isSignupMode
+                ? "I already have an account"
+                : "Make a new account"}
+            </button>
+          )}
+        </div>
       </form>
     </Modal>
   );

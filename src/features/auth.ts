@@ -49,6 +49,32 @@ export async function signInWithEmail(payload: EmailAuthPayload) {
   return data;
 }
 
+export async function sendPasswordResetEmail(email: string) {
+  assertSupabaseConfig();
+
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateCurrentUserPassword(password: string) {
+  assertSupabaseConfig();
+
+  const { data, error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 export async function verifyUserPassword(payload: {
   email: string;
   password: string;

@@ -28,6 +28,7 @@ export default function App() {
   const [heartOpen, setHeartOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isLockMessageOpen, setIsLockMessageOpen] = useState(false);
+  const [isPasswordRecoveryOpen, setIsPasswordRecoveryOpen] = useState(false);
   const [cameraAccessRequestCount, setCameraAccessRequestCount] = useState(0);
   const isLoading = useAuth((state) => state.isLoading);
   const user = useAuth((state) => state.user);
@@ -76,12 +77,16 @@ export default function App() {
     // Listen for auth state changes and update the session accordingly
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!isMounted) {
         return;
       }
 
       setSession(nextSession);
+      if (event === "PASSWORD_RECOVERY") {
+        setIsPasswordRecoveryOpen(true);
+      }
+
       if (!nextSession) {
         clearNotesQueryCache(queryClient);
         clearUserProfileQueryCache(queryClient);
@@ -175,7 +180,13 @@ export default function App() {
           }
         />
       )}
-      {!isLoading && !user && !isHelpOpen && (
+      {isPasswordRecoveryOpen && !isHelpOpen && (
+        <AuthModal
+          initialAuthMode="passwordRecovery"
+          onPasswordRecoveryComplete={() => setIsPasswordRecoveryOpen(false)}
+        />
+      )}
+      {!isLoading && !user && !isHelpOpen && !isPasswordRecoveryOpen && (
         <AuthModal onCreateAccount={() => setIsHelpOpen(true)} />
       )}
       {isLockMessageOpen && (
